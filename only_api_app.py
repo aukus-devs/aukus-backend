@@ -1,5 +1,5 @@
 from flask import Flask
-from routes.login.login import auth_bp
+from routes.api.login.login import auth_bp
 from routes.api.player.player import player_bp
 from routes.api.canvas.canvas import canvas_bp
 from apscheduler.schedulers.background import BackgroundScheduler

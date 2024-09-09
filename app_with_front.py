@@ -137,7 +137,7 @@ def add_player_move():
         player_id = data['player_id']
         dice_roll = data['dice_roll']
         cell_from = last_cell_number if last_cell_number else 0
-        cell_to = data['cell_to']
+        cell_to = data['move_to']
         stair_from = data.get('stair_from')
         stair_to = data.get('stair_to')
         snake_from = data.get('snake_from')
