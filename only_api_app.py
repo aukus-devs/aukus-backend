@@ -29,4 +29,4 @@ if __name__ == '__main__':
     scheduler = BackgroundScheduler()
     scheduler.add_job(reset_finished_players, 'interval', minutes=1)
     scheduler.start()
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

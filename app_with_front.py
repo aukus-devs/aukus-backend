@@ -3,14 +3,13 @@ from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, g, jsonify, send_from_directory
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from config import DB, SESSION_SECRET, UPLOAD_FOLDER
+from config import SESSION_SECRET, UPLOAD_FOLDER
 from db_client.db_client import DatabaseClient
 
 app = Flask(__name__)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = SESSION_SECRET
-DATABASE = DB
 
 
 def get_db():
