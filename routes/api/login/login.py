@@ -15,7 +15,7 @@ def login():
         if user:
             session['username'] = user[1]
             session['role'] = user[2]
-            return jsonify({'success': True}), 200
+            return redirect('/')
         else:
             return jsonify({'error': 'Неверное имя пользователя или пароль. Попробуйте снова.'})
 
