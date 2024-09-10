@@ -29,7 +29,7 @@ def upload_canvas_image(player_id):
     name = str(player_id) + '-' + str(last_file_id[0] + 1) + '.' + file_extension if last_file_id else str(
         player_id) + '-' + str('1') + '.' + file_extension
     file.save(BASE_DIR + UPLOAD_FOLDER + '/' + name)
-    url = str(UPLOAD_FOLDER + '/' + name)
+    url = str('/uploads/' + name)
     db.add_image(player_id=player_id, url=url, width=width, height=height)
     return jsonify({
         'id': last_file_id[0] + 1 if last_file_id else 1,
