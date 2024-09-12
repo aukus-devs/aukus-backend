@@ -30,3 +30,9 @@ if __name__ == '__main__':
     scheduler.add_job(reset_finished_players, 'interval', minutes=1)
     scheduler.start()
     app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+if __name__ == 'only_api_app':
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(reset_finished_players, 'interval', minutes=1)
+    scheduler.start()
