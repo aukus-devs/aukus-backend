@@ -87,7 +87,6 @@ def add_player_move():
 
 
 @player_bp.route('/api/player_stats', methods=['GET'])
-@login_required
 def player_stats():
     # Получаем информацию обо всех игроках
 
@@ -122,7 +121,6 @@ def player_stats():
 
 
 @player_bp.route('/api/players/<int:player_id>', methods=['GET'])
-@login_required
 def get_player_moves(player_id):
     moves = db.get_moves_by_player(player_id=player_id)
     return jsonify({'moves': [
@@ -146,7 +144,6 @@ def get_player_moves(player_id):
 
 
 @player_bp.route('/api/get_current_user_id', methods=['GET'])
-@login_required
 def get_current_user_id():
     user_id = db.get_user_id_by_name(session['username'])
     return jsonify({'user_id': user_id[0]})
