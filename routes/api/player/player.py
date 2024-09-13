@@ -145,8 +145,13 @@ def get_player_moves(player_id):
 
 @player_bp.route('/api/get_current_user_id', methods=['GET'])
 def get_current_user_id():
+    if session.get('username') is None:
+        return jsonify({'error': "Need auth"}), 401
     user_id = db.get_user_id_by_name(session['username'])
-    return jsonify({'user_id': user_id[0]})
+    if user_id:
+        return jsonify({'user_id': user_id[0]})
+    else:
+        return jsonify({'error': "Not found"}), 404
 
 
 @player_bp.route('/api/reset_stats', methods=['GET'])
