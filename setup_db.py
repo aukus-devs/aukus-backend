@@ -17,7 +17,7 @@ def setup_database():
         moder_for INTEGER,
         password TEXT NOT NULL,
         vk_stream_link TEXT NOT NULL,
-        donation_link TEXT NOT NULL,
+        donation_link TEXT NOT NULL
     )
     ''')
 
@@ -40,7 +40,7 @@ def setup_database():
         item_review TEXT NOT NULL,
         item_rating INTEGER,
         item_length TEXT CHECK(item_length IN ('short', 'medium', 'long')),
-        vod_link TEXT,
+        vod_link TEXT
     )
     ''')
 
