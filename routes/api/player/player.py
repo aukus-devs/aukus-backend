@@ -101,11 +101,15 @@ def add_vod_link_to_player_move():
         vod_link = data.get('vod_link')
         move_id = data.get('move_id')
 
-        db.update_player_move_vod_link(
-            move_id=move_id,
-            vod_link=vod_link
-        )
-        return jsonify({'message': 'Player move vod link updated successfully'}), 201
+        player_move = db.get_move_by_id(move_id)
+        if player_move:
+            db.update_player_move_vod_link(
+                move_id=move_id,
+                vod_link=vod_link
+            )
+            return jsonify({'message': 'Player move vod link updated successfully'}), 201
+        else:
+            return jsonify({'error': f'Player move with id {move_id} not found'}), 404
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
