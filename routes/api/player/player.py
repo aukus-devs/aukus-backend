@@ -25,7 +25,9 @@ def get_players():
         player_info = {
             'id': player[0],
             'name': player[1],
-            'stream_link': player[3],
+            'twitch_stream_link': player[3],
+            'vk_stream_link': player[9],
+            'donation_link': player[10],
             'is_online': True if player[4] else False,
             'current_game': player[5],
             'url_handle': player[6],
@@ -86,6 +88,29 @@ def add_player_move():
         return jsonify({'error': str(e)}), 500
 
 
+@player_bp.route('/api/player_move_vod_link', methods=['POST'])
+@login_required
+def add_vod_link_to_player_move():
+    data = request.get_json()
+    required_fields = ['move_id', 'vod_link']
+    for field in required_fields:
+        if field not in data:
+            return jsonify({'error': f'Missing required field: {field}'}), 400
+
+    try:
+        vod_link = data.get('vod_link')
+        move_id = data.get('move_id')
+
+        db.update_player_move_vod_link(
+            move_id=move_id,
+            vod_link=vod_link
+        )
+        return jsonify({'message': 'Player move vod link updated successfully'}), 201
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @player_bp.route('/api/player_stats', methods=['GET'])
 def player_stats():
     # Получаем информацию обо всех игроках
@@ -138,7 +163,8 @@ def get_player_moves(player_id):
             'item_title': m[10],
             'item_review': m[11],
             'item_rating': m[12],
-            'item_length': m[13]
+            'item_length': m[13],
+            'vod_link': m[14]
         } for m in moves
     ]})
 
