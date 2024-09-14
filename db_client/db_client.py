@@ -8,13 +8,13 @@ class DatabaseClient:
 
     # --- Методы для работы с таблицей users ---
 
-    def add_user(self, name, role, stream_link, is_online, current_game, url_handle, moder_for, password):
+    def add_user(self, name, role, stream_link, is_online, current_game, url_handle, moder_for, password, vk_stream_link, donation_link):
         """Добавить нового пользователя"""
         self.cursor.execute('''
-            INSERT INTO users (name, role, player_stream_link, player_is_online, player_current_game, 
-                               player_url_handle, moder_for, password)
+            INSERT INTO users (name, role, twitch_stream_link, player_is_online, player_current_game, 
+                               player_url_handle, moder_for, password, vk_stream_link, donation_link)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (name, role, stream_link, is_online, current_game, url_handle, moder_for, password))
+        ''', (name, role, stream_link, is_online, current_game, url_handle, moder_for, password, vk_stream_link, donation_link))
         self.conn.commit()
 
     def get_user_by_id(self, user_id):
@@ -32,7 +32,7 @@ class DatabaseClient:
         return self.cursor.fetchall()
 
     def update_user(self, user_id, name=None, role=None, stream_link=None, is_online=None, current_game=None,
-                    url_handle=None, moder_for=None, password=None):
+                    url_handle=None, moder_for=None, password=None, vk_stream_link=None, donation_link=None):
         """Обновить информацию о пользователе"""
         updates = []
         params = []
@@ -44,7 +44,7 @@ class DatabaseClient:
             updates.append('role = ?')
             params.append(role)
         if stream_link:
-            updates.append('player_stream_link = ?')
+            updates.append('twitch_stream_link = ?')
             params.append(stream_link)
         if is_online is not None:
             updates.append('player_is_online = ?')
@@ -61,6 +61,12 @@ class DatabaseClient:
         if password:
             updates.append('password = ?')
             params.append(password)
+        if vk_stream_link:
+            updates.append('vk_stream_link = ?')
+            params.append(vk_stream_link)
+        if donation_link:
+            updates.append('donation_link = ?')
+            params.append(donation_link)
 
         params.append(user_id)
         query = f'UPDATE users SET {", ".join(updates)} WHERE id = ?'
@@ -77,7 +83,7 @@ class DatabaseClient:
     def get_moves_by_player(self, player_id):
         """Получить все ходы определенного игрока"""
         self.cursor.execute(
-            'SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length FROM playermoves WHERE player_id = ? order by id desc',
+            'SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link FROM playermoves WHERE player_id = ? order by id desc',
             (player_id,))
         return self.cursor.fetchall()
 
@@ -88,7 +94,7 @@ class DatabaseClient:
 
     def update_player_move(self, move_id, dice_roll=None, cell_from=None, cell_to=None, stair_from=None, stair_to=None,
                            snake_from=None, snake_to=None, move_type=None, item_title=None, item_review=None,
-                           item_rating=None, item_length=None):
+                           item_rating=None, item_length=None, vod_link=None):
         """Обновить информацию о ходе игрока"""
         updates = []
         params = []
@@ -129,6 +135,9 @@ class DatabaseClient:
         if item_length is not None:
             updates.append('item_length = ?')
             params.append(item_length)
+        if vod_link is not None:
+            updates.append('vod_link = ?')
+            params.append(vod_link)
 
         params.append(move_id)
         query = f'UPDATE playermoves SET {", ".join(updates)} WHERE id = ?'
@@ -155,21 +164,30 @@ class DatabaseClient:
 
     def add_player_move(self, player_id, dice_roll, cell_from, cell_to, stair_from=None, stair_to=None,
                         snake_from=None, snake_to=None, move_type=None, item_title=None, item_review=None,
-                        item_rating=None, item_length=None):
+                        item_rating=None, item_length=None, vod_link=None):
         """Добавить ход игрока и обновить его позицию на карте"""
         try:
             # Добавляем новый ход в playermoves
             self.cursor.execute('''
                 INSERT INTO playermoves (player_id, dice_roll, cell_from, cell_to, stair_from, stair_to, 
-                                         snake_from, snake_to, type, item_title, item_review, item_rating, item_length)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                         snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (player_id, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to,
-                  move_type, item_title, item_review, item_rating, item_length))
+                  move_type, item_title, item_review, item_rating, item_length, vod_link))
 
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()  # откат изменений в случае ошибки
             raise e
+
+    def update_player_move_vod_link(self, move_id, vod_link):
+        """Обновить поле vod_link в таблице playermoves"""
+        self.cursor.execute('''
+            UPDATE playermoves
+            SET vod_link = ?
+            WHERE id = ?
+        ''', (vod_link, move_id))
+        self.conn.commit()
 
     def update_player_position(self, player_id, new_position):
         """Обновить поле map_position в таблице users"""
