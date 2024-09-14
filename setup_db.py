@@ -10,12 +10,14 @@ def setup_database():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         role TEXT CHECK(role IN ('player', 'moder', 'admin')) NOT NULL,
-        player_stream_link TEXT NOT NULL,
+        twitch_stream_link TEXT NOT NULL,
         player_is_online BOOLEAN NOT NULL,
         player_current_game TEXT NOT NULL,
         player_url_handle TEXT NOT NULL,
         moder_for INTEGER,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        vk_stream_link TEXT NOT NULL,
+        donation_link TEXT NOT NULL,
     )
     ''')
 
@@ -37,7 +39,8 @@ def setup_database():
         item_title TEXT NOT NULL,
         item_review TEXT NOT NULL,
         item_rating INTEGER,
-        item_length TEXT CHECK(item_length IN ('short', 'medium', 'long'))
+        item_length TEXT CHECK(item_length IN ('short', 'medium', 'long')),
+        vod_link TEXT,
     )
     ''')
 
