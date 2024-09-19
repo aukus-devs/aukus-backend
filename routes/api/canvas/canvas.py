@@ -78,7 +78,7 @@ def get_canvas_files(player_id):
     return jsonify({'objects': files}), 200
 
 
-@canvas_bp.route('/api/canvas/<int:player_id>/update', methods=['POST'])
+@canvas_bp.route('/api/canvas/<int:player_id>/update', methods=['PUT'])
 @login_required
 def update_canvas(player_id):
     data = request.get_json()
