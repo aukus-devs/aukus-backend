@@ -18,6 +18,24 @@ def login_required(f):
     return decorated_function
 
 
+def available_for_roles(roles=None):
+    if roles is None:
+        roles = ['player', 'moder', 'admin']
+
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'username' not in session and 'role' not in session:
+                return jsonify({'error': f'Auth required'}), 401
+            if session['role'] not in roles:
+                return jsonify({'error': f'Forbidden'}), 403
+            return f(*args, **kwargs)
+
+        return decorated_function
+
+    return decorator
+
+
 @canvas_bp.route('/api/canvas/<int:player_id>/upload', methods=['POST'])
 @login_required
 def upload_canvas_image(player_id):
@@ -58,3 +76,41 @@ def get_canvas_files(player_id):
     ]
 
     return jsonify({'objects': files}), 200
+
+
+@canvas_bp.route('/api/canvas/<int:player_id>/update', methods=['POST'])
+@login_required
+def update_canvas(player_id):
+    data = request.get_json()
+    if not isinstance(data, list):
+        return jsonify({'error': 'Invalid request format'}), 400
+
+    required_fields = ['id', 'rotation', 'x', 'y', 'width', 'height']
+    for i in data:
+        for field in required_fields:
+            if field not in i:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+
+    current_objects = db.get_player_files_by_player_id(player_id)
+    current_ids = {obj[0] for obj in current_objects}
+    incoming_ids = {obj['id'] for obj in data}
+    ids_to_delete = current_ids - incoming_ids
+    for i in incoming_ids:
+        if i not in current_ids:
+            return jsonify({'error': f'id {i} not found in current files'}), 400
+
+    try:
+        for i in data:
+            db.update_player_files_by_file_id(
+                file_id=i['id'],
+                rotation=i['rotation'],
+                x=i['x'],
+                y=i['y'],
+                width=i['width'],
+                height=i['height'])
+        for i in ids_to_delete:
+            db.delete_file(file_id=i)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    return jsonify({'message': f'Updated {incoming_ids}. Deleted {ids_to_delete if ids_to_delete else "none"}'}), 200

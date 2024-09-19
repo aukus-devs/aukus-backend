@@ -8,13 +8,15 @@ class DatabaseClient:
 
     # --- Методы для работы с таблицей users ---
 
-    def add_user(self, name, role, stream_link, is_online, current_game, url_handle, moder_for, password, vk_stream_link, donation_link):
+    def add_user(self, name, role, stream_link, is_online, current_game, url_handle, moder_for, password,
+                 vk_stream_link, donation_link):
         """Добавить нового пользователя"""
         self.cursor.execute('''
             INSERT INTO users (name, role, twitch_stream_link, player_is_online, player_current_game, 
                                player_url_handle, moder_for, password, vk_stream_link, donation_link)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (name, role, stream_link, is_online, current_game, url_handle, moder_for, password, vk_stream_link, donation_link))
+        ''', (name, role, stream_link, is_online, current_game, url_handle, moder_for, password, vk_stream_link,
+              donation_link))
         self.conn.commit()
 
     def get_user_by_id(self, user_id):
@@ -305,6 +307,26 @@ class DatabaseClient:
         """
         self.cursor.execute(sql, (player_id,))
         return self.cursor.fetchall()
+
+    def delete_file(self, file_id):
+        self.cursor.execute('DELETE FROM PlayerFiles WHERE id = ?', (file_id,))
+        self.conn.commit()
+
+    def delete_files_by_player_id(self, player_id):
+        self.cursor.execute('DELETE FROM PlayerFiles WHERE player_id = ?', (player_id,))
+        self.conn.commit()
+
+    def update_player_files_by_file_id(self, file_id, width, height, x, y, rotation):
+        self.cursor.execute(
+            'UPDATE PlayerFiles SET width = ?, height = ?, x = ?, y = ?, rotation = ? WHERE id = ?',
+            (width, height, x, y, rotation, file_id))
+        self.conn.commit()
+
+    def insert_player_files_by_player_id(self, player_id, width, height, x, y, rotation, url):
+        self.cursor.execute(
+            'INSERT INTO PlayerFiles (player_id, width, height, x, y, rotation, url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            (player_id, width, height, x, y, rotation, url))
+        self.conn.commit()
 
     def close(self):
         """Закрыть соединение с базой данных"""
