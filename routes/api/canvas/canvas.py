@@ -48,7 +48,7 @@ def upload_canvas_image(player_id):
         player_id) + '-' + str('1') + '.' + file_extension
     file.save(BASE_DIR + UPLOAD_FOLDER + '/' + name)
     url = str('/uploads/' + name)
-    db.add_image(player_id=player_id, url=url, width=width, height=height)
+    z_index =db.add_image(player_id=player_id, url=url, width=width, height=height)
     return jsonify({
         'id': last_file_id[0] + 1 if last_file_id else 1,
         'rotation': 0.0,
@@ -56,7 +56,8 @@ def upload_canvas_image(player_id):
         'y': 0.0,
         'url': url,
         'width': float(width),
-        'height': float(height)
+        'height': float(height),
+        'z_index': z_index
     })
 
 
@@ -71,7 +72,8 @@ def get_canvas_files(player_id):
             'y': file[3],
             'url': file[4],
             'width': file[5],
-            'height': file[6]
+            'height': file[6],
+            'zIndex': file[7]
         } for file in player_files
     ]
 
@@ -85,7 +87,7 @@ def update_canvas(player_id):
     if not isinstance(data, list):
         return jsonify({'error': 'Invalid request format'}), 400
 
-    required_fields = ['id', 'rotation', 'x', 'y', 'width', 'height']
+    required_fields = ['id', 'rotation', 'x', 'y', 'width', 'height', 'zIndex']
     for i in data:
         for field in required_fields:
             if field not in i:
@@ -107,7 +109,8 @@ def update_canvas(player_id):
                 x=i['x'],
                 y=i['y'],
                 width=i['width'],
-                height=i['height'])
+                height=i['height'],
+                z_index=i['zIndex'])
         for i in ids_to_delete:
             db.delete_file(file_id=i)
     except Exception as e:

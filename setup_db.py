@@ -53,7 +53,8 @@ def setup_database():
         y REAL NOT NULL,
         url TEXT NOT NULL,
         width REAL NOT NULL,
-        height REAL NOT NULL);
+        height REAL NOT NULL,
+        zIndex INTEGER NOT NULL UNIQUE);
     ''')
 
     conn.commit()

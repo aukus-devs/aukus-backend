@@ -285,10 +285,14 @@ class DatabaseClient:
 
     def add_image(self, player_id, url, width, height, x=0, y=0, rotation=0):
         """Добавить изображение"""
-        self.cursor.execute('INSERT INTO PlayerFiles (player_id, rotation, x, y, url, width, height)'
-                            ' VALUES (?, ?, ?, ?, ?, ?, ?)',
-                            (player_id, rotation, x, y, url, width, height))
+        z_index = self.cursor.execute('SELECT MAX(zIndex) FROM PlayerFiles WHERE player_id = ?',
+                                      (player_id,)).fetchone()
+        z_index = z_index[0] + 1 if z_index else 0
+        self.cursor.execute('INSERT INTO PlayerFiles (player_id, rotation, x, y, url, width, height, zIndex)'
+                            ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                            (player_id, rotation, x, y, url, width, height, z_index))
         self.conn.commit()
+        return z_index
 
     def get_last_image_id(self, player_id):
         """Получить ID последнего изображения игрока"""
@@ -301,7 +305,7 @@ class DatabaseClient:
 
     def get_player_files_by_player_id(self, player_id):
         sql = """
-            SELECT id, rotation, x, y, url, width, height
+            SELECT id, rotation, x, y, url, width, height, zIndex
             FROM PlayerFiles
             WHERE player_id = ?
         """
@@ -316,10 +320,10 @@ class DatabaseClient:
         self.cursor.execute('DELETE FROM PlayerFiles WHERE player_id = ?', (player_id,))
         self.conn.commit()
 
-    def update_player_files_by_file_id(self, file_id, width, height, x, y, rotation):
+    def update_player_files_by_file_id(self, file_id, width, height, x, y, rotation, z_index):
         self.cursor.execute(
-            'UPDATE PlayerFiles SET width = ?, height = ?, x = ?, y = ?, rotation = ? WHERE id = ?',
-            (width, height, x, y, rotation, file_id))
+            'UPDATE PlayerFiles SET width = ?, height = ?, x = ?, y = ?, rotation = ?, zIndex = ? WHERE id = ?',
+            (width, height, x, y, rotation, z_index, file_id))
         self.conn.commit()
 
     def insert_player_files_by_player_id(self, player_id, width, height, x, y, rotation, url):
