@@ -52,7 +52,7 @@ def refresh_stream_statuses():
             elif player[9]: #vkplay link exists
                 logger.info("Start vkplay check for " + player[1])
                 vkplay_page = requests.get(player[9])
-                content = html.fromstring(vkplay_page.content)
+                content = html.fromstring(vkplay_page.content, timeout=30)
                 category_xpath = content.xpath('/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div[1]/div[3]/a')
                 if len(category_xpath) != 0:
                     db.update_stream_status(player_id=player[0], is_online=True, category=category_xpath[0].text)
