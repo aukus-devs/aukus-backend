@@ -2,6 +2,7 @@ import requests
 from lxml import html
 from dotenv import load_dotenv
 import os
+import logging
 from flask import Flask
 from routes.api.login.login import auth_bp
 from routes.api.player.player import player_bp
@@ -16,7 +17,7 @@ twitch_headers = {
     "Authorization": os.getenv("TWITCH_BEARER_TOKEN"),
 }
 app = Flask(__name__)
-
+logger = app.logger
 
 def create_app():
     app.secret_key = config.SESSION_SECRET
@@ -39,7 +40,7 @@ def refresh_stream_statuses():
         players = db.get_all_players()
         for player in players:
             if player[3]: #twitch link exists
-                app.logger.info("Start twitch check for " + player[1])
+                logger.info("Start twitch check for " + player[1])
                 url = "https://api.twitch.tv/helix/streams?user_login=" + player[3].rsplit('/', 1)[1]
                 response = requests.get(url, headers=twitch_headers, timeout=15)
                 data = response.json()["data"]
@@ -49,7 +50,7 @@ def refresh_stream_statuses():
                 else:
                     db.update_stream_status(player_id=player[0], is_online=False)
             elif player[9]: #vkplay link exists
-                app.logger.info("Start vkplay check for " + player[1])
+                logger.info("Start vkplay check for " + player[1])
                 vkplay_page = requests.get(player[9])
                 content = html.fromstring(vkplay_page.content)
                 category_xpath = content.xpath('/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div[1]/div[3]/a')
@@ -58,7 +59,7 @@ def refresh_stream_statuses():
                 else:
                     db.update_stream_status(player_id=player[0], is_online=False)
     except Exception as e:
-        app.logger.error("Stream check failed for " + player[1] + ",: " + str(e))
+        logger.error("Stream check failed for " + player[1] + ",: " + str(e))
         db.update_stream_status(player_id=player[0], is_online=False)
 
 
@@ -72,6 +73,7 @@ if __name__ == '__main__':
 
 
 if __name__ == 'only_api_app':
+    logger = logging.getLogger('gunicorn.error')
     scheduler = BackgroundScheduler()
     scheduler.add_job(reset_finished_players, 'interval', minutes=1)
     scheduler.add_job(refresh_stream_statuses, 'interval', minutes=1)
