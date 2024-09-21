@@ -236,7 +236,7 @@ class DatabaseClient:
 
     def get_games_dropped_by_player_id(self, player_id):
         """Получить количество пропущенных игр"""
-        self.cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = ? AND type = "dropped"',
+        self.cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = ? AND type = "drop"',
                             (player_id,))
         return self.cursor.fetchone()
 
