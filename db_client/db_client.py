@@ -9,14 +9,14 @@ class DatabaseClient:
     # --- Методы для работы с таблицей users ---
 
     def add_user(self, name, role, stream_link, is_online, current_game, url_handle, moder_for, password,
-                 vk_stream_link, donation_link):
+                 vk_stream_link, donation_link, player_stream_current_category):
         """Добавить нового пользователя"""
         self.cursor.execute('''
             INSERT INTO users (name, role, twitch_stream_link, player_is_online, player_current_game, 
-                               player_url_handle, moder_for, password, vk_stream_link, donation_link)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                               player_url_handle, moder_for, password, vk_stream_link, donation_link, player_stream_current_category)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (name, role, stream_link, is_online, current_game, url_handle, moder_for, password, vk_stream_link,
-              donation_link))
+              donation_link, player_stream_current_category))
         self.conn.commit()
 
     def get_user_by_id(self, user_id):
@@ -34,7 +34,7 @@ class DatabaseClient:
         return self.cursor.fetchall()
 
     def update_user(self, user_id, name=None, role=None, stream_link=None, is_online=None, current_game=None,
-                    url_handle=None, moder_for=None, password=None, vk_stream_link=None, donation_link=None):
+                    url_handle=None, moder_for=None, password=None, vk_stream_link=None, donation_link=None, player_stream_current_category=None):
         """Обновить информацию о пользователе"""
         updates = []
         params = []
@@ -69,6 +69,9 @@ class DatabaseClient:
         if donation_link:
             updates.append('donation_link = ?')
             params.append(donation_link)
+        if player_stream_current_category:
+            updates.append('player_stream_current_category = ?')
+            params.append(player_stream_current_category)
 
         params.append(user_id)
         query = f'UPDATE users SET {", ".join(updates)} WHERE id = ?'
@@ -198,6 +201,15 @@ class DatabaseClient:
             SET map_position = ?
             WHERE id = ?
         ''', (new_position, player_id))
+        self.conn.commit()
+
+    def update_player_stream_category(self, player_id, player_stream_current_category):
+        """Обновить поле player_stream_current_category в таблице users"""
+        self.cursor.execute('''
+            UPDATE users
+            SET player_stream_current_category = ?
+            WHERE id = ?
+        ''', (player_stream_current_category, player_id))
         self.conn.commit()
 
     def get_move_by_id(self, move_id):
@@ -330,6 +342,21 @@ class DatabaseClient:
         self.cursor.execute(
             'INSERT INTO PlayerFiles (player_id, width, height, x, y, rotation, url) VALUES (?, ?, ?, ?, ?, ?, ?)',
             (player_id, width, height, x, y, rotation, url))
+        self.conn.commit()
+        
+    def update_stream_status(self, player_id, is_online, category=None):
+        """Обновить поля player_is_online и player_stream_current_category в таблице users"""
+        self.cursor.execute('''
+            UPDATE users
+            SET player_is_online = ?
+            WHERE id = ?
+        ''', (is_online, player_id))
+        if category is not None:
+            self.cursor.execute('''
+                UPDATE users
+                SET player_stream_current_category = ?
+                WHERE id = ?
+            ''', (category, player_id))
         self.conn.commit()
 
     def close(self):

@@ -17,7 +17,8 @@ def setup_database():
         moder_for INTEGER,
         password TEXT NOT NULL,
         vk_stream_link TEXT NOT NULL,
-        donation_link TEXT NOT NULL
+        donation_link TEXT NOT NULL,
+        player_stream_current_category TEXT
     )
     ''')
 
