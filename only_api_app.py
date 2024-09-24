@@ -3,7 +3,8 @@ from lxml import html
 from dotenv import load_dotenv
 import os
 import logging
-from flask import Flask
+from datetime import datetime, timedelta
+from flask import Flask, session
 from routes.api.login.login import auth_bp
 from routes.api.player.player import player_bp
 from routes.api.canvas.canvas import canvas_bp
@@ -18,6 +19,14 @@ twitch_headers = {
 }
 app = Flask(__name__)
 logger = app.logger
+
+
+@app.before_request
+def before_request():
+    app.before_request_funcs[None].remove(before_request)
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(days=30)
+
 
 def create_app():
     app.secret_key = config.SESSION_SECRET
