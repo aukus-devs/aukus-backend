@@ -14,3 +14,4 @@ Werkzeug==3.0.4
 gunicorn==23.0.0
 lxml==5.3.0
 python-dotenv==1.0.1
+Flask-Session==0.8.0
