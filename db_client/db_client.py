@@ -25,7 +25,7 @@ class DatabaseClient:
         return self.cursor.fetchone()
 
     def get_user_by_logpass(self, username, password):
-        return self.cursor.execute('SELECT * FROM users WHERE username = ? AND password = ?',
+        return self.cursor.execute('SELECT * FROM users WHERE UPPER(username) = UPPER(?) AND password = ?',
                                    (username, password)).fetchone()
 
     def get_all_users(self):
@@ -270,7 +270,7 @@ class DatabaseClient:
 
     def get_user_id_by_name(self, username):
         """Получить ID пользователя по имени"""
-        self.cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+        self.cursor.execute('SELECT id FROM users WHERE UPPER(username) = UPPER(?)', (username,))
         return self.cursor.fetchone()
 
     def remove_moves_by_player_name(self, username):
