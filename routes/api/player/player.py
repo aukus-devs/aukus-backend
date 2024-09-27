@@ -46,6 +46,7 @@ def get_players():
             'twitch_stream_link': player[3],
             'vk_stream_link': player[9],
             'donation_link': player[10],
+            'stream_last_category': player[11],
             'is_online': True if player[4] else False,
             'current_game': player[5],
             'url_handle': player[6],
