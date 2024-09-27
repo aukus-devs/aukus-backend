@@ -305,7 +305,7 @@ class DatabaseClient:
 
     def get_player_files_by_player_id(self, player_id):
         sql = """
-            SELECT id, rotation, x, y, url, width, height, zIndex
+            SELECT id, rotation, x, y, url, width, height, zIndex, scaleX, scaleY
             FROM PlayerFiles
             WHERE player_id = ?
         """
@@ -320,10 +320,10 @@ class DatabaseClient:
         self.cursor.execute('DELETE FROM PlayerFiles WHERE player_id = ?', (player_id,))
         self.conn.commit()
 
-    def update_player_files_by_file_id(self, file_id, width, height, x, y, rotation, z_index):
+    def update_player_files_by_file_id(self, file_id, width, height, x, y, rotation, z_index, scale_x=1, scale_y=1):
         self.cursor.execute(
-            'UPDATE PlayerFiles SET width = ?, height = ?, x = ?, y = ?, rotation = ?, zIndex = ? WHERE id = ?',
-            (width, height, x, y, rotation, z_index, file_id))
+            'UPDATE PlayerFiles SET width = ?, height = ?, x = ?, y = ?, rotation = ?, zIndex = ?, scaleX = ?, scaleY = ? WHERE id = ?',
+            (width, height, x, y, rotation, z_index, scale_x, scale_y, file_id))
         self.conn.commit()
 
     def insert_player_files_by_player_id(self, player_id, width, height, x, y, rotation, url):

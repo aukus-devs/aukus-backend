@@ -48,7 +48,7 @@ def upload_canvas_image(player_id):
         player_id) + '-' + str('1') + '.' + file_extension
     file.save(BASE_DIR + UPLOAD_FOLDER + '/' + name)
     url = str('/uploads/' + name)
-    z_index =db.add_image(player_id=player_id, url=url, width=width, height=height)
+    z_index = db.add_image(player_id=player_id, url=url, width=width, height=height)
     return jsonify({
         'id': last_file_id[0] + 1 if last_file_id else 1,
         'rotation': 0.0,
@@ -57,7 +57,9 @@ def upload_canvas_image(player_id):
         'url': url,
         'width': float(width),
         'height': float(height),
-        'z_index': z_index
+        'z_index': z_index,
+        'scaleX': 1,
+        'scaleY': 1
     })
 
 
@@ -73,7 +75,9 @@ def get_canvas_files(player_id):
             'url': file[4],
             'width': file[5],
             'height': file[6],
-            'zIndex': file[7]
+            'zIndex': file[7],
+            'scaleX': file[8],
+            'scaleY': file[9]
         } for file in player_files
     ]
 
@@ -103,6 +107,12 @@ def update_canvas(player_id):
 
     try:
         for i in data:
+            if i['scaleX'] > 1 or i['scaleX'] < -1 or i['scaleY'] > 1 or i['scaleY'] < -1:
+                return jsonify({'error': 'Invalid scale value'}), 400
+
+        for i in data:
+            if i['scaleX'] > 1 or i['scaleX'] < -1 or i['scaleY'] > 1 or i['scaleY'] < -1:
+                return jsonify({'error': 'Invalid scale value'}), 400
             db.update_player_files_by_file_id(
                 file_id=i['id'],
                 rotation=i['rotation'],
@@ -110,7 +120,9 @@ def update_canvas(player_id):
                 y=i['y'],
                 width=i['width'],
                 height=i['height'],
-                z_index=i['zIndex'])
+                z_index=i['zIndex'],
+                scale_x=i['scaleX'],
+                scale_y=i['scaleY'])
         for i in ids_to_delete:
             db.delete_file(file_id=i)
     except Exception as e:
