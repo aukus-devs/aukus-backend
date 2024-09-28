@@ -173,8 +173,8 @@ def get_player_moves(player_id):
     ]})
 
 
-@player_bp.route('/api/get_current_user_id', methods=['GET'])
-def get_current_user_id():
+@player_bp.route("/api/current_user", methods=["GET"])
+def current_user():
     if session.get("username") is None:
         return jsonify({"error": "Need auth"}), 401
     user_info = db.get_user_info_by_name(session["username"])
