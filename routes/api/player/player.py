@@ -2,6 +2,7 @@ from functools import wraps
 from flask import Blueprint, request, jsonify, session
 from db_client.db_client import DatabaseClient
 from datetime import date
+import secrets
 
 player_bp = Blueprint('player', __name__)
 db = DatabaseClient()
@@ -219,3 +220,12 @@ def get_moves():
             ]
         }
     )
+
+
+@player_bp.route("/api/reset_pointauc_token", methods=["POST"])
+@login_required
+def reset_pointauc_token():
+    new_token = secrets.token_urlsafe(8)
+    user_info = db.get_user_info_by_name(session["username"])
+    db.update_player_pointauc_token(user_info[0], new_token)
+    return jsonify({"token": new_token})
