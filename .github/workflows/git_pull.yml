@@ -16,4 +16,4 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           command_timeout: 2m
-          script: cd ${{ secrets.APP_PATH }} && git pull && ps -ef | grep 'only_api_app' | awk '{print $2}'  | xargs -r kill -9 && nohup gunicorn 'only_api_app:create_app()'  --log-level debug --workers 1 --bind 127.0.0.1:5000  >> backend.log &
+          script: cd ${{ secrets.APP_PATH }} && git pull && sh restart.sh
