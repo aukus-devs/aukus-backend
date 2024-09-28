@@ -12,7 +12,7 @@ class DatabaseClient:
                  vk_stream_link, donation_link, player_stream_current_category):
         """Добавить нового пользователя"""
         self.cursor.execute('''
-            INSERT INTO users (name, role, twitch_stream_link, player_is_online, player_current_game, 
+            INSERT INTO users (name, role, twitch_stream_link, player_is_online, player_current_game,
                                player_url_handle, moder_for, password, vk_stream_link, donation_link, player_stream_current_category)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (name, role, stream_link, is_online, current_game, url_handle, moder_for, password, vk_stream_link,
@@ -174,7 +174,7 @@ class DatabaseClient:
         try:
             # Добавляем новый ход в playermoves
             self.cursor.execute('''
-                INSERT INTO playermoves (player_id, dice_roll, cell_from, cell_to, stair_from, stair_to, 
+                INSERT INTO playermoves (player_id, dice_roll, cell_from, cell_to, stair_from, stair_to,
                                          snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (player_id, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to,
@@ -268,15 +268,15 @@ class DatabaseClient:
                             (player_id,))
         return self.cursor.fetchone()
 
-    def get_user_id_by_name(self, username):
+    def get_user_info_by_name(self, username):
         """Получить ID пользователя по имени"""
-        self.cursor.execute('SELECT id FROM users WHERE UPPER(username) = UPPER(?)', (username,))
+        self.cursor.execute('SELECT id, role FROM users WHERE UPPER(username) = UPPER(?)', (username,))
         return self.cursor.fetchone()
 
     def remove_moves_by_player_name(self, username):
         """Удалить все ходы игрока"""
-        player_id = self.get_user_id_by_name(username)[0]
-        self.cursor.execute('DELETE FROM playermoves WHERE player_id = ?', (player_id,))
+        player_id = self.get_user_info_by_name(username)[0]
+        self.cursor.execute("DELETE FROM playermoves WHERE player_id = ?", (player_id,))
         self.conn.commit()
 
     def remove_moves_by_player_id(self, player_id):
@@ -343,7 +343,7 @@ class DatabaseClient:
             'INSERT INTO PlayerFiles (player_id, width, height, x, y, rotation, url) VALUES (?, ?, ?, ?, ?, ?, ?)',
             (player_id, width, height, x, y, rotation, url))
         self.conn.commit()
-        
+
     def update_stream_status(self, player_id, is_online, category=None):
         """Обновить поля player_is_online и player_stream_current_category в таблице users"""
         self.cursor.execute('''
