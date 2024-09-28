@@ -308,7 +308,7 @@ class DatabaseClient:
         """Добавить изображение"""
         z_index = self.cursor.execute('SELECT MAX(zIndex) FROM PlayerFiles WHERE player_id = ?',
                                       (player_id,)).fetchone()
-        z_index = (z_index[0] + 1) if z_index[0] else 0
+        z_index = (z_index[0] + 1) if z_index[0] is not None else 0
         self.cursor.execute('INSERT INTO PlayerFiles (player_id, rotation, x, y, url, width, height, zIndex)'
                             ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                             (player_id, rotation, x, y, url, width, height, z_index))
