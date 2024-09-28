@@ -166,31 +166,7 @@ def player_stats():
         }
         players.append(player_info)
 
-    return jsonify({'players': players})
-
-
-@player_bp.route('/api/players/<int:player_id>', methods=['GET'])
-def get_player_moves(player_id):
-    moves = db.get_moves_by_player(player_id=player_id)
-    return jsonify({'moves': [
-        {
-            'id': m[0],
-            'created_at': m[1],
-            'dice_roll': m[2],
-            'cell_from': m[3],
-            'cell_to': m[4],
-            'stair_from': m[5],
-            'stair_to': m[6],
-            'snake_from': m[7],
-            'snake_to': m[8],
-            'type': m[9],
-            'item_title': m[10],
-            'item_review': m[11],
-            'item_rating': m[12],
-            'item_length': m[13],
-            'vod_link': m[14]
-        } for m in moves
-    ]})
+    return jsonify({"players": players})
 
 
 @player_bp.route("/api/current_user", methods=["GET"])
@@ -237,6 +213,7 @@ def get_moves():
                     "item_rating": m[12],
                     "item_length": m[13],
                     "vod_link": m[14],
+                    "player_id": m[15],
                 }
                 for m in moves
             ]
