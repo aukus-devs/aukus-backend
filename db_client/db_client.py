@@ -88,8 +88,10 @@ class DatabaseClient:
     def get_moves_by_player(self, player_id):
         """Получить все ходы определенного игрока"""
         self.cursor.execute(
-            'SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link FROM playermoves WHERE player_id = ? order by id desc',
-            (player_id,))
+            "SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link FROM playermoves WHERE player_id = ? order by id desc",
+            (player_id,),
+        )
+        return self.cursor.fetchall()
 
     def get_moves_by_date(self, date: str):
         """Получить все ходы за день"""
