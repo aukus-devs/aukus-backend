@@ -269,8 +269,8 @@ class DatabaseClient:
         return self.cursor.fetchone()
 
     def get_user_info_by_name(self, username):
-        """Получить ID пользователя по имени"""
-        self.cursor.execute('SELECT id, role FROM users WHERE UPPER(username) = UPPER(?)', (username,))
+        """Получить инфу пользователя по имени"""
+        self.cursor.execute('SELECT id, role, moder_for FROM users WHERE UPPER(username) = UPPER(?)', (username,))
         return self.cursor.fetchone()
 
     def remove_moves_by_player_name(self, username):
