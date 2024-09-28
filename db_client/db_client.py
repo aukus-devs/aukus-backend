@@ -255,9 +255,9 @@ class DatabaseClient:
         return self.cursor.fetchone()
 
     def get_user_info_by_name(self, username):
-        """Получить ID пользователя по имени"""
+        """Получить инфу пользователя по имени"""
         self.cursor.execute(
-            "SELECT id, role FROM users WHERE username = ?", (username,)
+            "SELECT id, role, moder_for FROM users WHERE username = ?", (username,)
         )
         return self.cursor.fetchone()
 

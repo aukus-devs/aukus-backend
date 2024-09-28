@@ -179,7 +179,9 @@ def current_user():
         return jsonify({"error": "Need auth"}), 401
     user_info = db.get_user_info_by_name(session["username"])
     if user_info:
-        return jsonify({"user_id": user_info[0], "role": user_info[1]})
+        return jsonify(
+            {"user_id": user_info[0], "role": user_info[1], "moder_for": user_info[2]}
+        )
     else:
         return jsonify({"error": "Not found"}), 404
 
