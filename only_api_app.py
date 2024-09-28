@@ -49,7 +49,7 @@ def refresh_stream_statuses():
         players = db.get_all_players()
         for player in players:
             if player[3]: #twitch link exists
-                logger.info("Start twitch check for " + player[1])
+                #logger.info("Start twitch check for " + player[1])
                 url = "https://api.twitch.tv/helix/streams?user_login=" + player[3].rsplit('/', 1)[1]
                 response = requests.get(url, headers=twitch_headers, timeout=15)
                 data = response.json()["data"]
@@ -59,7 +59,7 @@ def refresh_stream_statuses():
                 else:
                     db.update_stream_status(player_id=player[0], is_online=False)
             elif player[9]: #vkplay link exists
-                logger.info("Start vkplay check for " + player[1])
+                #logger.info("Start vkplay check for " + player[1])
                 vkplay_page = requests.get(player[9], timeout=30)
                 content = html.fromstring(vkplay_page.content)
                 category_xpath = content.xpath('/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div[1]/div[3]/a')
