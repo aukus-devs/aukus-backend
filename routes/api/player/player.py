@@ -1,6 +1,7 @@
 from functools import wraps
 from flask import Blueprint, request, jsonify, session
 from db_client.db_client import DatabaseClient
+from datetime import date
 
 player_bp = Blueprint('player', __name__)
 db = DatabaseClient()
@@ -207,3 +208,37 @@ def current_user():
 def reset_stats():
     db.remove_moves_by_player_name(session['username'])
     return jsonify({'message': 'Position reset'})
+
+
+@player_bp.route("/api/moves", methods=["GET"])
+def get_moves():
+    player_id = request.args.get("player_id")
+    if player_id:
+        moves = db.get_moves_by_player(player_id=player_id)
+    else:
+        date_param = request.args.get("date") or str(date.today())
+        moves = db.get_moves_by_date(date=date_param)
+    return jsonify(
+        {
+            "moves": [
+                {
+                    "id": m[0],
+                    "created_at": m[1],
+                    "dice_roll": m[2],
+                    "cell_from": m[3],
+                    "cell_to": m[4],
+                    "stair_from": m[5],
+                    "stair_to": m[6],
+                    "snake_from": m[7],
+                    "snake_to": m[8],
+                    "type": m[9],
+                    "item_title": m[10],
+                    "item_review": m[11],
+                    "item_rating": m[12],
+                    "item_length": m[13],
+                    "vod_link": m[14],
+                }
+                for m in moves
+            ]
+        }
+    )
