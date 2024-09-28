@@ -254,15 +254,17 @@ class DatabaseClient:
                             (player_id,))
         return self.cursor.fetchone()
 
-    def get_user_id_by_name(self, username):
+    def get_user_info_by_name(self, username):
         """Получить ID пользователя по имени"""
-        self.cursor.execute('SELECT id FROM users WHERE username = ?', (username,))
+        self.cursor.execute(
+            "SELECT id, role FROM users WHERE username = ?", (username,)
+        )
         return self.cursor.fetchone()
 
     def remove_moves_by_player_name(self, username):
         """Удалить все ходы игрока"""
-        player_id = self.get_user_id_by_name(username)[0]
-        self.cursor.execute('DELETE FROM playermoves WHERE player_id = ?', (player_id,))
+        player_id = self.get_user_info_by_name(username)[0]
+        self.cursor.execute("DELETE FROM playermoves WHERE player_id = ?", (player_id,))
         self.conn.commit()
 
     def remove_moves_by_player_id(self, player_id):
