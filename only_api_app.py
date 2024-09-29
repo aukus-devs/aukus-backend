@@ -29,6 +29,7 @@ def create_app():
     app.config["SESSION_TYPE"] = "filesystem"
     app.config['SESSION_FILE_THRESHOLD'] = 250
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+    app.config['DEBUG'] = True
 
     Session(app)
 
