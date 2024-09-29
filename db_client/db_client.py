@@ -279,7 +279,15 @@ class DatabaseClient:
 
     def get_user_info_by_name(self, username):
         """Получить инфу пользователя по имени"""
-        self.cursor.execute('SELECT id, role, moder_for FROM users WHERE UPPER(username) = UPPER(?)', (username,))
+        self.cursor.execute(
+            "SELECT id, role, moder_for FROM users WHERE UPPER(username) = UPPER(?)",
+            (username,),
+        )
+        return self.cursor.fetchone()
+
+    def get_user_id_by_token(self, token: str):
+        """Получить инфу пользователя по имени"""
+        self.cursor.execute("SELECT id FROM users WHERE pointauc_token = ?", (token,))
         return self.cursor.fetchone()
 
     def remove_moves_by_player_name(self, username):

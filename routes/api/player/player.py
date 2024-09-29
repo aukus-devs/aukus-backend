@@ -229,3 +229,22 @@ def reset_pointauc_token():
     user_info = db.get_user_info_by_name(session["username"])
     db.update_player_pointauc_token(user_info[0], new_token)
     return jsonify({"token": new_token})
+
+
+@player_bp.route("/api/point_auc/result", methods=["POST"])
+def pointauc_result_callback():
+    data = request.get_json() or {}
+    token = data.get("token")
+    if not token:
+        return jsonify({"error": "Token is required"}), 400
+
+    winner_title = data.get("winner_title")
+    if not winner_title:
+        return jsonify({"error": "Winner title is required"}), 400
+
+    user_info = db.get_user_id_by_token(token)
+    if not user_info:
+        return jsonify({"error": "Invalid token"}), 400
+
+    db.update_current_game_by_player_id(user_info[0], winner_title)
+    return jsonify({"message": "updated successfully"})
