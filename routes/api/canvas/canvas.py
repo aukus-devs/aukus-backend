@@ -107,12 +107,14 @@ def update_canvas(player_id):
 
     try:
         for i in data:
-            if i['scaleX'] > 1 or i['scaleX'] < -1 or i['scaleY'] > 1 or i['scaleY'] < -1:
-                return jsonify({'error': 'Invalid scale value'}), 400
+            if i['scaleX']:
+                if i['scaleX'] > 1 or i['scaleX'] < -1:
+                    return jsonify({'error': 'Invalid scale value'}), 400
 
-        for i in data:
-            if i['scaleX'] > 1 or i['scaleX'] < -1 or i['scaleY'] > 1 or i['scaleY'] < -1:
-                return jsonify({'error': 'Invalid scale value'}), 400
+            if i['scaleY']:
+                if i['scaleY'] > 1 or i['scaleY'] < -1:
+                    return jsonify({'error': 'Invalid scale value'}), 400
+
             db.update_player_files_by_file_id(
                 file_id=i['id'],
                 rotation=i['rotation'],
