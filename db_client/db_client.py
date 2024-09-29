@@ -286,7 +286,7 @@ class DatabaseClient:
         return self.cursor.fetchone()
 
     def get_user_id_by_token(self, token: str):
-        """Получить инфу пользователя по имени"""
+        """Получить инфу пользователя по токену"""
         self.cursor.execute("SELECT id FROM users WHERE pointauc_token = ?", (token,))
         return self.cursor.fetchone()
 
