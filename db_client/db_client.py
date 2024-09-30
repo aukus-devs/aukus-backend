@@ -374,6 +374,8 @@ class DatabaseClient:
                 SET player_stream_current_category = ?
                 WHERE id = ?
             ''', (category, player_id))
+        self.conn.commit()
+
     def update_player_pointauc_token(self, player_id: int, token: str):
         """Обновить поле pointauc_token в таблице users"""
         self.cursor.execute(
