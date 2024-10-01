@@ -30,6 +30,8 @@ def create_app():
     app.config['SESSION_FILE_THRESHOLD'] = 250
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
     app.config['DEBUG'] = True
+    app.json.ensure_ascii = False
+    app.json.mimetype = "application/json; charset=utf-8"
 
     Session(app)
 

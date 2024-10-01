@@ -171,9 +171,8 @@ def player_stats():
 
 
 @player_bp.route("/api/current_user", methods=["GET"])
+@login_required
 def current_user():
-    if session.get("username") is None:
-        return jsonify({"error": "Need auth"}), 401
     user_info = db.get_user_info_by_name(session["username"])
     if user_info:
         return jsonify({"user_id": user_info[0], "role": user_info[1], "moder_for": user_info[2]})
