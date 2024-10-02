@@ -212,7 +212,7 @@ class DatabaseClient:
                 ''', (player_id, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to,
                       move_type, item_title, item_review, item_rating, item_length, vod_link))
             except Exception as e:
-                logging.getLogger('gunicorn.error').error("add_player_move: " + str(e))
+                logging.error("add_player_move: " + str(e))
                 self.conn.rollback()  # откат изменений в случае ошибки
                 raise e
 
