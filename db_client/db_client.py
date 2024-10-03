@@ -2,37 +2,32 @@ import MySQLdb
 import logging
 import os
 from dotenv import load_dotenv
+from contextlib import closing
 
 
 load_dotenv()
 MYSQL_LOGIN=os.getenv("MYSQL_LOGIN")
-MYSQL_PQSSWORD=os.getenv("MYSQL_PASSWORD")
+MYSQL_PASSWORD=os.getenv("MYSQL_PASSWORD")
+MYSQLCONF = {
+    'host': '127.0.0.1',
+    'user': MYSQL_LOGIN,
+    'password': MYSQL_PASSWORD,
+    'db': 'aukus_db',
+    'port': 3306,
+    'charset': 'utf8',
+    'autocommit': True
+}
+
 
 class DatabaseClient:
     def __init__(self):
-        self.connection = MySQLdb.connect(
-            host="127.0.0.1",
-            user=MYSQL_LOGIN,
-            password=MYSQL_PQSSWORD,
-            database="aukus_db",
-            port=3306,
-            charset="utf8",
-            autocommit=True
-        )
+        self.connection = MySQLdb.connect(**MYSQLCONF)
 
     def conn(self):
         if self.connection.open:
             return self.connection
         else:
-            self.connection = MySQLdb.connect(
-                host="127.0.0.1",
-                user=MYSQL_LOGIN,
-                password=MYSQL_PQSSWORD,
-                database="aukus_db",
-                port=3306,
-                charset="utf8",
-                autocommit=True
-            )
+            self.connection = MySQLdb.connect(**MYSQLCONF)
             return self.connection
 
     # --- Методы для работы с таблицей users ---
@@ -40,7 +35,7 @@ class DatabaseClient:
     def add_user(self, name, role, stream_link, is_online, current_game, url_handle, moder_for, password,
                  vk_stream_link, donation_link, player_stream_current_category):
         """Добавить нового пользователя"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('''
                 INSERT INTO users (name, role, twitch_stream_link, player_is_online, player_current_game,
                                    player_url_handle, moder_for, password, vk_stream_link, donation_link, player_stream_current_category)
@@ -50,19 +45,19 @@ class DatabaseClient:
 
     def get_user_by_id(self, user_id):
         """Получить пользователя по ID"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
             return cursor.fetchone()
 
     def get_user_by_logpass(self, username, password):
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT * FROM users WHERE UPPER(username) = UPPER(%s) AND password = %s',
                                        (username, password))
             return cursor.fetchone()
 
     def get_all_users(self):
         """Получить всех пользователей"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT * FROM users')
             return cursor.fetchall()
 
@@ -108,19 +103,19 @@ class DatabaseClient:
 
         params.append(user_id)
         query = f'UPDATE users SET {", ".join(updates)} WHERE id = %s'
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(query, params)
 
     def delete_user(self, user_id):
         """Удалить пользователя по ID"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('DELETE FROM users WHERE id = %s', (user_id,))
 
     # --- Методы для работы с таблицей playermoves ---
 
     def get_moves_by_player(self, player_id):
         """Получить все ходы определенного игрока"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link, player_id FROM playermoves WHERE player_id = %s order by id desc",
                 (player_id,),
@@ -129,7 +124,7 @@ class DatabaseClient:
 
     def get_moves_by_date(self, date: str):
         """Получить все ходы за день"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link, player_id FROM playermoves WHERE DATE(created_at) = %s order by id desc",
                 (date,),
@@ -138,7 +133,7 @@ class DatabaseClient:
 
     def get_all_moves(self):
         """Получить все ходы"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT * FROM playermoves')
             return cursor.fetchall()
 
@@ -191,12 +186,12 @@ class DatabaseClient:
 
         params.append(move_id)
         query = f'UPDATE playermoves SET {", ".join(updates)} WHERE id = %s'
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(query, params)
 
     def delete_player_move(self, move_id):
         """Удалить ход игрока по ID"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('DELETE FROM playermoves WHERE id = %s', (move_id,))
 
     # --- Методы для получения игроков с позицией на карте ---
@@ -209,7 +204,7 @@ class DatabaseClient:
         WHERE u.role = 'player'
         GROUP BY u.id
         '''
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(query)
             return cursor.fetchall()
 
@@ -218,7 +213,7 @@ class DatabaseClient:
                         item_rating=None, item_length=None, vod_link=None):
         """Добавить ход игрока и обновить его позицию на карте"""
         # Добавляем новый ход в playermoves
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             try:
                 cursor.execute('''
                     INSERT INTO playermoves (player_id, dice_roll, cell_from, cell_to, stair_from, stair_to,
@@ -233,7 +228,7 @@ class DatabaseClient:
 
     def update_player_move_vod_link(self, move_id, vod_link):
         """Обновить поле vod_link в таблице playermoves"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('''
                 UPDATE playermoves
                 SET vod_link = %s
@@ -242,7 +237,7 @@ class DatabaseClient:
 
     def update_player_position(self, player_id, new_position):
         """Обновить поле map_position в таблице users"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('''
                 UPDATE users
                 SET map_position = %s
@@ -251,7 +246,7 @@ class DatabaseClient:
 
     def update_player_stream_category(self, player_id, player_stream_current_category):
         """Обновить поле player_stream_current_category в таблице users"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('''
                 UPDATE users
                 SET player_stream_current_category = %s
@@ -260,73 +255,73 @@ class DatabaseClient:
 
     def get_move_by_id(self, move_id):
         """Получить ход игрока по ID"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT * FROM playermoves WHERE id = %s', (move_id,))
             return cursor.fetchone()
 
     def get_last_cell_number(self, player_id):
         """Получить последнюю ячейку игрока"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT cell_to FROM playermoves WHERE player_id = %s ORDER BY id DESC LIMIT 1',
                                 (player_id,))
             return cursor.fetchone()
 
     def get_moves_count_by_player_id(self, player_id):
         """Получить количество ходов игрока"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = %s', (player_id,))
             return cursor.fetchone()
 
     def get_games_completed_by_player_id(self, player_id):
         """Получить количество завершенных игр"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = %s AND type = "completed"',
                                 (player_id,))
             return cursor.fetchone()
 
     def get_games_dropped_by_player_id(self, player_id):
         """Получить количество пропущенных игр"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = %s AND type = "drop"',
                                 (player_id,))
             return cursor.fetchone()
 
     def get_games_sheikh_by_player_id(self, player_id):
         """Получить количество игр с шейхой"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = %s AND type = "sheikh"',
                                 (player_id,))
             return cursor.fetchone()
 
     def get_reroll_count_by_player_id(self, player_id):
         """Получить количество рероллов"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = %s AND type = "reroll"', (player_id,))
             return cursor.fetchone()
 
     def get_movies_count_by_player_id(self, player_id):
         """Получить количество фильмов"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = %s AND type = "movie"', (player_id,))
             return cursor.fetchone()
 
     def get_ladders_count_by_player_id(self, player_id):
         """Получить количество ладдеров"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = %s AND stair_from IS NOT NULL',
                                 (player_id,))
             return cursor.fetchone()
 
     def get_snakes_count_by_player_id(self, player_id):
         """Получить количество змей"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT COUNT(*) FROM playermoves WHERE player_id = %s AND snake_from IS NOT NULL',
                                 (player_id,))
             return cursor.fetchone()
 
     def get_user_info_by_name(self, username):
         """Получить инфу пользователя по имени"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "SELECT id, role, moder_for FROM users WHERE UPPER(username) = UPPER(%s)",
                 (username,),
@@ -335,19 +330,19 @@ class DatabaseClient:
 
     def get_user_id_by_token(self, token: str):
         """Получить инфу пользователя по токену"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute("SELECT id FROM users WHERE pointauc_token = %s", (token,))
             return cursor.fetchone()
 
     def remove_moves_by_player_name(self, username):
         """Удалить все ходы игрока"""
         player_id = self.get_user_info_by_name(username)[0]
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute("DELETE FROM playermoves WHERE player_id = %s", (player_id,))
 
     def remove_moves_by_player_id(self, player_id):
         """Удалить все ходы игрока"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('DELETE FROM playermoves WHERE player_id = %s', (player_id,))
 
     def reset_finished_players(self):
@@ -361,7 +356,7 @@ class DatabaseClient:
 
     def add_image(self, player_id, url, width, height, x=0, y=0, rotation=0):
         """Добавить изображение"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT MAX(zIndex) FROM PlayerFiles WHERE player_id = %s',
                                           (player_id,))
             z_index = cursor.fetchone()
@@ -373,12 +368,12 @@ class DatabaseClient:
 
     def get_last_image_id(self, player_id):
         """Получить ID последнего изображения игрока"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('SELECT id FROM PlayerFiles WHERE player_id = %s ORDER BY id DESC LIMIT 1', (player_id,))
             return cursor.fetchone()
 
     def update_current_game_by_player_id(self, player_id, game):
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('UPDATE users SET player_current_game = %s WHERE id = %s', (game, player_id))
 
     def get_player_files_by_player_id(self, player_id):
@@ -387,33 +382,33 @@ class DatabaseClient:
             FROM PlayerFiles
             WHERE player_id = %s
         """
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(sql, (player_id,))
             return cursor.fetchall()
 
     def delete_file(self, file_id):
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('DELETE FROM PlayerFiles WHERE id = %s', (file_id,))
 
     def delete_files_by_player_id(self, player_id):
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('DELETE FROM PlayerFiles WHERE player_id = %s', (player_id,))
 
     def update_player_files_by_file_id(self, file_id, width, height, x, y, rotation, z_index, scale_x=1, scale_y=1):
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 'UPDATE PlayerFiles SET width = %s, height = %s, x = %s, y = %s, rotation = %s, zIndex = %s, scaleX = %s, scaleY = %s WHERE id = %s',
                 (width, height, x, y, rotation, z_index, scale_x, scale_y, file_id))
 
     def insert_player_files_by_player_id(self, player_id, width, height, x, y, rotation, url):
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 'INSERT INTO PlayerFiles (player_id, width, height, x, y, rotation, url) VALUES (%s, %s, %s, %s, %s, %s, %s)',
                 (player_id, width, height, x, y, rotation, url))
 
     def update_stream_status(self, player_id, is_online, category=None):
         """Обновить поля player_is_online и player_stream_current_category в таблице users"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute('''
                 UPDATE users
                 SET player_is_online = %s
@@ -428,7 +423,7 @@ class DatabaseClient:
 
     def update_player_pointauc_token(self, player_id: int, token: str):
         """Обновить поле pointauc_token в таблице users"""
-        with self.conn().cursor() as cursor:
+        with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 """
                 UPDATE users
