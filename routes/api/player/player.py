@@ -105,6 +105,7 @@ def add_player_move():
             item_rating=item_rating,
             item_length=item_length
         )
+        db.update_current_game_by_player_id(player_id, None)
         return jsonify({'message': 'Player move added and position updated successfully'}), 201
 
     except Exception as e:
