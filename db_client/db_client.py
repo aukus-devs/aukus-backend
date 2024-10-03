@@ -33,15 +33,15 @@ class DatabaseClient:
     # --- Методы для работы с таблицей users ---
 
     def add_user(self, name, role, stream_link, is_online, current_game, url_handle, moder_for, password,
-                 vk_stream_link, donation_link, player_stream_current_category):
+                 vk_stream_link, donation_link, player_stream_current_category, first_name, last_name):
         """Добавить нового пользователя"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute('''
-                INSERT INTO users (name, role, twitch_stream_link, player_is_online, player_current_game,
-                                   player_url_handle, moder_for, password, vk_stream_link, donation_link, player_stream_current_category)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO users (username, role, twitch_stream_link, player_is_online, player_current_game,
+                                   player_url_handle, moder_for, password, vk_stream_link, donation_link, player_stream_current_category, name, surname)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ''', (name, role, stream_link, is_online, current_game, url_handle, moder_for, password, vk_stream_link,
-                  donation_link, player_stream_current_category))
+                  donation_link, player_stream_current_category, first_name, last_name))
 
     def get_user_by_id(self, user_id):
         """Получить пользователя по ID"""
@@ -62,13 +62,13 @@ class DatabaseClient:
             return cursor.fetchall()
 
     def update_user(self, user_id, name=None, role=None, stream_link=None, is_online=None, current_game=None,
-                    url_handle=None, moder_for=None, password=None, vk_stream_link=None, donation_link=None, player_stream_current_category=None):
+                    url_handle=None, moder_for=None, password=None, vk_stream_link=None, donation_link=None, player_stream_current_category=None, first_name=None, last_name=None):
         """Обновить информацию о пользователе"""
         updates = []
         params = []
 
         if name:
-            updates.append('name = %s')
+            updates.append('username = %s')
             params.append(name)
         if role:
             updates.append('role = %s')
@@ -100,6 +100,12 @@ class DatabaseClient:
         if player_stream_current_category:
             updates.append('player_stream_current_category = %s')
             params.append(player_stream_current_category)
+        if first_name:
+            updates.append('name = %s')
+            params.append(first_name)
+        if last_name:
+            updates.append('surname = %s')
+            params.append(last_name)
 
         params.append(user_id)
         query = f'UPDATE users SET {", ".join(updates)} WHERE id = %s'

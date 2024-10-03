@@ -52,7 +52,9 @@ def get_players():
             'is_online': True if player[4] else False,
             'current_game': player[5],
             'url_handle': player[6],
-            'map_position': map_position[0] if map_position else 0
+            'map_position': map_position[0] if map_position else 0,
+            'first_name': player[13],
+            'last_name': player[14]
         }
         players.append(player_info)
 
