@@ -217,6 +217,7 @@ def get_moves():
                     "item_length": m[13],
                     "vod_link": m[14],
                     "player_id": m[15],
+                    "player_move_id": m[16]
                 }
                 for m in moves
             ]

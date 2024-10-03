@@ -123,7 +123,7 @@ class DatabaseClient:
         """Получить все ходы определенного игрока"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
-                "SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link, player_id FROM playermoves WHERE player_id = %s order by id desc",
+                "SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link, player_id, player_move_id FROM playermoves WHERE player_id = %s order by id desc",
                 (player_id,),
             )
             return cursor.fetchall()
@@ -132,7 +132,7 @@ class DatabaseClient:
         """Получить все ходы за день"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
-                "SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link, player_id FROM playermoves WHERE DATE(created_at) = %s order by id desc",
+                "SELECT id, created_at, dice_roll, cell_from, cell_to, stair_from, stair_to, snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link, player_id, player_move_id FROM playermoves WHERE DATE(created_at) = %s order by id desc",
                 (date,),
             )
             return cursor.fetchall()
