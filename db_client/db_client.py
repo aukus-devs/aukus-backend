@@ -24,7 +24,7 @@ class DatabaseClient:
         self.connection = MySQLdb.connect(**MYSQLCONF)
 
     def conn(self):
-        if self.connection.open:
+        if self.connection.open and self.connection.ping(True):
             return self.connection
         else:
             self.connection = MySQLdb.connect(**MYSQLCONF)
