@@ -28,33 +28,33 @@ def refresh_stream_statuses():
         players = db.get_all_players()
         for player in players:
             #logging.info(str(player))
-            if player[3]: #twitch link exists
-                #logging.info("Start twitch check for " + player[1] + ", URL: " + player[3])
-                url = "https://api.twitch.tv/helix/streams?user_login=" + player[3].rsplit('/', 1)[1]
+            if player["twitch_stream_link"]: #twitch link exists
+                #logging.info("Start twitch check for " + player["username"] + ", URL: " + player["twitch_stream_link"])
+                url = "https://api.twitch.tv/helix/streams?user_login=" + player["twitch_stream_link"].rsplit('/', 1)[1]
                 response = requests.get(url, headers=twitch_headers, timeout=15)
                 data = response.json()["data"]
                 #logging.info(data)
                 if len(data) != 0 and data[0]["type"] == "live":
                     stream = data[0]
-                    if stream["game_name"] != player[11]: # comparing category with DB
-                        db.update_stream_status(player_id=player[0], is_online=True, category=stream["game_name"])
+                    if stream["game_name"] != player["player_stream_current_category"]: # comparing category with DB
+                        db.update_stream_status(player_id=player["id"], is_online=True, category=stream["game_name"])
                 else:
-                    if player[4] == True: # is online in DB?
-                        db.update_stream_status(player_id=player[0], is_online=False)
-            elif player[9]: #vkplay link exists
-                #logging.info("Start vkplay check for " + player[1] + ", URL: " + player[9])
-                vkplay_page = requests.get(player[9], timeout=30)
+                    if player["player_is_online"] == True: # is online in DB?
+                        db.update_stream_status(player_id=player["id"], is_online=False)
+            elif player["vk_stream_link"]: #vkplay link exists
+                #logging.info("Start vkplay check for " + player["username"] + ", URL: " + player["vk_stream_link"])
+                vkplay_page = requests.get(player["vk_stream_link"], timeout=30)
                 content = html.fromstring(vkplay_page.content)
                 category_xpath = content.xpath('/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div[1]/div[3]/a')
                 if len(category_xpath) != 0:
-                    if category_xpath[0].text != player[11]: # comparing category with DB
-                        db.update_stream_status(player_id=player[0], is_online=True, category=category_xpath[0].text)
+                    if category_xpath[0].text != player["player_stream_current_category"]: # comparing category with DB
+                        db.update_stream_status(player_id=player["id"], is_online=True, category=category_xpath[0].text)
                 else:
-                    if player[4] == True: # is online in DB?
-                        db.update_stream_status(player_id=player[0], is_online=False)
+                    if player["player_is_online"] == True: # is online in DB?
+                        db.update_stream_status(player_id=player["id"], is_online=False)
     except Exception as e:
-        logging.error("Stream check failed for " + player[1] + ",: " + str(e))
-        db.update_stream_status(player_id=player[0], is_online=False)
+        logging.error("Stream check failed for " + player["username"] + ",: " + str(e))
+        db.update_stream_status(player_id=player["id"], is_online=False)
 
 
 scheduler = BlockingScheduler()

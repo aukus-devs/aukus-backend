@@ -479,7 +479,7 @@ class DatabaseClient:
         for i in players:
             last_cell = self.get_last_cell_number(i["id"])
             if last_cell:
-                if last_cell[0] >= 101:
+                if last_cell["cell_to"] >= 101:
                     self.remove_moves_by_player_id(i["id"])
         return True
 

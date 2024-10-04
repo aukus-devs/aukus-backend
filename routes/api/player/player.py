@@ -243,8 +243,7 @@ def get_moves():
 def reset_pointauc_token():
     new_token = secrets.token_urlsafe(8)
     user_info = db.get_user_by_name(session["username"])
-    if user_info:
-        db.update_player_pointauc_token(user_info["id"], new_token)
+    db.update_player_pointauc_token(user_info["id"], new_token)
     return jsonify({"token": new_token})
 
 
