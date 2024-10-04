@@ -188,6 +188,8 @@ def current_user():
                 "user_id": user_info["id"],
                 "role": user_info["role"],
                 "moder_for": user_info["moder_for"],
+                "url_handle": user_info["player_url_handle"],
+                "name": user_info["username"],
             }
         )
     return jsonify({"error": "Not found"}), 404
