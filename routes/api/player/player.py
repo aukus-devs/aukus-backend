@@ -152,15 +152,18 @@ def player_stats():
     # Формируем JSON-ответ
     players = []
     for player in players_data:
-        map_position = db.get_last_cell_number(player_id=player["id"])
-        total_moves = db.get_moves_count_by_player_id(player_id=player["id"])
-        games_completed = db.get_games_completed_by_player_id(player_id=player["id"])
-        games_dropped = db.get_games_dropped_by_player_id(player_id=player["id"])
-        sheikh_moments = db.get_games_sheikh_by_player_id(player_id=player["id"])
-        rerolls = db.get_reroll_count_by_player_id(player_id=player["id"])
-        movies = db.get_movies_count_by_player_id(player_id=player["id"])
-        ladders = db.get_ladders_count_by_player_id(player_id=player["id"])
-        snakes = db.get_snakes_count_by_player_id(player_id=player["id"])
+        player_stats_result = db.get_player_stats_by_player_id(player_id=player["id"])
+
+        map_position = player_stats_result["map_position"]
+        total_moves = player_stats_result["total_moves"]
+        games_completed = player_stats_result["games_completed"]
+        games_dropped = player_stats_result["games_dropped"]
+        sheikh_moments = player_stats_result["sheikh_moments"]
+        rerolls = player_stats_result["rerolls"]
+        movies = player_stats_result["movies"]
+        ladders = player_stats_result["ladders"]
+        snakes = player_stats_result["snakes"]
+
         player_info = {
             "id": player["id"],
             "map_position": map_position["cell_to"] if map_position else 0,

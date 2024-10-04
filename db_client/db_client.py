@@ -583,6 +583,65 @@ class DatabaseClient:
                 (token, player_id),
             )
 
+    def get_player_stats_by_player_id(self, player_id):
+        """Получить статистику игрока"""
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            players_stats = {}
+            cursor.execute(
+                "SELECT cell_to FROM playermoves WHERE player_id = %s ORDER BY id DESC LIMIT 1",
+                (player_id,),
+            )
+            players_stats["map_position"] = cursor.fetchone()
+
+            cursor.execute(
+                "SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s",
+                (player_id,),
+            )
+            players_stats["total_moves"] = cursor.fetchone()
+
+            cursor.execute(
+                'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "completed"',
+                (player_id,),
+            )
+            players_stats["games_completed"] = cursor.fetchone()
+
+            cursor.execute(
+                'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "drop"',
+                (player_id,),
+            )
+            players_stats["games_dropped"] = cursor.fetchone()
+
+            cursor.execute(
+                'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "sheikh"',
+                (player_id,),
+            )
+            players_stats["sheikh_moments"] = cursor.fetchone()
+
+            cursor.execute(
+                'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "reroll"',
+                (player_id,),
+            )
+            players_stats["rerolls"] = cursor.fetchone()
+
+            cursor.execute(
+                'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "movie"',
+                (player_id,),
+            )
+            players_stats["movies"] = cursor.fetchone()
+
+            cursor.execute(
+                "SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND stair_from IS NOT NULL",
+                (player_id,),
+            )
+            players_stats["ladders"] = cursor.fetchone()
+
+            cursor.execute(
+                "SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND snake_from IS NOT NULL",
+                (player_id,),
+            )
+            players_stats["snakes"] = cursor.fetchone()
+            return players_stats
+
     def close(self):
         """Закрыть соединение с базой данных"""
         self.conn().close()
