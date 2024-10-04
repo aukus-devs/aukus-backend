@@ -4,15 +4,15 @@ from db_client.db_client import DatabaseClient
 from datetime import date
 import secrets
 
-player_bp = Blueprint('player', __name__)
+player_bp = Blueprint("player", __name__)
 db = DatabaseClient()
 
 
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'username' not in session and 'role' not in session:
-            return jsonify({'error': f'Auth required'}), 401
+        if "username" not in session and "role" not in session:
+            return jsonify({"error": f"Auth required"}), 401
         return f(*args, **kwargs)
 
     return decorated_function
@@ -20,15 +20,15 @@ def login_required(f):
 
 def available_for_roles(roles=None):
     if roles is None:
-        roles = ['player', 'moder', 'admin']
+        roles = ["player", "moder", "admin"]
 
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if 'username' not in session and 'role' not in session:
-                return jsonify({'error': f'Auth required'}), 401
-            if session['role'] not in roles:
-                return jsonify({'error': f'Forbidden'}), 403
+            if "username" not in session and "role" not in session:
+                return jsonify({"error": f"Auth required"}), 401
+            if session["role"] not in roles:
+                return jsonify({"error": f"Forbidden"}), 403
             return f(*args, **kwargs)
 
         return decorated_function
@@ -36,59 +36,63 @@ def available_for_roles(roles=None):
     return decorator
 
 
-@player_bp.route('/api/players', methods=['GET'])
+@player_bp.route("/api/players", methods=["GET"])
 def get_players():
     players_data = db.get_all_players()
     players = []
     for player in players_data:
         map_position = db.get_last_cell_number(player_id=player[0])
         player_info = {
-            'id': player[0],
-            'name': player[1],
-            'twitch_stream_link': player[3],
-            'vk_stream_link': player[9],
-            'donation_link': player[10],
-            'stream_last_category': player[11],
-            'is_online': True if player[4] else False,
-            'current_game': player[5],
-            'url_handle': player[6],
-            'map_position': map_position[0] if map_position else 0,
-            'first_name': player[13],
-            'last_name': player[14]
+            "id": player["id"],
+            "name": player["username"],
+            "twitch_stream_link": player["twitch_stream_link"],
+            "vk_stream_link": player["vk_stream_link"],
+            "donation_link": player["donation_link"],
+            "stream_last_category": player["player_stream_current_category"],
+            "is_online": bool(player["player_is_online"]),
+            "current_game": player["player_current_game"],
+            "url_handle": player["player_url_handle"],
+            "map_position": map_position["cell_to"] if map_position else 0,
+            "first_name": player["name"],
+            "last_name": player["surname"],
+            "current_game_updated_at": player["player_current_game_updated_at"],
+            "telegram_link": player["telegram_link"],
         }
         players.append(player_info)
 
-    return jsonify({'players': players})
+    return jsonify({"players": players})
 
 
-@player_bp.route('/api/player_move', methods=['POST'])
+@player_bp.route("/api/player_move", methods=["POST"])
 @login_required
 def add_player_move():
     data = request.get_json()
-    required_fields = ['player_id', 'dice_roll', 'type', 'item_title', 'item_review']
+    required_fields = ["player_id", "dice_roll", "type", "item_title", "item_review"]
     for field in required_fields:
         if field not in data:
-            return jsonify({'error': f'Missing required field: {field}'}), 400
-    if data.get('stair_from') and data.get('snake_from'):
-        return jsonify({'error': f'Stair and snake cannot be used at the same time'}), 400
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+    if data.get("stair_from") and data.get("snake_from"):
+        return jsonify(
+            {"error": f"Stair and snake cannot be used at the same time"}
+        ), 400
 
-    last_cell_number_db = db.get_last_cell_number(player_id=data['player_id'])
-    last_cell_number = last_cell_number_db[0] if last_cell_number_db else 0
+    last_cell_number_db = db.get_last_cell_number(player_id=data["player_id"])
+    last_cell_number = last_cell_number_db["cell_to"] if last_cell_number_db else 0
 
     try:
-        player_id = data['player_id']
-        dice_roll = data['dice_roll']
+        player_id = data["player_id"]
+        dice_roll = data["dice_roll"]
         cell_from = last_cell_number if last_cell_number else 0
-        cell_to = data['move_to']
-        stair_from = data.get('stair_from')
-        stair_to = data.get('stair_to')
-        snake_from = data.get('snake_from')
-        snake_to = data.get('snake_to')
-        move_type = data['type']
-        item_title = data['item_title']
-        item_review = data['item_review']
-        item_rating = data.get('item_rating')
-        item_length = data.get('item_length')
+        cell_to = data["move_to"]
+        stair_from = data.get("stair_from")
+        stair_to = data.get("stair_to")
+        snake_from = data.get("snake_from")
+        snake_to = data.get("snake_to")
+        move_type = data["type"]
+        item_title = data["item_title"]
+        item_review = data["item_review"]
+        item_rating = data.get("item_rating")
+        item_length = data.get("item_length")
 
         db.add_player_move(
             player_id=player_id,
@@ -103,43 +107,44 @@ def add_player_move():
             item_title=item_title,
             item_review=item_review,
             item_rating=item_rating,
-            item_length=item_length
+            item_length=item_length,
         )
         db.update_current_game_by_player_id(player_id, None)
-        return jsonify({'message': 'Player move added and position updated successfully'}), 201
+        return jsonify(
+            {"message": "Player move added and position updated successfully"}
+        ), 201
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
-@player_bp.route('/api/player_move_vod_link', methods=['POST'])
+@player_bp.route("/api/player_move_vod_link", methods=["POST"])
 @login_required
 def add_vod_link_to_player_move():
     data = request.get_json()
-    required_fields = ['move_id', 'vod_link']
+    required_fields = ["move_id", "vod_link"]
     for field in required_fields:
         if field not in data:
-            return jsonify({'error': f'Missing required field: {field}'}), 400
+            return jsonify({"error": f"Missing required field: {field}"}), 400
 
     try:
-        vod_link = data.get('vod_link')
-        move_id = data.get('move_id')
+        vod_link = data.get("vod_link")
+        move_id = data.get("move_id")
 
         player_move = db.get_move_by_id(move_id)
         if player_move:
-            db.update_player_move_vod_link(
-                move_id=move_id,
-                vod_link=vod_link
-            )
-            return jsonify({'message': 'Player move vod link updated successfully'}), 201
+            db.update_player_move_vod_link(move_id=move_id, vod_link=vod_link)
+            return jsonify(
+                {"message": "Player move vod link updated successfully"}
+            ), 201
         else:
-            return jsonify({'error': f'Player move with id {move_id} not found'}), 404
+            return jsonify({"error": f"Player move with id {move_id} not found"}), 404
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({"error": str(e)}), 500
 
 
-@player_bp.route('/api/player_stats', methods=['GET'])
+@player_bp.route("/api/player_stats", methods=["GET"])
 def player_stats():
     # Получаем информацию обо всех игроках
 
@@ -157,16 +162,16 @@ def player_stats():
         ladders = db.get_ladders_count_by_player_id(player_id=player[0])
         snakes = db.get_snakes_count_by_player_id(player_id=player[0])
         player_info = {
-            'id': player[0],
-            'map_position': map_position[0] if map_position else 0,
-            'total_moves': total_moves[0] if total_moves else 0,
-            'games_completed': games_completed[0] if games_completed else 0,
-            'games_dropped': games_dropped[0] if games_dropped else 0,
-            'sheikh_moments': sheikh_moments[0] if sheikh_moments else 0,
-            'rerolls': rerolls[0] if rerolls else 0,
-            'movies': movies[0] if movies else 0,
-            'ladders': ladders[0] if ladders else 0,
-            'snakes': snakes[0] if snakes else 0
+            "id": player["id"],
+            "map_position": map_position["cell_to"] if map_position else 0,
+            "total_moves": total_moves["count"],
+            "games_completed": games_completed["count"],
+            "games_dropped": games_dropped["count"],
+            "sheikh_moments": sheikh_moments["count"],
+            "rerolls": rerolls["count"],
+            "movies": movies["count"],
+            "ladders": ladders["count"],
+            "snakes": snakes["count"],
         }
         players.append(player_info)
 
@@ -176,17 +181,23 @@ def player_stats():
 @player_bp.route("/api/current_user", methods=["GET"])
 @login_required
 def current_user():
-    user_info = db.get_user_info_by_name(session["username"])
+    user_info = db.get_user_by_name(session["username"])
     if user_info:
-        return jsonify({"user_id": user_info[0], "role": user_info[1], "moder_for": user_info[2]})
+        return jsonify(
+            {
+                "user_id": user_info["id"],
+                "role": user_info["role"],
+                "moder_for": user_info["moder_for"],
+            }
+        )
     return jsonify({"error": "Not found"}), 404
 
 
-@player_bp.route('/api/reset_stats', methods=['GET'])
+@player_bp.route("/api/reset_stats", methods=["GET"])
 @login_required
 def reset_stats():
-    db.remove_moves_by_player_name(session['username'])
-    return jsonify({'message': 'Position reset'})
+    db.remove_moves_by_player_name(session["username"])
+    return jsonify({"message": "Position reset"})
 
 
 @player_bp.route("/api/moves", methods=["GET"])
@@ -201,23 +212,23 @@ def get_moves():
         {
             "moves": [
                 {
-                    "id": m[0],
-                    "created_at": str(m[1]) + " UTC+3",
-                    "dice_roll": m[2],
-                    "cell_from": m[3],
-                    "cell_to": m[4],
-                    "stair_from": m[5],
-                    "stair_to": m[6],
-                    "snake_from": m[7],
-                    "snake_to": m[8],
-                    "type": m[9],
-                    "item_title": m[10],
-                    "item_review": m[11],
-                    "item_rating": m[12],
-                    "item_length": m[13],
-                    "vod_link": m[14],
-                    "player_id": m[15],
-                    "player_move_id": m[16]
+                    "id": m["id"],
+                    "created_at": str(m["created_at"]) + " UTC+3",
+                    "dice_roll": m["dice_roll"],
+                    "cell_from": m["cell_from"],
+                    "cell_to": m["cell_to"],
+                    "stair_from": m["stair_from"],
+                    "stair_to": m["stair_to"],
+                    "snake_from": m["snake_from"],
+                    "snake_to": m["snake_to"],
+                    "type": m["type"],
+                    "item_title": m["item_title"],
+                    "item_review": m["item_review"],
+                    "item_rating": m["item_rating"],
+                    "item_length": m["item_length"],
+                    "vod_link": m["vod_link"],
+                    "player_id": m["player_id"],
+                    "player_move_id": m["player_move_id"],
                 }
                 for m in moves
             ]
@@ -229,25 +240,23 @@ def get_moves():
 @login_required
 def reset_pointauc_token():
     new_token = secrets.token_urlsafe(8)
-    user_info = db.get_user_info_by_name(session["username"])
-    db.update_player_pointauc_token(user_info[0], new_token)
+    user_info = db.get_user_by_name(session["username"])
+    if user_info:
+        db.update_player_pointauc_token(user_info["id"], new_token)
     return jsonify({"token": new_token})
 
 
 @player_bp.route("/api/point_auc/result", methods=["POST"])
 def pointauc_result_callback():
     data = request.get_json() or {}
-    token = data.get("token")
-    if not token:
-        return jsonify({"error": "Token is required"}), 400
+    require_fields = ["token", "winner_title"]
+    for field in require_fields:
+        if field not in request.json:
+            return jsonify({"error": f"{field} is required"}), 400
 
-    winner_title = data.get("winner_title")
-    if not winner_title:
-        return jsonify({"error": "Winner title is required"}), 400
-
-    user_info = db.get_user_id_by_token(token)
+    user_info = db.get_user_by_token(data["token"])
     if not user_info:
         return jsonify({"error": "Invalid token"}), 400
 
-    db.update_current_game_by_player_id(user_info[0], winner_title)
+    db.update_current_game_by_player_id(user_info["id"], data["winner_title"])
     return jsonify({"message": "updated successfully"})
