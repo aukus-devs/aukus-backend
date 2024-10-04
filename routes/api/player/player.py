@@ -41,7 +41,7 @@ def get_players():
     players_data = db.get_all_players()
     players = []
     for player in players_data:
-        map_position = db.get_last_cell_number(player_id=player[0])
+        map_position = db.get_last_cell_number(player_id=player["id"])
         player_info = {
             "id": player["id"],
             "name": player["username"],
