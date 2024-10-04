@@ -55,7 +55,7 @@ def get_players():
             "map_position": map_position["cell_to"] if map_position else 0,
             "first_name": player["name"],
             "last_name": player["surname"],
-            "current_game_updated_at": player["player_current_game_updated_at"],
+            "current_game_updated_at": player["current_game_updated_at"],
             "telegram_link": player["telegram_link"],
         }
         players.append(player_info)
