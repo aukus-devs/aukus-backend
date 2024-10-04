@@ -202,7 +202,7 @@ def get_moves():
             "moves": [
                 {
                     "id": m[0],
-                    "created_at": m[1],
+                    "created_at": str(m[1]) + " UTC+3",
                     "dice_roll": m[2],
                     "cell_from": m[3],
                     "cell_to": m[4],
