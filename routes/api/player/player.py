@@ -55,7 +55,7 @@ def get_players():
             "map_position": map_position["cell_to"] if map_position else 0,
             "first_name": player["name"],
             "last_name": player["surname"],
-            "current_game_updated_at": str(player["current_game_updated_at"]) + " UTC+3",
+            "current_game_updated_at": player["current_game_updated_at"],
             "telegram_link": player["telegram_link"],
         }
         players.append(player_info)
@@ -228,7 +228,7 @@ def get_moves():
             "moves": [
                 {
                     "id": m["id"],
-                    "created_at": str(m["created_at"]) + " UTC+3",
+                    "created_at": m["created_at"],
                     "dice_roll": m["dice_roll"],
                     "cell_from": m["cell_from"],
                     "cell_to": m["cell_to"],
