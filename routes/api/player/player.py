@@ -212,6 +212,10 @@ def get_moves():
         moves = db.get_moves_by_player(player_id=player_id)
     else:
         date_param = request.args.get("date") or str(date.today())
+        try:
+            date.fromisoformat(date_param)
+        except ValueError:
+            return jsonify({"error": "Incorrect data format, should be YYYY-MM-DD"}), 422
         moves = db.get_moves_by_date(date=date_param)
     return jsonify(
         {
