@@ -2,7 +2,7 @@
 sleep 5
 tail -fn0 backend.log | \
 while read line ; do
-        echo "$line" | grep "error" | grep -v "errorlog"
+        echo "$line" | grep -i "error" | grep -v "errorlog"
         if [ $? = 0 ]
         then
              msg=${line//\"/\\\"} ; \
