@@ -1,5 +1,4 @@
 #!/usr/bin/sh
-sleep 5
 tail -fn0 backend.log | \
 while read line ; do
         echo "$line" | grep -i "error" | grep -v "errorlog"
