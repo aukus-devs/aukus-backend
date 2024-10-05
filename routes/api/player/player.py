@@ -147,34 +147,21 @@ def add_vod_link_to_player_move():
 @player_bp.route("/api/player_stats", methods=["GET"])
 def player_stats():
     # Получаем информацию обо всех игроках
-
-    players_data = db.get_all_players()
+    players_stats = db.get_players_stats()
     # Формируем JSON-ответ
     players = []
-    for player in players_data:
-        player_stats_result = db.get_player_stats_by_player_id(player_id=player["id"])
-
-        map_position = player_stats_result["map_position"]
-        total_moves = player_stats_result["total_moves"]
-        games_completed = player_stats_result["games_completed"]
-        games_dropped = player_stats_result["games_dropped"]
-        sheikh_moments = player_stats_result["sheikh_moments"]
-        rerolls = player_stats_result["rerolls"]
-        movies = player_stats_result["movies"]
-        ladders = player_stats_result["ladders"]
-        snakes = player_stats_result["snakes"]
-
+    for stats in players_stats:
         player_info = {
-            "id": player["id"],
-            "map_position": map_position["cell_to"] if map_position else 0,
-            "total_moves": total_moves["count"],
-            "games_completed": games_completed["count"],
-            "games_dropped": games_dropped["count"],
-            "sheikh_moments": sheikh_moments["count"],
-            "rerolls": rerolls["count"],
-            "movies": movies["count"],
-            "ladders": ladders["count"],
-            "snakes": snakes["count"],
+            "id": stats["player_id"],
+            "map_position": stats["map_position"],
+            "total_moves": stats["total_moves"],
+            "games_completed": stats["games_completed"],
+            "games_dropped": stats["games_dropped"],
+            "sheikh_moments": stats["sheikh_moments"],
+            "rerolls": stats["rerolls"],
+            "movies": stats["movies"],
+            "ladders": stats["ladders"],
+            "snakes": stats["snakes"],
         }
         players.append(player_info)
 
