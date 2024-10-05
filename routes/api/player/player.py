@@ -165,6 +165,25 @@ def player_stats():
         }
         players.append(player_info)
 
+    players_with_stats = {s["player_id"] for s in players_stats}
+    all_players = db.get_all_players()
+    for player in all_players:
+        if player["id"] not in players_with_stats:
+            players.append(
+                {
+                    "id": player["id"],
+                    "map_position": 0,
+                    "total_moves": 0,
+                    "games_completed": 0,
+                    "games_dropped": 0,
+                    "sheikh_moments": 0,
+                    "rerolls": 0,
+                    "movies": 0,
+                    "ladders": 0,
+                    "snakes": 0,
+                }
+            )
+
     return jsonify({"players": players})
 
 

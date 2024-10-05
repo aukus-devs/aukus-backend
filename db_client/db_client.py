@@ -606,7 +606,7 @@ class DatabaseClient:
                   LIMIT 1
                 ), 0) as map_position
                 FROM playermoves moves
-                GROUP BY player_id
+                GROUP BY moves.player_id
                 """
             )
             stats = cursor.fetchall()
