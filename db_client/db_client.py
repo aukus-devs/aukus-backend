@@ -591,18 +591,18 @@ class DatabaseClient:
                 SELECT
                 moves.player_id,
                 COUNT(*) as total_moves,
-                SUM(CASE WHEN moves.type = 'completed' THEN 1 ELSE 0) as games_completed,
-                SUM(CASE WHEN moves.type = 'drop' THEN 1 ELSE 0) as games_dropped,
-                SUM(CASE WHEN moves.type = 'sheikh' THEN 1 ELSE 0) as sheikh_moments,
-                SUM(CASE WHEN moves.type = 'reroll' THEN 1 ELSE 0) as rerolls,
-                SUM(CASE WHEN moves.type = 'movie' THEN 1 ELSE 0) as movies,
-                SUM(CASE WHEN moves.stair_from IS NOT NULL THEN 1 ELSE 0) as ladders,
-                SUM(CASE WHEN moves.snake_from IS NOT NULL THEN 1 ELSE 0) as snakes,
+                SUM(CASE WHEN moves.type = 'completed' THEN 1 ELSE 0 END) as games_completed,
+                SUM(CASE WHEN moves.type = 'drop' THEN 1 ELSE 0 END) as games_dropped,
+                SUM(CASE WHEN moves.type = 'sheikh' THEN 1 ELSE 0 END) as sheikh_moments,
+                SUM(CASE WHEN moves.type = 'reroll' THEN 1 ELSE 0 END) as rerolls,
+                SUM(CASE WHEN moves.type = 'movie' THEN 1 ELSE 0 END) as movies,
+                SUM(CASE WHEN moves.stair_from IS NOT NULL THEN 1 ELSE 0 END) as ladders,
+                SUM(CASE WHEN moves.snake_from IS NOT NULL THEN 1 ELSE 0 END) as snakes,
                 COALESCE((
-                  SELECT inner.cell_to
-                  FROM playermoves inner
-                  WHERE inner.player_id = moves.player_id
-                  ORDER BY inner.id DESC
+                  SELECT subquery.cell_to
+                  FROM playermoves subquery
+                  WHERE subquery.player_id = moves.player_id
+                  ORDER BY subquery.id DESC
                   LIMIT 1
                 ), 0) as map_position
                 FROM playermoves moves
