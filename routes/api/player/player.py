@@ -38,8 +38,12 @@ def available_for_roles(roles=None):
 
 @player_bp.route("/api/players", methods=["GET"])
 def get_players():
+    move_id = request.args.get("move_id")
     players_data = db.get_all_players()
-    last_cells = db.get_players_last_cell_number()
+    if move_id:
+        last_cells = db.get_players_positions_by_move_id(move_id)
+    else:
+        last_cells = db.get_players_last_cell_number()
     players = []
     for player in players_data:
         last_cell = next(

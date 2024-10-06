@@ -372,7 +372,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 """
-                SELECT moves.player_id, moves.id, moves.cell_to
+                SELECT moves.player_id as player_id, moves.id as id, moves.cell_to as cell_to
                 FROM playermoves moves
                 JOIN (
                     SELECT player_id, MAX(id) as max_id
@@ -389,7 +389,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 """
-                SELECT moves.player_id, moves.id, moves.cell_to
+                SELECT moves.player_id as player_id, moves.id as id, moves.cell_to as cell_to
                 FROM playermoves moves
                 JOIN (
                     SELECT player_id, MAX(id) as max_id
