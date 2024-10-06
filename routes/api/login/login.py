@@ -6,6 +6,7 @@ from flask import (
     url_for,
     session,
     jsonify,
+    flash,
 )
 from db_client.db_client import DatabaseClient
 
@@ -25,8 +26,6 @@ def login():
             session["role"] = user["role"]
             return redirect("/")
         else:
-            return jsonify(
-                {"error": "Неверное имя пользователя или пароль. Попробуйте снова."}
-            )
+            flash("Неверное имя пользователя или пароль. Попробуйте снова.")
 
     return render_template("login.html")
