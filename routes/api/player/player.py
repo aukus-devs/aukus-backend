@@ -38,10 +38,22 @@ def available_for_roles(roles=None):
 
 @player_bp.route("/api/players", methods=["GET"])
 def get_players():
+    move_id = request.args.get("move_id")
     players_data = db.get_all_players()
+    if move_id:
+        last_cells = db.get_players_positions_by_move_id(move_id)
+    else:
+        last_cells = db.get_players_last_cell_number()
     players = []
     for player in players_data:
-        map_position = db.get_last_cell_number(player_id=player["id"])
+        last_cell = next(
+            (
+                cell["cell_To"]
+                for cell in last_cells
+                if cell["player_id"] == player["id"]
+            ),
+            0,
+        )
         player_info = {
             "id": player["id"],
             "name": player["username"],
@@ -52,7 +64,7 @@ def get_players():
             "is_online": bool(player["player_is_online"]),
             "current_game": player["player_current_game"],
             "url_handle": player["player_url_handle"],
-            "map_position": map_position["cell_to"] if map_position else 0,
+            "map_position": last_cell,
             "first_name": player["name"],
             "last_name": player["surname"],
             "current_game_updated_at": player["current_game_updated_at"],
@@ -76,13 +88,20 @@ def add_player_move():
             {"error": f"Stair and snake cannot be used at the same time"}
         ), 400
 
-    last_cell_number_db = db.get_last_cell_number(player_id=data["player_id"])
-    last_cell_number = last_cell_number_db["cell_to"] if last_cell_number_db else 0
+    last_cells = db.get_players_last_cell_number()
+    last_cell_number = next(
+        (
+            cell["cell_To"]
+            for cell in last_cells
+            if cell["player_id"] == data["player_id"]
+        ),
+        0,
+    )
 
     try:
         player_id = data["player_id"]
         dice_roll = data["dice_roll"]
-        cell_from = last_cell_number if last_cell_number else 0
+        cell_from = last_cell_number
         cell_to = data["move_to"]
         stair_from = data.get("stair_from")
         stair_to = data.get("stair_to")
@@ -221,7 +240,9 @@ def get_moves():
         try:
             date.fromisoformat(date_param)
         except ValueError:
-            return jsonify({"error": "Incorrect data format, should be YYYY-MM-DD"}), 422
+            return jsonify(
+                {"error": "Incorrect data format, should be YYYY-MM-DD"}
+            ), 422
         moves = db.get_moves_by_date(date=date_param)
     return jsonify(
         {

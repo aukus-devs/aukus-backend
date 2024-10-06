@@ -380,14 +380,41 @@ class DatabaseClient:
             cursor.execute("SELECT * FROM playermoves WHERE id = %s", (move_id,))
             return cursor.fetchone()
 
-    def get_last_cell_number(self, player_id):
-        """Получить последнюю ячейку игрока"""
+    def get_players_last_cell_number(self):
+        """Получить последние ячейки игроков"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                "SELECT cell_to FROM playermoves WHERE player_id = %s ORDER BY id DESC LIMIT 1",
-                (player_id,),
+                """
+                SELECT moves.player_id as player_id, moves.id as id, moves.cell_to as cell_to
+                FROM playermoves moves
+                JOIN (
+                    SELECT player_id, MAX(id) as max_id
+                    FROM playermoves
+                    GROUP BY player_id
+                ) sub
+                on moves.id = sub.max_id
+                """
             )
             return cursor.fetchone()
+
+    def get_players_positions_by_move_id(self, move_id: int):
+        """Получить позиции игроков на определенный ход"""
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                """
+                SELECT moves.player_id as player_id, moves.id as id, moves.cell_to as cell_to
+                FROM playermoves moves
+                JOIN (
+                    SELECT player_id, MAX(id) as max_id
+                    FROM playermoves
+                    WHERE id < %s
+                    GROUP BY player_id
+                ) sub
+                on moves.id = sub.max_id
+            """,
+                (move_id,),
+            )
+            return cursor.fetchall()
 
     def get_moves_count_by_player_id(self, player_id):
         """Получить количество ходов игрока"""
@@ -488,12 +515,10 @@ class DatabaseClient:
             cursor.execute("DELETE FROM playermoves WHERE player_id = %s", (player_id,))
 
     def reset_finished_players(self):
-        players = self.get_all_players()
-        for i in players:
-            last_cell = self.get_last_cell_number(i["id"])
-            if last_cell:
-                if last_cell["cell_to"] >= 101:
-                    self.remove_moves_by_player_id(i["id"])
+        last_cells = self.get_players_last_cell_number()
+        for i in last_cells:
+            if i["cell_to"] >= 101:
+                self.remove_moves_by_player_id(i["player_id"])
         return True
 
     def add_image(self, player_id, url, width, height, x=0, y=0, rotation=0):
