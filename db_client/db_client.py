@@ -29,6 +29,10 @@ class DatabaseClient:
         if self.connection.open and self.connection.ping(True):
             return self.connection
         else:
+            try:
+                self.connection.close()
+            except:
+                pass
             self.connection = MySQLdb.connect(**MYSQLCONF)
             return self.connection
 
