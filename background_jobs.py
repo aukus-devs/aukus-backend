@@ -36,7 +36,7 @@ def refresh_stream_statuses():
                 #logging.info(data)
                 if len(data) != 0 and data[0]["type"] == "live":
                     stream = data[0]
-                    if stream["game_name"] != player["player_stream_current_category"]: # comparing category with DB
+                    if stream["game_name"] != player["player_stream_current_category"] or player["player_is_online"] == False: # comparing category with DB
                         db.update_stream_status(player_id=player["id"], is_online=True, category=stream["game_name"])
                 else:
                     if player["player_is_online"] == True: # is online in DB?
@@ -47,7 +47,7 @@ def refresh_stream_statuses():
                 content = html.fromstring(vkplay_page.content)
                 category_xpath = content.xpath('/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div[1]/div[3]/a')
                 if len(category_xpath) != 0:
-                    if category_xpath[0].text != player["player_stream_current_category"]: # comparing category with DB
+                    if category_xpath[0].text != player["player_stream_current_category"] or player["player_is_online"] == False: # comparing category with DB
                         db.update_stream_status(player_id=player["id"], is_online=True, category=category_xpath[0].text)
                 else:
                     if player["player_is_online"] == True: # is online in DB?
