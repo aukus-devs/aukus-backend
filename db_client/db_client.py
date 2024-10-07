@@ -395,7 +395,7 @@ class DatabaseClient:
                 on moves.id = sub.max_id
                 """
             )
-            return cursor.fetchone()
+            return cursor.fetchall()
 
     def get_players_positions_by_move_id(self, move_id: int):
         """Получить позиции игроков на определенный ход"""
