@@ -1,5 +1,6 @@
 #!/usr/bin/sh
 ps -ef | grep 'aukus_logs_alert.sh' | awk '{print $2}'  | xargs -r kill -9
+sleep 2
 ps -ef | grep 'only_api_app' | awk '{print $2}'  | xargs -r kill -9
 ps -ef | grep 'only_api_app' | awk '{print $2}'  | xargs -r kill -9
 ps -ef | grep 'background_jobs' | awk '{print $2}'  | xargs -r kill -9
