@@ -48,7 +48,7 @@ def get_players():
     for player in players_data:
         last_cell = next(
             (
-                cell["cell_To"]
+                cell["cell_to"]
                 for cell in last_cells
                 if cell["player_id"] == player["id"]
             ),
@@ -91,7 +91,7 @@ def add_player_move():
     last_cells = db.get_players_last_cell_number()
     last_cell_number = next(
         (
-            cell["cell_To"]
+            cell["cell_to"]
             for cell in last_cells
             if cell["player_id"] == data["player_id"]
         ),
