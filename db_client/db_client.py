@@ -37,11 +37,11 @@ class DatabaseClient:
                 self.connection.ping(True)
                 return self.connection
             except:
-                safe_close()
+                self.safe_close()
                 self.connection = MySQLdb.connect(**MYSQLCONF)
                 return self.connection
         else:
-            safe_close()
+            self.safe_close()
             self.connection = MySQLdb.connect(**MYSQLCONF)
             return self.connection
 
