@@ -25,10 +25,23 @@ class DatabaseClient:
     def __init__(self):
         self.connection = MySQLdb.connect(**MYSQLCONF)
 
+    def safe_close(self):
+        try:
+            self.connection.close()
+        except:
+            pass
+
     def conn(self):
-        if self.connection.open and self.connection.ping(True):
-            return self.connection
+        if self.connection.open:
+            try:
+                self.connection.ping(True)
+                return self.connection
+            except:
+                safe_close()
+                self.connection = MySQLdb.connect(**MYSQLCONF)
+                return self.connection
         else:
+            safe_close()
             self.connection = MySQLdb.connect(**MYSQLCONF)
             return self.connection
 
