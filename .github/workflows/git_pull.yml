@@ -33,7 +33,7 @@ jobs:
         run: |
           COMMIT_AUTHOR=$(git log -1 --pretty=%an)
           COMMIT_TEXT=$(git log --oneline -n 1)
-          msg_text='Aukus backend upload success!%0AAuthor: $COMMIT_AUTHOR %0ACommit: $COMMIT_TEXT'
+          msg_text="✅Aukus backend upload success!%0AAuthor: $COMMIT_AUTHOR %0ACommit: $COMMIT_TEXT"
           curl -s -X POST 'https://api.telegram.org/bot${{ secrets.TG_TOKEN }}/sendMessage' \
           -d "message_thread_id=20&chat_id=-1002471795184_20&text=${msg_text}&"
 
@@ -50,6 +50,6 @@ jobs:
         run: |
           COMMIT_AUTHOR=$(git log -1 --pretty=%an)
           COMMIT_TEXT=$(git log --oneline -n 1)
-          msg_text='Aukus backend upload failure!%0AAuthor: $COMMIT_AUTHOR %0ACommit: $COMMIT_TEXT'
+          msg_text="⚠️Aukus backend upload failure!%0AAuthor: $COMMIT_AUTHOR %0ACommit: $COMMIT_TEXT"
           curl -s -X POST 'https://api.telegram.org/bot${{ secrets.TG_TOKEN }}/sendMessage' \
           -d "message_thread_id=20&chat_id=-1002471795184_20&text=${msg_text}&"
