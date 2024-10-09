@@ -25,6 +25,7 @@ jobs:
           details: Aukus backend upload success!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
       - name: Success to telegram
+        uses: actions/checkout@v2
         if: success()
         run: |
           COMMIT_AUTHOR=$(git log -1 --pretty=%an)
@@ -41,6 +42,7 @@ jobs:
           details: Aukus backend upload failure!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
       - name: Failure to telegram
+        uses: actions/checkout@v2
         if: failure()
         run: |
           COMMIT_AUTHOR=$(git log -1 --pretty=%an)
