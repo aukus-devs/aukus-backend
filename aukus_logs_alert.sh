@@ -7,5 +7,6 @@ while read line ; do
              msg=${line//\"/\\\"} ; \
              #echo "test $msg"
              curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"$msg\"}" $DISCORD_WEBHOOK
+             curl -s -X POST -d 'message_thread_id=20&chat_id=-1002471795184_20&text=${msg}' $TG_API
         fi
 done
