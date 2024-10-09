@@ -46,7 +46,6 @@ jobs:
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
 
       - name: Failure to telegram
-        uses: actions/checkout@v2
         if: failure()
         run: |
           COMMIT_AUTHOR=$(git log -1 --pretty=%an)
