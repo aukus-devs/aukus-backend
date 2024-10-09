@@ -24,8 +24,11 @@ jobs:
           severity: info
           details: Aukus backend upload success!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-      - name: Success to telegram
+
+      - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Success to telegram
         if: success()
         run: |
           COMMIT_AUTHOR=$(git log -1 --pretty=%an)
@@ -41,6 +44,7 @@ jobs:
           severity: error
           details: Aukus backend upload failure!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
       - name: Failure to telegram
         uses: actions/checkout@v2
         if: failure()
