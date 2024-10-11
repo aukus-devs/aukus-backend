@@ -17,13 +17,26 @@ jobs:
           port: ${{ secrets.PORT }}
           command_timeout: 2m
           script: cd ${{ secrets.APP_PATH }} && git pull && sh restart.sh
-      - name: Aukus backend upload success!
+      - name: Success to discord
         uses: rjstone/discord-webhook-notify@v1
         if: success()
         with:
           severity: info
           details: Aukus backend upload success!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Success to telegram
+        if: success()
+        run: |
+          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+          COMMIT_TEXT=$(git log --oneline -n 1)
+          msg_text="✅Aukus backend upload success!%0AAuthor: $COMMIT_AUTHOR %0ACommit: $COMMIT_TEXT"
+          curl -s -X POST 'https://api.telegram.org/bot${{ secrets.TG_TOKEN }}/sendMessage' \
+          -d "message_thread_id=20&chat_id=-1002471795184_20&text=${msg_text}&"
+
       - name: Aukus backend upload failure!
         uses: rjstone/discord-webhook-notify@v1
         if: failure()
@@ -31,3 +44,12 @@ jobs:
           severity: error
           details: Aukus backend upload failure!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Failure to telegram
+        if: failure()
+        run: |
+          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+          COMMIT_TEXT=$(git log --oneline -n 1)
+          msg_text="⚠️Aukus backend upload failure!%0AAuthor: $COMMIT_AUTHOR %0ACommit: $COMMIT_TEXT"
+          curl -s -X POST 'https://api.telegram.org/bot${{ secrets.TG_TOKEN }}/sendMessage' \
+          -d "message_thread_id=20&chat_id=-1002471795184_20&text=${msg_text}&"
