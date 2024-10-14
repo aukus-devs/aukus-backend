@@ -338,16 +338,16 @@ class DatabaseClient:
                 self.conn().rollback()  # откат изменений в случае ошибки
                 raise e
 
-    def update_player_move_vod_link(self, move_id, vod_link):
-        """Обновить поле vod_link в таблице playermoves"""
+    def update_player_move_vod_link(self, move_id, vod_link, title):
+        """Обновить поле vod_link и item_title в таблице playermoves"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 """
                 UPDATE playermoves
-                SET vod_link = %s
+                SET vod_link = %s, item_title = %s
                 WHERE id = %s
             """,
-                (vod_link, move_id),
+                (vod_link, title, move_id),
             )
 
     def update_player_position(self, player_id, new_position):

@@ -141,18 +141,21 @@ def add_player_move():
 @login_required
 def add_vod_link_to_player_move():
     data = request.get_json()
-    required_fields = ["move_id", "vod_link"]
+    required_fields = ["vod_link", "title", "move_id"]
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
 
     try:
-        vod_link = data.get("vod_link")
-        move_id = data.get("move_id")
+        vod_link = data["vod_link"]
+        title = data["title"]
+        move_id = data["move_id"]
 
         player_move = db.get_move_by_id(move_id)
         if player_move:
-            db.update_player_move_vod_link(move_id=move_id, vod_link=vod_link)
+            db.update_player_move_vod_link(
+                move_id=move_id, vod_link=vod_link, title=title
+            )
             return jsonify(
                 {"message": "Player move vod link updated successfully"}
             ), 201
