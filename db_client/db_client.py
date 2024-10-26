@@ -199,6 +199,15 @@ class DatabaseClient:
             )
             return cursor.fetchall()
 
+    def get_last_move_id_to_date(self, date: str):
+        """Получить последний ход перед днем"""
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                "SELECT MAX(id) as id FROM playermoves WHERE DATE(created_at) < %s",
+                (date,),
+            )
+            return cursor.fetchone()
+
     def get_all_moves(self):
         """Получить все ходы"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
