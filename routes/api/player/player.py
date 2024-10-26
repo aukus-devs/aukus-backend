@@ -236,6 +236,7 @@ def reset_stats():
 @player_bp.route("/api/moves", methods=["GET"])
 def get_moves():
     player_id = request.args.get("player_id")
+    last_move = None
     if player_id:
         moves = db.get_moves_by_player(player_id=player_id)
     else:
@@ -247,8 +248,11 @@ def get_moves():
                 {"error": "Incorrect data format, should be YYYY-MM-DD"}
             ), 422
         moves = db.get_moves_by_date(date=date_param)
+        last_move = db.get_last_move_id_to_date(date=date_param)
+    last_move_id = last_move["id"] if last_move else None
     return jsonify(
         {
+            "last_move_id": last_move_id,
             "moves": [
                 {
                     "id": m["id"],
@@ -270,7 +274,7 @@ def get_moves():
                     "player_move_id": m["player_move_id"],
                 }
                 for m in moves
-            ]
+            ],
         }
     )
 
