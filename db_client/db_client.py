@@ -359,6 +359,18 @@ class DatabaseClient:
                 (vod_link, title, move_id),
             )
 
+    def update_player_current_game(self, player_id: int, title: str):
+        """Обновить поле player_current_game в таблице users"""
+        with closing(self.conn().cursor()) as cursor:
+            cursor.execute(
+                """
+                UPDATE users
+                SET player_current_game = %s
+                WHERE id = %s
+                """,
+                (title, player_id),
+            )
+
     def update_player_position(self, player_id, new_position):
         """Обновить поле map_position в таблице users"""
         with closing(self.conn().cursor()) as cursor:

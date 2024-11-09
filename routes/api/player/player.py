@@ -158,7 +158,7 @@ def add_vod_link_to_player_move():
             )
             return jsonify(
                 {"message": "Player move vod link updated successfully"}
-            ), 201
+            ), 200
         else:
             return jsonify({"error": f"Player move with id {move_id} not found"}), 404
 
@@ -302,3 +302,23 @@ def pointauc_result_callback():
 
     db.update_current_game_by_player_id(user_info["id"], data["winner_title"])
     return jsonify({"message": "updated successfully"})
+
+
+@player_bp.route("/api/player_current_game", methods=["POST"])
+@login_required
+def update_player_current_game():
+    data = request.get_json()
+    required_fields = ["title", "player_id"]
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+
+    try:
+        title = data["title"]
+        player_id = data["player_id"]
+
+        db.update_player_current_game(player_id=player_id, title=title)
+        return jsonify({"message": "Player game updated successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
