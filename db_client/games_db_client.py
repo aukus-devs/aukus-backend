@@ -54,6 +54,8 @@ class GamesDatabaseClient:
             return cursor.fetchall()
 
     def search_games_multiple(self, titles: list[str]):
+        if not titles:
+            return []
         placeholders = ", ".join(["%s"] * len(titles))
         titles_lower = [title.lower() for title in titles]
         with closing(self.conn().cursor(DictCursor)) as cursor:
