@@ -255,7 +255,7 @@ def get_moves():
 
     moves_titles = [m["item_title"] for m in moves if m["item_title"] is not None]
     games = games_db.search_games_multiple(moves_titles)
-    games_dict = {g["title"]: g for g in games}
+    games_dict = {g["gameName"]: g for g in games}
 
     return jsonify(
         {
