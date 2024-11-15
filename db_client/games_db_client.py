@@ -45,7 +45,20 @@ class GamesDatabaseClient:
             self.connection = MySQLdb.connect(**MYSQLCONF)
             return self.connection
 
-    def search_games(self, title):
+    def search_games(self, title: str):
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("SELECT * FROM game WHERE gameName LIKE %s", ("%" + title + "%",))
+            cursor.execute(
+                "SELECT * FROM game WHERE LOWER(gameName) LIKE %s",
+                ("%" + title.lower() + "%",),
+            )
+            return cursor.fetchall()
+
+    def search_games_multiple(self, titles: list[str]):
+        placeholders = ", ".join(["%s"] * len(titles))
+        titles_lower = [title.lower() for title in titles]
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                f"SELECT * FROM game WHERE LOWER(gameName) IN {placeholders}",
+                titles_lower,
+            )
             return cursor.fetchall()

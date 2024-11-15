@@ -1,4 +1,5 @@
 from functools import wraps
+from db_client.games_db_client import GamesDatabaseClient
 from flask import Blueprint, request, jsonify, session
 from db_client.db_client import DatabaseClient
 from datetime import date
@@ -6,6 +7,7 @@ import secrets
 
 player_bp = Blueprint("player", __name__)
 db = DatabaseClient()
+games_db = GamesDatabaseClient()
 
 
 def login_required(f):
@@ -112,7 +114,6 @@ def add_player_move():
         item_review = data["item_review"]
         item_rating = data.get("item_rating")
         item_length = data.get("item_length")
-        item_image = data.get("item_image", "")
 
         db.add_player_move(
             player_id=player_id,
@@ -128,7 +129,6 @@ def add_player_move():
             item_review=item_review,
             item_rating=item_rating,
             item_length=item_length,
-            item_image=item_image,
         )
         db.update_current_game_by_player_id(player_id, None)
         return jsonify(
@@ -252,6 +252,11 @@ def get_moves():
         moves = db.get_moves_by_date(date=date_param)
         last_move = db.get_last_move_id_to_date(date=date_param)
     last_move_id = last_move["id"] if last_move else None
+
+    moves_titles = [m["item_title"] for m in moves if m["item_title"] is not None]
+    games = games_db.search_games_multiple(moves_titles)
+    games_dict = {g["title"]: g for g in games}
+
     return jsonify(
         {
             "last_move_id": last_move_id,
@@ -274,7 +279,9 @@ def get_moves():
                     "vod_link": m["vod_link"],
                     "player_id": m["player_id"],
                     "player_move_id": m["player_move_id"],
-                    "item_image": m["item_image"],
+                    "item_image": games_dict.get(m["item_title"], {}).get(
+                        "box_art_url"
+                    ),
                 }
                 for m in moves
             ],
