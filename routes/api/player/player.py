@@ -112,6 +112,7 @@ def add_player_move():
         item_review = data["item_review"]
         item_rating = data.get("item_rating")
         item_length = data.get("item_length")
+        item_image = data.get("item_image", "")
 
         db.add_player_move(
             player_id=player_id,
@@ -127,6 +128,7 @@ def add_player_move():
             item_review=item_review,
             item_rating=item_rating,
             item_length=item_length,
+            item_image=item_image,
         )
         db.update_current_game_by_player_id(player_id, None)
         return jsonify(
@@ -272,6 +274,7 @@ def get_moves():
                     "vod_link": m["vod_link"],
                     "player_id": m["player_id"],
                     "player_move_id": m["player_move_id"],
+                    "item_image": m["item_image"],
                 }
                 for m in moves
             ],

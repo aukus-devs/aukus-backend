@@ -314,6 +314,7 @@ class DatabaseClient:
         item_rating=None,
         item_length=None,
         vod_link=None,
+        item_image="",
     ):
         """Добавить ход игрока и обновить его позицию на карте"""
         # Добавляем новый ход в playermoves
@@ -322,8 +323,8 @@ class DatabaseClient:
                 cursor.execute(
                     """
                     INSERT INTO playermoves (player_id, dice_roll, cell_from, cell_to, stair_from, stair_to,
-                                             snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                             snake_from, snake_to, type, item_title, item_review, item_rating, item_length, vod_link, item_image)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                     (
                         player_id,
@@ -340,6 +341,7 @@ class DatabaseClient:
                         item_rating,
                         item_length,
                         vod_link,
+                        item_image,
                     ),
                 )
             except Exception as e:
