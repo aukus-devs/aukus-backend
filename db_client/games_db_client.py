@@ -58,7 +58,7 @@ class GamesDatabaseClient:
         titles_lower = [title.lower() for title in titles]
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                f"SELECT * FROM game WHERE LOWER(gameName) IN {placeholders}",
+                f"SELECT * FROM game WHERE LOWER(gameName) IN ({placeholders})",
                 titles_lower,
             )
             return cursor.fetchall()
