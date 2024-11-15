@@ -255,7 +255,7 @@ def get_moves():
 
     moves_titles = [m["item_title"] for m in moves if m["item_title"] is not None]
     games = games_db.search_games_multiple(moves_titles)
-    games_dict = {g["gameName"]: g for g in games}
+    games_images = {g["gameName"].lower(): g["box_art_url"] for g in games}
 
     return jsonify(
         {
@@ -279,9 +279,7 @@ def get_moves():
                     "vod_link": m["vod_link"],
                     "player_id": m["player_id"],
                     "player_move_id": m["player_move_id"],
-                    "item_image": games_dict.get(m["item_title"], {}).get(
-                        "box_art_url"
-                    ),
+                    "item_image": games_images.get(m["item_title"].lower()),
                 }
                 for m in moves
             ],
