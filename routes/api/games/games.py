@@ -18,26 +18,9 @@ def login_required(f):
     return decorated_function
 
 
-def available_for_roles(roles=None):
-    if roles is None:
-        roles = ["player", "moder", "admin"]
-
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if "username" not in session and "role" not in session:
-                return jsonify({"error": f"Auth required"}), 401
-            if session["role"] not in roles:
-                return jsonify({"error": f"Forbidden"}), 403
-            return f(*args, **kwargs)
-
-        return decorated_function
-
-    return decorator
-
-
 @games_bp.route("/api/games", methods=["GET"])
-def get_players():
+@login_required
+def search_games():
     title = request.args.get("title")
     if not title:
         return jsonify({"error": f"Missing required field: title"}), 400
