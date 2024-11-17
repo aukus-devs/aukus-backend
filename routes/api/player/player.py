@@ -47,6 +47,16 @@ def get_players():
     else:
         last_cells = db.get_players_last_cell_number()
     players = []
+    players_games = [
+        player["player_current_game"]
+        for player in players_data
+        if player["player_current_game"]
+    ]
+    games_images = games_db.search_games_multiple(players_games)
+    games_images_by_name = {
+        game["gameName"].lower(): game["box_art_url"] for game in games_images
+    }
+
     for player in players_data:
         last_cell = next(
             (
@@ -56,6 +66,7 @@ def get_players():
             ),
             0,
         )
+        image = games_images_by_name.get(player["player_current_game"].lower())
         player_info = {
             "id": player["id"],
             "name": player["username"],
@@ -71,6 +82,7 @@ def get_players():
             "last_name": player["surname"],
             "current_game_updated_at": player["current_game_updated_at"],
             "telegram_link": player["telegram_link"],
+            "current_game_image": image,
         }
         players.append(player_info)
 
