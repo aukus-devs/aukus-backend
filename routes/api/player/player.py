@@ -66,7 +66,9 @@ def get_players():
             ),
             0,
         )
-        image = games_images_by_name.get(player["player_current_game"].lower())
+        image = None
+        if player["player_current_game"]:
+            image = games_images_by_name.get(player["player_current_game"].lower())
         player_info = {
             "id": player["id"],
             "name": player["username"],
