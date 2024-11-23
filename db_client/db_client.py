@@ -413,7 +413,6 @@ class DatabaseClient:
                 JOIN (
                     SELECT player_id, MAX(id) as max_id
                     FROM playermoves
-                    WHERE is_active = 1
                     GROUP BY player_id
                 ) sub
                 on moves.id = sub.max_id
