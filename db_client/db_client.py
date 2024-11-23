@@ -91,13 +91,15 @@ class DatabaseClient:
     def get_user_by_id(self, user_id):
         """Получить пользователя по ID"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+            cursor.execute(
+                "SELECT * FROM users WHERE id = %s and is_active = 1", (user_id,)
+            )
             return cursor.fetchone()
 
     def get_user_by_logpass(self, username, password):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                "SELECT * FROM users WHERE UPPER(username) = UPPER(%s) AND password = %s",
+                "SELECT * FROM users WHERE UPPER(username) = UPPER(%s) AND password = %s AND is_active = 1",
                 (username, password),
             )
             return cursor.fetchone()
@@ -105,7 +107,7 @@ class DatabaseClient:
     def get_all_users(self):
         """Получить всех пользователей"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("SELECT * FROM users")
+            cursor.execute("SELECT * FROM users WHERE is_active = 1")
             return cursor.fetchall()
 
     def update_user(
@@ -292,7 +294,7 @@ class DatabaseClient:
         query = """
         SELECT *
         FROM users u
-        WHERE u.role = 'player'
+        WHERE u.role = 'player' and is_active = 1
         """
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(query)
@@ -411,6 +413,7 @@ class DatabaseClient:
                 JOIN (
                     SELECT player_id, MAX(id) as max_id
                     FROM playermoves
+                    WHERE is_active = 1
                     GROUP BY player_id
                 ) sub
                 on moves.id = sub.max_id
@@ -513,7 +516,7 @@ class DatabaseClient:
         """Получить инфу пользователя по имени"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                "SELECT * FROM users WHERE UPPER(username) = UPPER(%s)",
+                "SELECT * FROM users WHERE UPPER(username) = UPPER(%s) and is_active = 1",
                 (username,),
             )
             return cursor.fetchone()
