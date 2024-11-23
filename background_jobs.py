@@ -58,6 +58,6 @@ def refresh_stream_statuses():
 
 
 scheduler = BlockingScheduler()
-scheduler.add_job(reset_finished_players, 'interval', minutes=1)
-scheduler.add_job(refresh_stream_statuses, 'interval', minutes=1)
+# scheduler.add_job(reset_finished_players, 'interval', minutes=1)
+scheduler.add_job(refresh_stream_statuses, "interval", minutes=1)
 scheduler.start()
