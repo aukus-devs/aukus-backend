@@ -75,6 +75,7 @@ def get_players():
             "name": player["username"],
             "twitch_stream_link": player["twitch_stream_link"],
             "vk_stream_link": player["vk_stream_link"],
+            "kick_stream_link": player["kick_stream_link"],
             "donation_link": player["donation_link"],
             "stream_last_category": player["player_stream_current_category"],
             "is_online": bool(player["player_is_online"]),
