@@ -17,8 +17,8 @@ db = DatabaseClient()
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form["username"].strip()
+        password = request.form["password"].strip()
         user = db.get_user_by_logpass(username=username, password=password)
 
         if user:
