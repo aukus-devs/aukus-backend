@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from flask import Flask
+from flask import Flask, session, request
 from flask_session.__init__ import Session
 from routes.api.login.login import auth_bp
 from routes.api.player.player import player_bp
@@ -9,7 +9,7 @@ from routes.api.games.games import games_bp
 import config
 
 
-logging.basicConfig(level = logging.INFO)
+logging.basicConfig(level = logging.DEBUG)
 app = Flask(__name__)
 
 
@@ -31,6 +31,22 @@ def create_app():
     app.register_blueprint(canvas_bp)
     app.register_blueprint(games_bp)
     return app
+
+
+@app.after_request
+def after_request(response):
+    """ Logging all of the requests in JSON Per Line Format. """
+    if "username" not in session:
+        return response
+    audit_logger = logging.getLogger('inbound_requests')
+    audit_logger.info({
+            "datetime": datetime.now().isoformat(),
+            "user_name": session["username"],
+            "method": request.method,
+            "request_url": request.path,
+            "response_status": response.status
+        })
+    return response
 
 
 if __name__ == '__main__':
