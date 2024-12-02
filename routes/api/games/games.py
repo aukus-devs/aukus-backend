@@ -8,7 +8,7 @@ games_bp = Blueprint("games", __name__)
 db = GamesDatabaseClient()
 
 
-@games_bp.route("/api/games", methods=["GET"])
+@games_bp.route("/test_api/games", methods=["GET"])
 def search_games():
     title = request.args.get("title")
     if not title:
