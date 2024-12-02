@@ -215,10 +215,10 @@ def player_stats():
             "movies": stats["movies"],
             "ladders": stats["ladders"],
             "snakes": stats["snakes"],
-            "tiny_games": stats["tiny_games"],
-            "short_games": stats["short_games"],
-            "medium_games": stats["medium_games"],
-            "long_games": stats["long_games"],
+            "tiny_games": int(stats["tiny_games"]),
+            "short_games": int(stats["short_games"]),
+            "medium_games": int(stats["medium_games"]),
+            "long_games": int(stats["long_games"]),
         }
         players.append(player_info)
 
