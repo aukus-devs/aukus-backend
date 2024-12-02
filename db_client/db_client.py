@@ -659,6 +659,10 @@ class DatabaseClient:
                 SUM(CASE WHEN moves.type = 'movie' THEN 1 ELSE 0 END) as movies,
                 SUM(CASE WHEN moves.stair_from IS NOT NULL THEN 1 ELSE 0 END) as ladders,
                 SUM(CASE WHEN moves.snake_from IS NOT NULL THEN 1 ELSE 0 END) as snakes,
+                SUM(CASE WHEN moves.type = 'completed' && moves.item_length = 'tiny' THEN 1 ELSE 0 END) as tiny_games,
+                SUM(CASE WHEN moves.type = 'completed' && moves.item_length = 'short' THEN 1 ELSE 0 END) as short_games,
+                SUM(CASE WHEN moves.type = 'completed' && moves.item_length = 'medium' THEN 1 ELSE 0 END) as medium_games,
+                SUM(CASE WHEN moves.type = 'completed' && moves.item_length = 'long' THEN 1 ELSE 0 END) as long_games,
                 COALESCE((
                   SELECT subquery.cell_to
                   FROM playermoves subquery
