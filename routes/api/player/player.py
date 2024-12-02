@@ -38,6 +38,19 @@ def available_for_roles(roles=None):
     return decorator
 
 
+@player_bp.route("/api/dons", methods=["GET"])
+def get_dons():
+    dons_data = db.get_dons()
+    dons = []
+    for donate in dons_data:
+        dons.append({
+            "name": donate["name"],
+            "text": donate["text"],
+            "type": "big" if int(donate["sum"]) >= 5000 else "small",
+        })
+    return jsonify({"dons": dons})
+
+
 @player_bp.route("/api/players", methods=["GET"])
 def get_players():
     move_id = request.args.get("move_id")

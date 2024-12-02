@@ -677,6 +677,13 @@ class DatabaseClient:
             stats = cursor.fetchall()
             return stats
 
+    def get_dons(self):
+        """Получить всех донатеров"""
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute("SELECT * FROM dons ORDER BY sum desc")
+            return cursor.fetchall()
+
+
     def close(self):
         """Закрыть соединение с базой данных"""
         self.conn().close()
