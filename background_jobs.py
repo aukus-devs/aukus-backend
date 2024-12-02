@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BlockingScheduler
 from db_client.db_client import DatabaseClient
 import config
+import json
 
 load_dotenv()
 twitch_headers = {
@@ -79,6 +80,35 @@ def refresh_stream_statuses():
                 else:
                     if player["player_is_online"] == True:  # is online in DB?
                         db.update_stream_status(player_id=player["id"], is_online=False)
+            elif player["kick_stream_link"]:
+                #logging.info("Start kick check for " + player["username"] + ", URL: " + player["kick_stream_link"])
+                try:
+                    url = "http://localhost:20080/v1" # cloudflare bypass proxy
+                    headers = {"Content-Type": "application/json"}
+                    data = {
+                        "cmd": "request.get",
+                        "url": "https://kick.com/api/v1/channels/" + player["kick_stream_link"].split("/")[-1],
+                        "maxTimeout": 60000
+                    }
+                    response = requests.post(url, headers = headers, json = data)
+                    response_json_text = response.text
+                    response_json_text = response_json_text.replace("<html><head></head><body>", "")
+                    response_json_text = response_json_text.replace("</body></html>", "")
+                    content = json.loads(json.loads(response_json_text)["solution"]["response"])
+                    if(content["livestream"] == None):
+                        db.update_stream_status(player_id=player["id"], is_online=False)
+                    else:
+                        content = content["livestream"]
+                        is_online = content["is_live"]
+                        category = content["categories"][0]["name"]
+                        db.update_stream_status(
+                            player_id=player["id"],
+                            is_online=is_online,
+                            category=category,
+                        )
+                except Exception as e:
+                    logging.error("Stream check failed for " + player["username"] + ",: " + str(e))
+                    db.update_stream_status(player_id=player["id"], is_online=False)
     except Exception as e:
         logging.error("Stream check failed for " + player["username"] + ",: " + str(e))
         db.update_stream_status(player_id=player["id"], is_online=False)
