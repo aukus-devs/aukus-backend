@@ -611,6 +611,40 @@ class DatabaseClient:
                 (player_id, width, height, x, y, rotation, url),
             )
 
+    def calculate_time_by_category_name(
+        self, category_name, player_id
+    ):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                """
+                WITH time_differences AS (
+                    SELECT
+                        category_name, player_id,
+                        TIMESTAMPDIFF(SECOND, category_date, LEAD(category_date) OVER (ORDER BY id)) AS difference_in_seconds
+                    FROM
+                        categories_history
+                    WHERE
+                        category_name = %s AND
+                        player_id = %s
+                )
+                SELECT
+                    category_name,
+                    SUM(difference_in_seconds) AS total_difference_in_seconds
+                FROM
+                    time_differences
+                GROUP BY
+                    category_name;
+                """
+                ,
+                (category_name, player_id,),
+            )
+            result = cursor.fetchone()
+            if result is None:
+                return {"total_difference_in_seconds": 0}
+            else:
+                return result
+
+
     def update_stream_status(self, player_id, is_online, category=None):
         """Обновить поля player_is_online и player_stream_current_category в таблице users"""
         with closing(self.conn().cursor()) as cursor:
@@ -631,6 +665,11 @@ class DatabaseClient:
                 """,
                     (category, player_id),
                 )
+                cursor.execute(
+                    "INSERT INTO categories_history (category_name, player_id) VALUES (%s, %s)",
+                    (category, player_id,),
+                )
+
 
     def update_player_pointauc_token(self, player_id: int, token: str):
         """Обновить поле pointauc_token в таблице users"""
