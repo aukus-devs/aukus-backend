@@ -9,7 +9,7 @@ from routes.api.games.games import games_bp
 import config
 
 
-logging.basicConfig(level = logging.INFO)
+logging.basicConfig(level = logging.DEBUG)
 app = Flask(__name__)
 
 
