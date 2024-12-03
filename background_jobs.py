@@ -2,6 +2,7 @@ import requests
 from lxml import html
 from dotenv import load_dotenv
 import os
+import sys
 import logging
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BlockingScheduler
@@ -95,24 +96,26 @@ def refresh_stream_statuses():
                     response_json_text = response_json_text.replace("<html><head></head><body>", "")
                     response_json_text = response_json_text.replace("</body></html>", "")
                     content = json.loads(json.loads(response_json_text)["solution"]["response"])
-                    if(content["livestream"] == None) or player["player_is_online"] == True:
-                        db.update_stream_status(player_id=player["id"], is_online=False)
+                    if content["livestream"] == None:
+                        if player["player_is_online"] == True:
+                            db.update_stream_status(player_id=player["id"], is_online=False)
                     else:
                         content = content["livestream"]
                         is_online = content["is_live"]
                         category = content["categories"][0]["name"]
-                        if category != player["player_stream_current_category"] or player["player_is_online"] == False:
+                        if category != player["player_stream_current_category"] or player["player_is_online"] != is_online:
                             db.update_stream_status(
                                 player_id=player["id"],
                                 is_online=is_online,
                                 category=category,
                             )
                 except Exception as e:
-                    logging.error("Stream check failed for " + player["username"] + ",: " + str(e))
-                    db.update_stream_status(player_id=player["id"], is_online=False)
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    logging.error("Stream check failed for " + player["username"] + ",: " + str(e) + ", line: " + str(exc_tb.tb_lineno))
+                    if player["player_is_online"] == True:
+                        db.update_stream_status(player_id=player["id"], is_online=False)
     except Exception as e:
         logging.error("Stream check failed for " + player["username"] + ",: " + str(e))
-        db.update_stream_status(player_id=player["id"], is_online=False)
 
 
 scheduler = BlockingScheduler()
