@@ -371,6 +371,8 @@ class DatabaseClient:
                     category_name,
                     SUM(
                         CASE
+                            WHEN next_category_name IS NULL THEN
+                                TIMESTAMPDIFF(SECOND, category_date, NOW())
                             WHEN next_category_name != category_name THEN
                                 TIMESTAMPDIFF(SECOND, category_date, next_category_date)
                             ELSE
