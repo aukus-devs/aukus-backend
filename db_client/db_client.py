@@ -739,6 +739,11 @@ class DatabaseClient:
             cursor.execute("SELECT * FROM dons ORDER BY sum desc")
             return cursor.fetchall()
 
+    def get_igdb_token(self):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute("SELECT * FROM igdb_token")
+            return cursor.fetchone()
+
     def close(self):
         """Закрыть соединение с базой данных"""
         self.conn().close()
