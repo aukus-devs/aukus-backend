@@ -316,7 +316,7 @@ def get_moves():
                     "player_id": m["player_id"],
                     "player_move_id": m["player_move_id"],
                     "item_image": games_images.get(m["item_title"].lower()),
-                    "stream_title_category_duration": db.calculate_time_by_category_name(m["item_title"], player_id)["total_difference_in_seconds"],
+                    "stream_title_category_duration": db.calculate_time_by_category_name(m["item_title"], m["player_id"])["total_difference_in_seconds"],
                 }
                 for m in moves
             ],

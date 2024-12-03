@@ -359,19 +359,29 @@ class DatabaseClient:
                 """
                 WITH time_differences AS (
                     SELECT
-                        category_name, player_id,
-                        TIMESTAMPDIFF(SECOND, category_date, LEAD(category_date) OVER (ORDER BY id)) AS difference_in_seconds
+                        category_name,
+                        player_id,
+                        category_date,
+                        LEAD(category_name) OVER (PARTITION BY player_id ORDER BY id) AS next_category_name,
+                        LEAD(category_date) OVER (PARTITION BY player_id ORDER BY id) AS next_category_date
                     FROM
                         categories_history
-                    WHERE
-                        category_name = %s AND
-                        player_id = %s
                 )
                 SELECT
                     category_name,
-                    SUM(difference_in_seconds) AS total_difference_in_seconds
+                    SUM(
+                        CASE
+                            WHEN next_category_name != category_name THEN
+                                TIMESTAMPDIFF(SECOND, category_date, next_category_date)
+                            ELSE
+                                0
+                        END
+                    ) AS total_difference_in_seconds
                 FROM
                     time_differences
+                WHERE
+                    category_name = %s AND
+                    player_id = %s
                 GROUP BY
                     category_name;
                 """
