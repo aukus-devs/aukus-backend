@@ -271,11 +271,12 @@ def reset_stats():
 @player_bp.route("/api/moves", methods=["GET"])
 def get_moves():
     player_id = request.args.get("player_id")
+    date_param = request.args.get("date")
+    limit = max(request.args.get("limit", 10), 50)
     last_move = None
     if player_id:
         moves = db.get_moves_by_player(player_id=player_id)
-    else:
-        date_param = request.args.get("date") or str(date.today())
+    elif date_param:
         try:
             date.fromisoformat(date_param)
         except ValueError:
@@ -284,8 +285,10 @@ def get_moves():
             ), 422
         moves = db.get_moves_by_date(date=date_param)
         last_move = db.get_last_move_id_to_date(date=date_param)
-    last_move_id = last_move["id"] if last_move else None
+    else:
+        moves = db.get_all_moves(limit=limit)
 
+    last_move_id = last_move["id"] if last_move else None
     moves_titles = [m["item_title"] for m in moves if m["item_title"] is not None]
     games = games_db.search_games_multiple(moves_titles)
     games_images = {g["gameName"].lower(): g["box_art_url"] for g in games}

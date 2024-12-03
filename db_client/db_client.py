@@ -210,10 +210,12 @@ class DatabaseClient:
             )
             return cursor.fetchone()
 
-    def get_all_moves(self):
+    def get_all_moves(self, limit: int = 50):
         """Получить все ходы"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("SELECT * FROM playermoves")
+            cursor.execute(
+                "SELECT * FROM playermoves order by id desc limit %s", (limit,)
+            )
             return cursor.fetchall()
 
     def update_player_move(
@@ -682,7 +684,6 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute("SELECT * FROM dons ORDER BY sum desc")
             return cursor.fetchall()
-
 
     def close(self):
         """Закрыть соединение с базой данных"""
