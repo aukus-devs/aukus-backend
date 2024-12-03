@@ -670,6 +670,11 @@ class DatabaseClient:
                     "INSERT INTO categories_history (category_name, player_id) VALUES (%s, %s)",
                     (category, player_id,),
                 )
+            else:
+                cursor.execute(
+                    "INSERT INTO categories_history (category_name, player_id) VALUES (%s, %s)",
+                    ("Offline", player_id,),
+                )
 
     def update_player_pointauc_token(self, player_id: int, token: str):
         """Обновить поле pointauc_token в таблице users"""
