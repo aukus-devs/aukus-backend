@@ -12,14 +12,14 @@ IGDB_CLIENT_ID = os.getenv("IGDB_CLIENT_ID")
 igdb_session = CachedSession("igdb_cache", expire_after=timedelta(days=25), allowable_methods=['GET', 'POST'])
 db = DatabaseClient()
 
-playermoves = db.get_all_moves()
-#limit=1000)
+playermoves = db.get_all_moves(limit=1000)
 for move in playermoves:
     try:
         print("Get info for: " + move["item_title"].lower())
         igdb_token = db.get_igdb_token()["igdb_token"]
         headers = {"Client-ID": IGDB_CLIENT_ID, "Authorization": "Bearer " + igdb_token}
-        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data='search "' + move["item_title"].lower() + '"; fields id, name, cover.image_id;', timeout=2)
+        payload = ('fields id,name,cover.image_id; limit 50; where name ~ *"' + move["item_title"].lower() + '"*;').encode('utf-8')
+        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=2)
         print("IGDB response: " + response.text)
         time.sleep(0.5)
     except Exception as e:
