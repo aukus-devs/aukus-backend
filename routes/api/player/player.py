@@ -386,7 +386,7 @@ def search_games_multiple_idgb(titles: list[str]):
                     games.append({
                         "id": game["id"],
                         "gameName": game["name"],
-                        "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg" if "cover" in game else None
+                        "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg" if "cover" in game else ""
                     })
             else:
                 games.extend(games_db.search_games(title.lower()))
