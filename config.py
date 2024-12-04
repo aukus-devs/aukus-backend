@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-SESSION_SECRET = 'n!&cF,8[jsFR3?7K£OG_e}oxf(:sQeD0DFk;>UrX.WJIE(L>C('
+SESSION_SECRET = os.getenv("FLASK_SESSION_SECRET")
 UPLOAD_FOLDER = '/static/uploads'
