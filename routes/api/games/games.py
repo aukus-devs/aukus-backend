@@ -34,7 +34,12 @@ def search_games():
         response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=1)
         if response.ok and "name" in response.text and len(response.text) > 2:
             games_json = json.loads(response.content.decode('utf-8'))
+            unique_games = {}
             for game in games_json:
+                name = game["name"]
+                if name not in unique_games or ("cover" in game and "cover" not in unique_games[name]):
+                    unique_games[name] = game
+            for game in list(unique_games.values()):
                 games.append({
                     "id": game["id"],
                     "gameName": game["name"],
