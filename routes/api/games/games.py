@@ -27,7 +27,7 @@ def search_games():
         return jsonify({"games": []})
     igdb_token = db.get_igdb_token()["igdb_token"]
     headers = {"Client-ID": IGDB_CLIENT_ID, "Authorization": "Bearer " + igdb_token}
-    response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data='search "' + title + '"; fields id, name, cover.image_id;', timeout=1)
+    response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=('search "' + title.lower() + '"; fields id, name, cover.image_id;').encode('utf-8'), timeout=1)
     games = None
     if response.ok and "name" in response.text and len(response.text) > 2:
         games = []

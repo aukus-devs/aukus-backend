@@ -381,7 +381,7 @@ def search_games_multiple_idgb(titles: list[str]):
     for title in titles:
         igdb_token = db.get_igdb_token()["igdb_token"]
         headers = {"Client-ID": IGDB_CLIENT_ID, "Authorization": "Bearer " + igdb_token}
-        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data='search "' + title.lower() + '"; fields id, name, cover.image_id;', timeout=1)
+        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=('search "' + title.lower() + '"; fields id, name, cover.image_id;').encode('utf-8'), timeout=1)
         if response.ok and "name" in response.text and len(response.text) > 2:
             games_json = json.loads(response.content.decode('utf-8'))
             for game in games_json:
