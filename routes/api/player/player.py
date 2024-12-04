@@ -381,18 +381,19 @@ def search_games_multiple_idgb(titles: list[str]):
     for title in titles:
         igdb_token = db.get_igdb_token()["igdb_token"]
         headers = {"Client-ID": IGDB_CLIENT_ID, "Authorization": "Bearer " + igdb_token}
-        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=('search "' + title.lower() + '"; fields id, name, cover.image_id;').encode('utf-8'), timeout=1)
-        if response.ok and "name" in response.text and len(response.text) > 2:
-            games_json = json.loads(response.content.decode('utf-8'))
-            for game in games_json:
-                if "cover" in game:
+        payload = ('fields id,name,cover.image_id; limit 50; where name ~ *"' + title.lower() + '"*;').encode('utf-8')
+        try:
+            response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=1)
+            if response.ok and "name" in response.text and len(response.text) > 2:
+                games_json = json.loads(response.content.decode('utf-8'))
+                for game in games_json:
                     games.append({
                         "id": game["id"],
                         "gameName": game["name"],
-                        "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg"
+                        "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg" if "cover" in game else None
                     })
-                else:
-                    games.extend(games_db.search_games(title.lower()))
-        else:
-            games.extend(games_db.search_games(title.lower()))
+            else:
+                games.extend(games_db.search_games(title.lower()))
+        except:
+             games.extend(games_db.search_games(title.lower()))
     return games

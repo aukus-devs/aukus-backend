@@ -10,6 +10,7 @@ import json
 import os
 from dotenv import load_dotenv
 import logging
+import urllib.parse
 
 games_bp = Blueprint("games", __name__)
 db = DatabaseClient()
@@ -20,27 +21,27 @@ igdb_session = CachedSession("igdb_cache", expire_after=timedelta(days=25), allo
 
 @games_bp.route("/api/games", methods=["GET"])
 def search_games():
-    title = request.args.get("title")
-    if not title:
+    raw_query_string = request.query_string.decode()
+    args = urllib.parse.parse_qs(raw_query_string, separator=' ')
+    if not "title" in args:
         return jsonify({"error": f"Missing required field: title"}), 400
-    if len(title) == 0:
-        return jsonify({"games": []})
+    title = args["title"][0].lower()
     igdb_token = db.get_igdb_token()["igdb_token"]
     headers = {"Client-ID": IGDB_CLIENT_ID, "Authorization": "Bearer " + igdb_token}
-    response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=('search "' + title.lower() + '"; fields id, name, cover.image_id;').encode('utf-8'), timeout=1)
-    games = None
-    if response.ok and "name" in response.text and len(response.text) > 2:
-        games = []
-        games_json = json.loads(response.content.decode('utf-8'))
-        for game in games_json:
-            if "cover" in game:
+    payload = ('fields id,name,cover.image_id; limit 50; where name ~ *"' + title + '"*;').encode('utf-8')
+    games = []
+    try:
+        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=1)
+        if response.ok and "name" in response.text and len(response.text) > 2:
+            games_json = json.loads(response.content.decode('utf-8'))
+            for game in games_json:
                 games.append({
                     "id": game["id"],
                     "gameName": game["name"],
-                    "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg"
+                    "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg" if "cover" in game else ""
                 })
-            else:
-                games.extend(games_db.search_games(title.lower()))
-    else:
-        games = games_db.search_games(title)
+        else:
+            games = games_db.search_games(title)
+    except:
+        games.extend(games_db.search_games(title))
     return jsonify({"games": games})
