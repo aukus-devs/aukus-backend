@@ -33,11 +33,14 @@ def search_games():
         games = []
         games_json = json.loads(response.content.decode('utf-8'))
         for game in games_json:
-            games.append({
-                "id": game["id"],
-                "gameName": game["name"],
-                "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg" if "cover" in game else ""
-            })
+            if "cover" in game:
+                games.append({
+                    "id": game["id"],
+                    "gameName": game["name"],
+                    "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg"
+                })
+            else:
+                games.extend(games_db.search_games(title.lower()))
     else:
         games = games_db.search_games(title)
     return jsonify({"games": games})
