@@ -360,8 +360,9 @@ def pointauc_result_callback():
     db.update_current_game_by_player_id(user_info["id"], data["winner_title"])
     return jsonify({"message": "updated successfully"})
 
+
 @player_bp.route("/api/point_auc/timer_started", methods=["POST"])
-def pointauc_result_callback():
+def pointauc_timer_callback():
     data = request.get_json() or {}
     require_fields = ["token"]
     for field in require_fields:
