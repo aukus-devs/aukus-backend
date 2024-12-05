@@ -11,6 +11,7 @@ import os
 from dotenv import load_dotenv
 import logging
 import urllib.parse
+import igdb
 
 games_bp = Blueprint("games", __name__)
 db = DatabaseClient()
@@ -23,31 +24,10 @@ igdb_session = CachedSession("igdb_cache", expire_after=timedelta(days=25), allo
 def search_games():
     raw_query_string = request.query_string.decode()
     args = urllib.parse.parse_qs(raw_query_string, separator=' ')
-    logging.info(len(args))
     if not "title" in args:
         return jsonify({"error": f"Missing required field: title"}), 400
-    title = args["title"][0]
-    igdb_token = db.get_igdb_token()["igdb_token"]
-    headers = {"Client-ID": IGDB_CLIENT_ID, "Authorization": "Bearer " + igdb_token}
-    payload = ('fields id,name,cover.image_id; limit 50; where name ~ *"' + title.lower() + '"*;').encode('utf-8')
-    games = []
-    try:
-        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=1)
-        if response.ok and "name" in response.text and len(response.text) > 2:
-            games_json = json.loads(response.content.decode('utf-8'))
-            unique_games = {}
-            for game in games_json:
-                name = game["name"]
-                if name not in unique_games or ("cover" in game and "cover" not in unique_games[name]):
-                    unique_games[name] = game
-            for game in list(unique_games.values()):
-                games.append({
-                    "id": game["id"],
-                    "gameName": game["name"],
-                    "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg" if "cover" in game else ""
-                })
-        else:
-            games = games_db.search_games(title)
-    except:
-        games.extend(games_db.search_games(title.lower()))
+    title = args["title"][0].lower()
+    games = igdb.search_igdb(title)
+    if len(games) == 0:
+        games = games_db.search_games(title)
     return jsonify({"games": games})
