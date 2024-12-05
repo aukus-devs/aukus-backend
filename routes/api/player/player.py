@@ -246,6 +246,10 @@ def player_stats():
                     "movies": 0,
                     "ladders": 0,
                     "snakes": 0,
+                    "tiny_games": 0,
+                    "short_games": 0,
+                    "medium_games": 0,
+                    "long_games": 0,
                 }
             )
 
