@@ -16,7 +16,7 @@ MYSQLCONF = {
     "password": MYSQL_PASSWORD,
     "db": "aukus_db",
     "port": 3306,
-    "charset": "utf8",
+    "charset": "utf8mb4",
     "autocommit": True,
 }
 
