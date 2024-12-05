@@ -64,3 +64,12 @@ class GamesDatabaseClient:
                 titles_lower,
             )
             return cursor.fetchall()
+
+    def get_wrong_platforms(self):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                "SELECT * FROM wrong_platforms",
+                (),
+            )
+            return cursor.fetchall()
+
