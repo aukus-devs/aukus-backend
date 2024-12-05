@@ -360,6 +360,20 @@ def pointauc_result_callback():
     db.update_current_game_by_player_id(user_info["id"], data["winner_title"])
     return jsonify({"message": "updated successfully"})
 
+@player_bp.route("/api/point_auc/timer_started", methods=["POST"])
+def pointauc_result_callback():
+    data = request.get_json() or {}
+    require_fields = ["token"]
+    for field in require_fields:
+        if field not in request.json:
+            return jsonify({"error": f"{field} is required"}), 400
+
+    user_info = db.get_user_by_token(data["token"])
+    if not user_info:
+        return jsonify({"error": "Invalid token"}), 400
+
+    #db.update_current_game_by_player_id(user_info["id"], data["winner_title"])
+    return jsonify({"message": "updated successfully"})
 
 @player_bp.route("/api/player_current_game", methods=["POST"])
 @login_required
