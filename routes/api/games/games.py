@@ -28,25 +28,23 @@ def search_games():
     title = args["title"][0].lower()
     igdb_token = db.get_igdb_token()["igdb_token"]
     headers = {"Client-ID": IGDB_CLIENT_ID, "Authorization": "Bearer " + igdb_token}
-    payload = ('fields id,name,cover.image_id; limit 50; where name ~ *"' + title + '"*;').encode('utf-8')
+    payload = ('fields id,name,cover.image_id,first_release_date,platforms; limit 50; where name ~ *"' + title + '"* & platforms = [6] & first_release_date != null;').encode('utf-8')
     games = []
     try:
-        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=1)
+        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=2)
         if response.ok and "name" in response.text and len(response.text) > 2:
             games_json = json.loads(response.content.decode('utf-8'))
             unique_games = {}
             for game in games_json:
-                name = game["name"]
-                if name not in unique_games or ("cover" in game and "cover" not in unique_games[name]):
-                    unique_games[name] = game
-            for game in list(unique_games.values()):
                 games.append({
                     "id": game["id"],
                     "gameName": game["name"],
+                    "first_release_date": game["first_release_date"],
                     "box_art_url": "https://images.igdb.com/igdb/image/upload/t_cover_big/" + game["cover"]["image_id"] + ".jpg" if "cover" in game else ""
                 })
         else:
             games = games_db.search_games(title)
-    except:
+    except Exception as e:
+        logging.error("IGDB search failed: " + str(e))
         games.extend(games_db.search_games(title))
     return jsonify({"games": games})

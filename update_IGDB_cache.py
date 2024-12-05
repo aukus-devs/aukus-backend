@@ -18,7 +18,7 @@ for move in playermoves:
         print("Get info for: " + move["item_title"].lower())
         igdb_token = db.get_igdb_token()["igdb_token"]
         headers = {"Client-ID": IGDB_CLIENT_ID, "Authorization": "Bearer " + igdb_token}
-        payload = ('fields id,name,cover.image_id; limit 50; where name ~ *"' + move["item_title"].lower() + '"*;').encode('utf-8')
+        payload = ('fields id,name,cover.image_id,first_release_date,platforms; limit 50; where name ~ *"' + move["item_title"].lower() + '"* & platforms = [6] & first_release_date != null;').encode('utf-8')
         response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=2)
         print("IGDB response: " + response.text)
         time.sleep(0.5)
