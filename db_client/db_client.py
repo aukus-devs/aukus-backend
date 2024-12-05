@@ -736,7 +736,7 @@ class DatabaseClient:
     def get_dons(self):
         """Получить всех донатеров"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("SELECT * FROM dons ORDER BY sum desc")
+            cursor.execute("SELECT * FROM dons ORDER BY sum desc, id desc")
             return cursor.fetchall()
 
     def get_igdb_token(self):
