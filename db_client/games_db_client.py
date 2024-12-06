@@ -65,6 +65,26 @@ class GamesDatabaseClient:
             )
             return cursor.fetchall()
 
+    def search_games_igdb(self, title: str):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                "SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) LIKE %s",
+                ("%" + title.lower() + "%",),
+            )
+            return cursor.fetchall()
+
+    def search_games_multiple_igdb(self, titles: list[str]):
+        if not titles:
+            return []
+        placeholders = ", ".join(["%s"] * len(titles))
+        titles_lower = [title.lower() for title in titles]
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                f"SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) IN ({placeholders})",
+                titles_lower,
+            )
+            return cursor.fetchall()
+
     def get_wrong_platforms(self):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(

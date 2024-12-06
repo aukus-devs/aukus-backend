@@ -74,7 +74,7 @@ def get_players():
         for player in players_data
         if player["player_current_game"]
     ]
-    games_images = search_games_multiple_idgb(players_games)
+    games_images = games_db.search_games_multiple_igdb(players_games)
     games_images_by_name = {
         game["gameName"].lower(): game["box_art_url"] for game in games_images
     }
@@ -101,6 +101,7 @@ def get_players():
             "donation_link": player["donation_link"],
             "stream_last_category": player["player_stream_current_category"],
             "is_online": bool(player["player_is_online"]),
+            "online_count": int(player["online_count"]),
             "current_game": player["player_current_game"],
             "url_handle": player["player_url_handle"],
             "map_position": last_cell,
@@ -296,7 +297,7 @@ def get_moves():
     last_move_id = last_move["id"] if last_move else None
 
     moves_titles = [m["item_title"] for m in moves if m["item_title"] is not None]
-    games = search_games_multiple_idgb(moves_titles)
+    games = games_db.search_games_multiple_igdb(moves_titles)
     games_images = {g["gameName"].lower(): g["box_art_url"] for g in games}
     return jsonify(
         {
@@ -372,13 +373,3 @@ def update_player_current_game():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-def search_games_multiple_idgb(titles: list[str]):
-    games = []
-    for title in titles:
-        igdb_games = igdb.search_igdb(title.lower())
-        if len(igdb_games) == 0:
-            games.extend(games_db.search_games(title.lower()))
-        else:
-            games.extend(igdb_games)
-    return games

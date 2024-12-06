@@ -2,6 +2,7 @@ import requests
 from lxml import html
 from dotenv import load_dotenv
 import os
+import sys
 import logging
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BlockingScheduler
@@ -29,14 +30,14 @@ def refresh_stream_statuses():
         for player in players:
             # logging.info(str(player))
             if player["twitch_stream_link"]:  # twitch link exists
-                # logging.info("Start twitch check for " + player["username"] + ", URL: " + player["twitch_stream_link"])
+                logging.info("Start twitch check for " + player["username"] + ", URL: " + player["twitch_stream_link"])
                 url = (
                     "https://api.twitch.tv/helix/streams?user_login="
                     + player["twitch_stream_link"].rsplit("/", 1)[1]
                 )
                 response = requests.get(url, headers=twitch_headers, timeout=15)
                 data = response.json()["data"]
-                # logging.info(data)
+                #logging.info("data:" + str(data))
                 if len(data) != 0 and data[0]["type"] == "live":
                     stream = data[0]
                     if (
@@ -46,6 +47,7 @@ def refresh_stream_statuses():
                         db.update_stream_status(
                             player_id=player["id"],
                             is_online=True,
+                            online_count=int(stream["viewer_count"]),
                             category=stream["game_name"],
                         )
                 else:
@@ -65,6 +67,9 @@ def refresh_stream_statuses():
                 category_xpath = content.xpath(
                     "/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div[1]/div/a"
                 )
+                online_count_xpath = content.xpath(
+                    "/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[1]/div[2]/div[2]/div[2]/div[2]/div"
+                )
                 if len(category_xpath) != 0 and "StreamStatus_text" in vkplay_page.text:
                     if (
                         category_xpath[0].text
@@ -74,17 +79,20 @@ def refresh_stream_statuses():
                         db.update_stream_status(
                             player_id=player["id"],
                             is_online=True,
+                            online_count=int(online_count_xpath[0].text),
                             category=category_xpath[0].text,
                         )
                 else:
                     if player["player_is_online"] == True:  # is online in DB?
                         db.update_stream_status(player_id=player["id"], is_online=False)
     except Exception as e:
-        logging.error("Stream check failed for " + player["username"] + ",: " + str(e))
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        logging.error("Stream check failed for " + player["username"] + ",: " + str(e) + ", line: " + str(exc_tb.tb_lineno))
         db.update_stream_status(player_id=player["id"], is_online=False)
 
 
-scheduler = BlockingScheduler()
+#scheduler = BlockingScheduler()
 # scheduler.add_job(reset_finished_players, 'interval', minutes=1)
-scheduler.add_job(refresh_stream_statuses, "interval", minutes=2)
-scheduler.start()
+#scheduler.add_job(refresh_stream_statuses, "interval", minutes=2)
+#scheduler.start()
+refresh_stream_statuses()

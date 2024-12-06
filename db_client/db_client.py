@@ -645,29 +645,29 @@ class DatabaseClient:
                 return result
 
 
-    def update_stream_status(self, player_id, is_online, category=None):
+    def update_stream_status(self, player_id, is_online, online_count: int=0, category=None):
         """Обновить поля player_is_online и player_stream_current_category в таблице users"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 """
                 UPDATE users
-                SET player_is_online = %s
+                SET player_is_online = %s, online_count = %s
                 WHERE id = %s
             """,
-                (is_online, player_id),
+                (is_online, online_count, player_id),
             )
             if category is not None:
                 cursor.execute(
                     """
                     UPDATE users
-                    SET player_stream_current_category = %s
+                    SET player_stream_current_category = %s, online_count = %s
                     WHERE id = %s
                 """,
-                    (category, player_id),
+                    (category, online_count, player_id),
                 )
                 cursor.execute(
-                    "INSERT INTO categories_history (category_name, player_id) VALUES (%s, %s)",
-                    (category, player_id,),
+                    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
+                    (category, online_count, player_id,),
                 )
 
 
