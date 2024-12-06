@@ -686,12 +686,12 @@ class DatabaseClient:
                     (category, online_count, player_id),
                 )
                 cursor.execute(
-                    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s)",
+                    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
                     (category, online_count, player_id,),
                 )
             else:
                 cursor.execute(
-                    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s)",
+                    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
                     ("Offline", online_count, player_id,),
                 )
 
