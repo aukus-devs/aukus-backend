@@ -57,11 +57,11 @@ def refresh_stream_statuses():
                 #logging.info("Start vkplay check for " + player["username"] + ", URL: " + player["vk_stream_link"])
                 vkplay_page = None
                 try:
-                    vkplay_page = requests.get(player["vk_stream_link"], timeout=60)
+                    vkplay_page = requests.get(player["vk_stream_link"], timeout=110)
                 except Exception as e:
                     pass
                 if vkplay_page is None:
-                    vkplay_page = requests.get(player["vk_stream_link"], timeout=60)
+                    vkplay_page = requests.get(player["vk_stream_link"], timeout=110)
                 content = html.fromstring(vkplay_page.content)
                 #logging.info("IDDQD" + str(content))
                 category_xpath = content.xpath(
