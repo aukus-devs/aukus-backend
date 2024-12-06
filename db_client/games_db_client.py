@@ -3,6 +3,7 @@ import MySQLdb
 from MySQLdb.cursors import DictCursor
 import logging
 import os
+import sys
 from dotenv import load_dotenv
 from contextlib import closing
 
@@ -70,6 +71,36 @@ class GamesDatabaseClient:
             cursor.execute(
                 "SELECT * FROM wrong_platforms",
                 (),
+            )
+            return cursor.fetchall()
+
+    def insert_to_IGDB(self, game_id, name, cover_url, release_year, platforms):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                """
+                INSERT INTO igdb_games (game_id, name, cover_url, release_year, platforms)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (game_id, name, cover_url, release_year, platforms),
+            )
+
+    def search_games_igdb(self, title: str):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                "SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) LIKE %s",
+                ("%" + title.lower() + "%",),
+            )
+            return cursor.fetchall()
+
+    def search_games_multiple_igdb(self, titles: list[str]):
+        if not titles:
+            return []
+        placeholders = ", ".join(["%s"] * len(titles))
+        titles_lower = [title.lower() for title in titles]
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                f"SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) IN ({placeholders})",
+                titles_lower,
             )
             return cursor.fetchall()
 
