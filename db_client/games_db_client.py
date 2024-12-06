@@ -16,7 +16,7 @@ MYSQLCONF = {
     "password": MYSQL_PASSWORD,
     "db": "twitch_games_db",
     "port": 3306,
-    "charset": "utf8",
+    "charset": "utf8mb4",
     "autocommit": True,
 }
 
@@ -90,6 +90,22 @@ class GamesDatabaseClient:
             cursor.execute(
                 "SELECT * FROM wrong_platforms",
                 (),
+            )
+            return cursor.fetchall()
+
+    def search_games_igdb(self, title: str, year: int = None, player_id: int = None):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                f"SELECT * FROM igdb_games WHERE LOWER(name) = %s",
+                title.lower(),
+            )
+            return cursor.fetchall()
+
+    def add_game_to_igdb(self, title: str, image: str = None, year: int = None, player_id: int = None):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                f"SELECT * FROM igdb_games WHERE LOWER(name) = %s",
+                title.lower(),
             )
             return cursor.fetchall()
 

@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import logging
 import urllib.parse
 import igdb
+from howlongtobeatpy import HowLongToBeat
 
 games_bp = Blueprint("games", __name__)
 db = DatabaseClient()
@@ -31,3 +32,26 @@ def search_games():
     if len(games) == 0:
         games = games_db.search_games(title)
     return jsonify({"games": games})
+
+
+@games_bp.route("/test_api/hltb", methods=["GET"])
+def search_htlb():
+    raw_query_string = request.query_string.decode()
+    args = urllib.parse.parse_qs(raw_query_string, separator=' ')
+    if not "title" in args:
+        return jsonify({"error": f"Missing required field: title"}), 400
+    title = args["title"][0].lower()
+    results = HowLongToBeat().search(title)
+    hltb_games = []
+    for game in results:
+        hltb_games.append({
+            "gameName": game.game_name,
+            "mainStory": game.main_story,
+            "mainExtra": game.main_extra,
+            "completionist": game.completionist,
+            "all_styles": game.all_styles,
+            "release_world": game.release_world,
+            "profile_platforms": game.profile_platforms,
+            "game_image_url": game.game_image_url,
+        })
+    return jsonify({"hltb_games": hltb_games})
