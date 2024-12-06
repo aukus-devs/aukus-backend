@@ -28,7 +28,7 @@ def search_igdb(title: str):
     payload = ('fields id,name,cover.image_id, first_release_date; limit 50; where name ~ *"' + title.lower() + '"* & (platforms = [6]' + payload_fix +');').encode('utf-8')
     games = []
     try:
-        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=1)
+        response = igdb_session.post("https://api.igdb.com/v4/games", headers=headers, data=payload, timeout=2)
         if response.ok and "name" in response.text and len(response.text) > 2:
             games_json = json.loads(response.content.decode('utf-8'))
             for game in games_json:
