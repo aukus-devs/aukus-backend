@@ -88,8 +88,10 @@ class GamesDatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 """SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) LIKE %s
-                  ORDER BY
-                      LENGTH(gameName) ASC""",
+                   ORDER BY
+                       LENGTH(gameName) ASC
+                   LIMIT 50
+                """,
                 ("%" + title.lower() + "%",),
             )
             return cursor.fetchall()
