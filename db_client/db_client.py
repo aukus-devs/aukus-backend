@@ -615,11 +615,11 @@ class DatabaseClient:
             )
             return cursor.fetchone()
 
-    def update_current_game_by_player_id(self, player_id, game):
+    def update_last_auction_result_by_player_id(self, player_id, game, auc_value):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
-                "UPDATE users SET player_current_game = %s, current_game_updated_at = %s WHERE id = %s",
-                (game, datetime.datetime.utcnow(), player_id),
+                "UPDATE users SET player_current_game = %s, current_game_updated_at = %s, current_auction_total_sum = %s  WHERE id = %s",
+                (game, datetime.datetime.utcnow(), auc_value, player_id),
             )
 
     def update_current_online_count_by_player_id(self, player_id, online_count):

@@ -102,6 +102,7 @@ def get_players():
             "is_online": bool(player["player_is_online"]),
             "online_count": int(player["online_count"]),
             "current_game": player["player_current_game"],
+            "current_auction_total_sum": player["current_auction_total_sum"],
             "url_handle": player["player_url_handle"],
             "map_position": last_cell,
             "first_name": player["name"],
@@ -168,7 +169,7 @@ def add_player_move():
             item_rating=item_rating,
             item_length=item_length,
         )
-        db.update_current_game_by_player_id(player_id, None)
+        db.update_last_auction_result_by_player_id(player_id, None, None)
         return jsonify(
             {"message": "Player move added and position updated successfully"}
         ), 201
@@ -350,7 +351,7 @@ def reset_pointauc_token():
 def pointauc_result_callback():
     data = request.get_json() or {}
     logging.info(str(data))
-    require_fields = ["token", "winner_title"]
+    require_fields = ["token", "winner_title", "auc_value", "winner_value", "lots_count"]
     for field in require_fields:
         if field not in request.json:
             return jsonify({"error": f"{field} is required"}), 400
@@ -359,7 +360,7 @@ def pointauc_result_callback():
     if not user_info:
         return jsonify({"error": "Invalid token"}), 400
 
-    db.update_current_game_by_player_id(user_info["id"], data["winner_title"])
+    db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"], data["auc_value"])
     return jsonify({"message": "updated successfully"})
 
 
