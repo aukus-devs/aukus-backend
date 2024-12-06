@@ -44,6 +44,7 @@ def after_request(response):
             "user_name": session["username"],
             "method": request.method,
             "request_url": request.path,
+            "ip": request.headers.get("X-Forwarded-For", ""),
             "response_status": response.status
         })
     return response
