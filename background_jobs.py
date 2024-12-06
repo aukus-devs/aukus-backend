@@ -51,11 +51,10 @@ def refresh_stream_statuses():
                             online_count=int(stream["viewer_count"]),
                             category=stream["game_name"],
                         )
-                    if player["player_is_online"] == True:
-                        db.update_current_online_count_by_player_id(
-                            player_id=player["id"],
-                            online_count=int(stream["viewer_count"]),
-                        )
+                    db.update_current_online_count_by_player_id(
+                        player_id=player["id"],
+                        online_count=int(stream["viewer_count"]),
+                    )
                 else:
                     if player["player_is_online"] == True:  # is online in DB?
                         db.update_stream_status(player_id=player["id"], is_online=False)
@@ -89,11 +88,10 @@ def refresh_stream_statuses():
                             online_count=online_count,
                             category=category_xpath[0].text,
                         )
-                    if player["player_is_online"] == True:
-                        db.update_current_online_count_by_player_id(
-                            player_id=player["id"],
-                            online_count=online_count,
-                        )
+                    db.update_current_online_count_by_player_id(
+                        player_id=player["id"],
+                        online_count=online_count,
+                    )
                 else:
                     if player["player_is_online"] == True:  # is online in DB?
                         db.update_stream_status(player_id=player["id"], is_online=False)
@@ -127,11 +125,10 @@ def refresh_stream_statuses():
                                 online_count=online_count,
                                 category=category,
                             )
-                        if player["player_is_online"] == True:
-                            db.update_current_online_count_by_player_id(
-                                player_id=player["id"],
-                                online_count=online_count,
-                            )
+                        db.update_current_online_count_by_player_id(
+                            player_id=player["id"],
+                            online_count=online_count,
+                        )
                 except Exception as e:
                     exc_type, exc_obj, exc_tb = sys.exc_info()
                     logging.error("Stream check failed for " + player["username"] + ",: " + str(e) + ", line: " + str(exc_tb.tb_lineno))
