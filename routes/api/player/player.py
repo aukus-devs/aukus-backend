@@ -101,6 +101,7 @@ def get_players():
             "donation_link": player["donation_link"],
             "stream_last_category": player["player_stream_current_category"],
             "is_online": bool(player["player_is_online"]),
+            "online_count": int(player["online_count"]),
             "current_game": player["player_current_game"],
             "url_handle": player["player_url_handle"],
             "map_position": last_cell,

@@ -622,6 +622,13 @@ class DatabaseClient:
                 (game, datetime.datetime.utcnow(), player_id),
             )
 
+    def update_current_online_count_by_player_id(self, player_id, online_count):
+        with closing(self.conn().cursor()) as cursor:
+            cursor.execute(
+                "UPDATE users SET online_count = %s WHERE id = %s",
+                (online_count, player_id),
+            )
+
     def get_player_files_by_player_id(self, player_id):
         sql = """
             SELECT id, rotation, x, y, url, width, height, zIndex, scaleX, scaleY
@@ -658,34 +665,34 @@ class DatabaseClient:
                 (player_id, width, height, x, y, rotation, url),
             )
 
-    def update_stream_status(self, player_id, is_online, category=None):
+    def update_stream_status(self, player_id, is_online, online_count:int = 0, category=None):
         """Обновить поля player_is_online и player_stream_current_category в таблице users"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 """
                 UPDATE users
-                SET player_is_online = %s
+                SET player_is_online = %s, online_count = %s
                 WHERE id = %s
             """,
-                (is_online, player_id),
+                (is_online, online_count, player_id),
             )
             if category is not None:
                 cursor.execute(
                     """
                     UPDATE users
-                    SET player_stream_current_category = %s
+                    SET player_stream_current_category = %s, online_count = %s
                     WHERE id = %s
                 """,
-                    (category, player_id),
+                    (category, online_count, player_id),
                 )
                 cursor.execute(
-                    "INSERT INTO categories_history (category_name, player_id) VALUES (%s, %s)",
-                    (category, player_id,),
+                    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s)",
+                    (category, online_count, player_id,),
                 )
             else:
                 cursor.execute(
-                    "INSERT INTO categories_history (category_name, player_id) VALUES (%s, %s)",
-                    ("Offline", player_id,),
+                    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s)",
+                    ("Offline", online_count, player_id,),
                 )
 
     def update_player_pointauc_token(self, player_id: int, token: str):

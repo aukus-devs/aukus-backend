@@ -48,7 +48,13 @@ def refresh_stream_statuses():
                         db.update_stream_status(
                             player_id=player["id"],
                             is_online=True,
+                            online_count=int(stream["viewer_count"]),
                             category=stream["game_name"],
+                        )
+                    if player["player_is_online"] == True:
+                        db.update_current_online_count_by_player_id(
+                            player_id=player["id"],
+                            online_count=int(stream["viewer_count"]),
                         )
                 else:
                     if player["player_is_online"] == True:  # is online in DB?
@@ -67,7 +73,11 @@ def refresh_stream_statuses():
                 category_xpath = content.xpath(
                     "/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[2]/div[1]/div/a"
                 )
+                online_count_xpath = content.xpath(
+                    "/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[1]/div[2]/div[2]/div[2]/div[2]/div"
+                )
                 if len(category_xpath) != 0 and "StreamStatus_text" in vkplay_page.text:
+                    online_count = int(online_count_xpath[0].text)
                     if (
                         category_xpath[0].text
                         != player["player_stream_current_category"]
@@ -76,7 +86,13 @@ def refresh_stream_statuses():
                         db.update_stream_status(
                             player_id=player["id"],
                             is_online=True,
+                            online_count=online_count,
                             category=category_xpath[0].text,
+                        )
+                    if player["player_is_online"] == True:
+                        db.update_current_online_count_by_player_id(
+                            player_id=player["id"],
+                            online_count=online_count,
                         )
                 else:
                     if player["player_is_online"] == True:  # is online in DB?
@@ -102,12 +118,19 @@ def refresh_stream_statuses():
                     else:
                         content = content["livestream"]
                         is_online = content["is_live"]
+                        online_count = int(content["viewer_count"])
                         category = content["categories"][0]["name"]
                         if category != player["player_stream_current_category"] or player["player_is_online"] != is_online:
                             db.update_stream_status(
                                 player_id=player["id"],
                                 is_online=is_online,
+                                online_count=online_count,
                                 category=category,
+                            )
+                        if player["player_is_online"] == True:
+                            db.update_current_online_count_by_player_id(
+                                player_id=player["id"],
+                                online_count=online_count,
                             )
                 except Exception as e:
                     exc_type, exc_obj, exc_tb = sys.exc_info()
