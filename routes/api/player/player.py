@@ -349,6 +349,7 @@ def reset_pointauc_token():
 @player_bp.route("/api/point_auc/result", methods=["POST"])
 def pointauc_result_callback():
     data = request.get_json() or {}
+    logging.info(str(data))
     require_fields = ["token", "winner_title"]
     for field in require_fields:
         if field not in request.json:
