@@ -87,10 +87,14 @@ class GamesDatabaseClient:
     def search_games_igdb(self, title: str):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                """SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) LIKE %s
-                   ORDER BY
-                       LENGTH(gameName) ASC
-                   LIMIT 50
+                """
+                    SELECT g.gameName, g.box_art_url, g.release_year, g.game_id
+                    FROM igdb_games g
+                    JOIN game_platforms gp ON g.id = gp.game_id
+                    WHERE gp.platform_id = 6
+                    AND LOWER(g.gameName) LIKE %s
+                    ORDER BY LENGTH(g.gameName) ASC
+                    LIMIT 20;
                 """,
                 ("%" + title.lower() + "%",),
             )
@@ -99,12 +103,20 @@ class GamesDatabaseClient:
     def search_games_multiple_igdb(self, titles: list[str]):
         if not titles:
             return []
-        placeholders = ", ".join(["%s"] * len(titles))
-        titles_lower = [title.lower() for title in titles]
+        results = []
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(
-                f"SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) IN ({placeholders})",
-                titles_lower,
-            )
-            return cursor.fetchall()
+            for title in titles:
+                cursor.execute(
+                    """
+                        SELECT g.gameName, g.box_art_url, g.release_year, g.game_id
+                        FROM igdb_games g
+                        JOIN game_platforms gp ON g.id = gp.game_id
+                        WHERE gp.platform_id = 6 AND g.gameName = %s
+                        ORDER BY LENGTH(g.gameName) ASC
+                        LIMIT 1;
+                    """,
+                    (title.lower(),)
+                )
+                results.extend(cursor.fetchall())
+        return results
 
