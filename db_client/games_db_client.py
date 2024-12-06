@@ -87,7 +87,9 @@ class GamesDatabaseClient:
     def search_games_igdb(self, title: str):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                "SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) LIKE %s",
+                """SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) LIKE %s
+                  ORDER BY
+                      LENGTH(gameName) ASC""",
                 ("%" + title.lower() + "%",),
             )
             return cursor.fetchall()

@@ -366,6 +366,7 @@ def pointauc_result_callback():
 @player_bp.route("/api/point_auc/timer_started", methods=["POST"])
 def pointauc_timer_callback():
     data = request.get_json() or {}
+    logging.info(str(data))
     require_fields = ["token"]
     for field in require_fields:
         if field not in request.json:
