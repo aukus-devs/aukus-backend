@@ -164,3 +164,4 @@ cython_debug/
 /aukus.db
 static/
 flask_session/
+igdb_cache.sqlite
