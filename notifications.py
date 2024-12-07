@@ -20,7 +20,7 @@ def on_player_move(player, dice_roll, cell_from, cell_to, move_type, item_title,
     if len(image_url) == 0:
         image_url = "https://aukus.fun/uploads/splash.jpg"
     username =  str(player["username"])
-    turn_description = ""
+    turn_description = move_type
     if move_type == "completed":
         turn_description = "Прошёл"
     if move_type == "drop":
