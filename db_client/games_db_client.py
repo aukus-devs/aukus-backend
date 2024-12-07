@@ -46,34 +46,6 @@ class GamesDatabaseClient:
             self.connection = MySQLdb.connect(**MYSQLCONF)
             return self.connection
 
-    def search_games(self, title: str):
-        with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(
-                "SELECT * FROM game WHERE LOWER(gameName) LIKE %s",
-                ("%" + title.lower() + "%",),
-            )
-            return cursor.fetchall()
-
-    def search_games_multiple(self, titles: list[str]):
-        if not titles:
-            return []
-        placeholders = ", ".join(["%s"] * len(titles))
-        titles_lower = [title.lower() for title in titles]
-        with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(
-                f"SELECT * FROM game WHERE LOWER(gameName) IN ({placeholders})",
-                titles_lower,
-            )
-            return cursor.fetchall()
-
-    def get_wrong_platforms(self):
-        with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(
-                "SELECT * FROM wrong_platforms",
-                (),
-            )
-            return cursor.fetchall()
-
     def insert_to_IGDB(self, game_id, name, cover_url, release_year, platforms):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
@@ -93,10 +65,15 @@ class GamesDatabaseClient:
                     JOIN game_platforms gp ON g.id = gp.game_id
                     WHERE gp.platform_id = 6
                     AND LOWER(g.gameName) LIKE %s
-                    ORDER BY LENGTH(g.gameName) ASC
+                    ORDER BY
+                        CASE
+                            WHEN LOWER(g.gameName) LIKE %s THEN 0
+                            ELSE 1
+                        END,
+                        LENGTH(g.gameName) ASC
                     LIMIT 20;
                 """,
-                ("%" + title.lower() + "%",),
+                ("%" + title.lower() + "%", title.lower() + "%",),
             )
             return cursor.fetchall()
 
