@@ -636,7 +636,7 @@ class DatabaseClient:
                 (datetime.datetime.utcnow(), player_id),
             )
 
-def get_player_files_by_player_id(self, player_id):
+    def get_player_files_by_player_id(self, player_id):
         sql = """
             SELECT id, rotation, x, y, url, width, height, zIndex, scaleX, scaleY
             FROM PlayerFiles

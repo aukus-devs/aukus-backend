@@ -103,6 +103,7 @@ def get_players():
             "online_count": int(player["online_count"]),
             "current_game": player["player_current_game"],
             "current_auction_total_sum": player["current_auction_total_sum"],
+            "auction_timer_started_at": player["auction_timer_started_at"],
             "url_handle": player["player_url_handle"],
             "map_position": last_cell,
             "first_name": player["name"],
