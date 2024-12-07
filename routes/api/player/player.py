@@ -367,10 +367,15 @@ def pointauc_result_callback():
     user_info = db.get_user_by_token(data["token"])
     if not user_info:
         return jsonify({"error": "Invalid token"}), 400
-    if "auc_value" in data:
-         db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"], data["auc_value"])
+    if "auc_value" in data and "lots_count" in data:
+        try:
+            if int(data["lots_count"]) > 2:
+                db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"], data["auc_value"])
+        except Exception as e:
+            db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"])
+            logger.error("Error update_last_auction_result_by_player_id " + str(e))
     else:
-         db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"])
+        db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"])
     return jsonify({"message": "updated successfully"})
 
 
