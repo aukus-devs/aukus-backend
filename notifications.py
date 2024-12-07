@@ -33,7 +33,7 @@ def on_player_move(player, dice_roll, cell_from, cell_to, move_type, item_title,
         turn_description = "Шейх-момент"
     try:
         #send to TG
-        message = '👉 <b>' + str(player["username"]) + '</b>\n🎲 Ролл кубика: <b>' + str(dice_roll)  + '</b>, ход на карте: <b>'  + str(cell_from)  + '</b>-><b>'  + str(cell_to)  + '</b>\n❔ Тип хода: <b>'  + turn_description + '</b>\n🎮 Название: <b>'  + item_title  + '</b>\n⭐ ️Оценка: <b>' + str(item_rating) + '/10\n✍️ Отзыв: ' + item_review + '</b>'
+        message = '👉 <b>' + str(player["username"]) + '</b>\n🎲 Ролл кубика: <b>' + str(dice_roll)  + '</b>, ход на карте: <b>'  + str(cell_from)  + '</b>-><b>'  + str(cell_to)  + '</b>\n❔ Тип хода: <b>'  + turn_description + '</b>\n🎮 Название: <b>'  + item_title  + '</b>\n⭐ ️Оценка: <b>' + str(item_rating) + '/10</b>\n✍️ Отзыв: <b>' + item_review + '</b>'
         response = requests.get('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto?chat_id=-1002372388698&caption=' + message + '&reply_markup={"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}&parse_mode=html&photo='+ image_url, timeout=2)
         #logging.info("TG response: " + response.text)
     except Exception as e:
@@ -46,7 +46,7 @@ def on_player_move(player, dice_roll, cell_from, cell_to, move_type, item_title,
             'https' : AUKUS_SOCKS5_PROXY,
         }
         url = MOVES_DISCORD_WEBHOOK
-        description = '🎲 Ролл кубика: **' + str(dice_roll)  + '**, ход на карте: **'  + str(cell_from)  + '**->**'  + str(cell_to)  + '**\n❔ Тип хода: **'  + turn_description + '**\n 🎮Название: **'  + item_title  + '**\n⭐ ️Оценка: **' + str(item_rating) + '/10\n✍ ️Отзыв: ' + item_review + '**'
+        description = '🎲 Ролл кубика: **' + str(dice_roll)  + '**, ход на карте: **'  + str(cell_from)  + '**->**'  + str(cell_to)  + '**\n❔ Тип хода: **'  + turn_description + '**\n 🎮Название: **'  + item_title  + '**\n⭐ ️Оценка: **' + str(item_rating) + '/10**\n✍ ️Отзыв: **' + item_review + '**'
         payload = json.dumps({
             "content": "Новый ход!",
             "embeds": [
