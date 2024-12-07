@@ -379,8 +379,9 @@ def pointauc_timer_callback():
     if not user_info:
         return jsonify({"error": "Invalid token"}), 400
 
-    #db.update_current_game_by_player_id(user_info["id"], data["winner_title"])
+    db.update_last_auction_date_by_player_id(user_info["id"])
     return jsonify({"message": "updated successfully"})
+
 
 @player_bp.route("/api/player_current_game", methods=["POST"])
 @login_required

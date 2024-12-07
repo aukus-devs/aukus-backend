@@ -629,7 +629,14 @@ class DatabaseClient:
                 (online_count, player_id),
             )
 
-    def get_player_files_by_player_id(self, player_id):
+    def update_last_auction_date_by_player_id(self, player_id):
+        with closing(self.conn().cursor()) as cursor:
+            cursor.execute(
+                "UPDATE users SET auction_timer_started_at = %s WHERE id = %s",
+                (datetime.datetime.utcnow(), player_id),
+            )
+
+def get_player_files_by_player_id(self, player_id):
         sql = """
             SELECT id, rotation, x, y, url, width, height, zIndex, scaleX, scaleY
             FROM PlayerFiles
