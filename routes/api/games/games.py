@@ -29,8 +29,6 @@ def search_games():
         return jsonify({"error": f"Missing required field: title"}), 400
     title = args["title"][0].lower()
     games = games_db.search_games_igdb(title)
-    if len(games) == 0:
-        games = games_db.search_games(title)
     return jsonify({"games": games})
 
 

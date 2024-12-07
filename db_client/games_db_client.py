@@ -68,44 +68,40 @@ class GamesDatabaseClient:
     def search_games_igdb(self, title: str):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                "SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) LIKE %s",
-                ("%" + title.lower() + "%",),
+                """
+                    SELECT g.gameName, g.box_art_url, g.release_year, g.game_id
+                    FROM igdb_games g
+                    JOIN game_platforms gp ON g.id = gp.game_id
+                    WHERE gp.platform_id = 6
+                    AND LOWER(g.gameName) LIKE %s
+                    ORDER BY
+                        CASE
+                            WHEN LOWER(g.gameName) LIKE %s THEN 0
+                            ELSE 1
+                        END,
+                        LENGTH(g.gameName) ASC
+                    LIMIT 20;
+                """,
+                ("%" + title.lower() + "%", title.lower() + "%",),
             )
             return cursor.fetchall()
 
     def search_games_multiple_igdb(self, titles: list[str]):
         if not titles:
             return []
-        placeholders = ", ".join(["%s"] * len(titles))
-        titles_lower = [title.lower() for title in titles]
+        results = []
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(
-                f"SELECT * FROM igdb_games WHERE JSON_CONTAINS(platforms, '[6]') AND LOWER(gameName) IN ({placeholders})",
-                titles_lower,
-            )
-            return cursor.fetchall()
-
-    def get_wrong_platforms(self):
-        with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(
-                "SELECT * FROM wrong_platforms",
-                (),
-            )
-            return cursor.fetchall()
-
-    def search_games_igdb(self, title: str, year: int = None, player_id: int = None):
-        with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(
-                f"SELECT * FROM igdb_games WHERE LOWER(name) = %s",
-                title.lower(),
-            )
-            return cursor.fetchall()
-
-    def add_game_to_igdb(self, title: str, image: str = None, year: int = None, player_id: int = None):
-        with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(
-                f"SELECT * FROM igdb_games WHERE LOWER(name) = %s",
-                title.lower(),
-            )
-            return cursor.fetchall()
-
+            for title in titles:
+                cursor.execute(
+                    """
+                        SELECT g.gameName, g.box_art_url, g.release_year, g.game_id
+                        FROM igdb_games g
+                        JOIN game_platforms gp ON g.id = gp.game_id
+                        WHERE gp.platform_id = 6 AND g.gameName = %s
+                        ORDER BY LENGTH(g.gameName) ASC
+                        LIMIT 1;
+                    """,
+                    (title.lower(),)
+                )
+                results.extend(cursor.fetchall())
+        return results
