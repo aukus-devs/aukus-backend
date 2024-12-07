@@ -351,7 +351,7 @@ def reset_pointauc_token():
 def pointauc_result_callback():
     data = request.get_json() or {}
     logging.info(str(data))
-    require_fields = ["token", "winner_title", "auc_value", "winner_value", "lots_count"]
+    require_fields = ["token"]
     for field in require_fields:
         if field not in request.json:
             return jsonify({"error": f"{field} is required"}), 400
@@ -359,8 +359,10 @@ def pointauc_result_callback():
     user_info = db.get_user_by_token(data["token"])
     if not user_info:
         return jsonify({"error": "Invalid token"}), 400
-
-    db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"], data["auc_value"])
+    if "auc_value" in data:
+         db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"], data["auc_value"])
+    else:
+         db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"])
     return jsonify({"message": "updated successfully"})
 
 
