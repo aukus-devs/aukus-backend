@@ -17,7 +17,6 @@ scheduler = BackgroundScheduler()
 db = DatabaseClient()
 games_db = GamesDatabaseClient()
 load_dotenv()
-IGDB_CLIENT_ID = os.getenv("IGDB_CLIENT_ID")
 scheduler.start()
 
 def login_required(f):

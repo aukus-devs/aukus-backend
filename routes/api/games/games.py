@@ -1,6 +1,5 @@
 from functools import wraps
 from flask import Blueprint, request, jsonify, session
-from db_client.db_client import DatabaseClient
 from db_client.games_db_client import GamesDatabaseClient
 from datetime import date
 import secrets
@@ -12,10 +11,8 @@ import logging
 import urllib.parse
 
 games_bp = Blueprint("games", __name__)
-db = DatabaseClient()
 games_db = GamesDatabaseClient()
 load_dotenv()
-IGDB_CLIENT_ID = os.getenv("IGDB_CLIENT_ID")
 
 @games_bp.route("/api/games", methods=["GET"])
 def search_games():
