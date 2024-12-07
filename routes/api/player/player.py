@@ -351,7 +351,7 @@ def reset_pointauc_token():
 def pointauc_result_callback():
     data = request.get_json() or {}
     logging.info(str(data))
-    require_fields = ["token"]
+    require_fields = ["token", "winner_title"]
     for field in require_fields:
         if field not in request.json:
             return jsonify({"error": f"{field} is required"}), 400
