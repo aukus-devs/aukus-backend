@@ -294,7 +294,7 @@ def reset_stats():
 def get_moves():
     player_id = request.args.get("player_id")
     date_param = request.args.get("date")
-    limit = min(int(request.args.get("limit", 10)), 50)
+    limit = min(int(request.args.get("limit", 10)), 200)
     last_move = None
     if player_id:
         moves = db.get_moves_by_player(player_id=player_id)
