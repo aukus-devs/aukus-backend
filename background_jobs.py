@@ -76,7 +76,7 @@ def refresh_stream_statuses():
                     "/html/body/div[1]/div/div[2]/div[2]/div/div[3]/div[1]/div[1]/div/div[1]/div[2]/div[2]/div[2]/div[2]/div"
                 )
                 if len(category_xpath) != 0 and "StreamStatus_text" in vkplay_page.text:
-                    online_count = int(online_count_xpath[0].text)
+                    online_count = int(online_count_xpath[0].text.replace(",",""))
                     if (
                         category_xpath[0].text
                         != player["player_stream_current_category"]
