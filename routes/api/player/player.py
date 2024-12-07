@@ -360,8 +360,21 @@ def pointauc_result_callback():
     user_info = db.get_user_by_token(data["token"])
     if not user_info:
         return jsonify({"error": "Invalid token"}), 400
-
-    db.update_current_game_by_player_id(user_info["id"], data["winner_title"])
+    if "auc_value" in data and "lots_count" in data:
+        try:
+            if int(data["lots_count"]) > 2:
+                db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"], data["auc_value"])
+                try:
+                    scheduler.add_job(
+                        notifications.on_pointauc_result, args=[user_info["username"], data["winner_title"]]
+                    )
+                except Exception as e:
+                    logging.error("Error send notification on pointauc result: " + str(e))
+        except Exception as e:
+            db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"])
+            logger.error("Error update_last_auction_result_by_player_id " + str(e))
+    else:
+        db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"])
     return jsonify({"message": "updated successfully"})
 
 
