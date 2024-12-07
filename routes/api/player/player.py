@@ -4,7 +4,6 @@ from flask import Blueprint, request, jsonify, session
 from db_client.db_client import DatabaseClient
 from datetime import date
 import secrets
-from requests_cache import CachedSession
 from datetime import timedelta
 import json
 import os
