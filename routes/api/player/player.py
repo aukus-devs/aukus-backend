@@ -5,17 +5,21 @@ from db_client.db_client import DatabaseClient
 from datetime import date
 import secrets
 from datetime import timedelta
+from apscheduler.schedulers.background import BackgroundScheduler
 import json
 import os
 from dotenv import load_dotenv
 import logging
+import notifications
 
 player_bp = Blueprint("player", __name__)
+scheduler = BackgroundScheduler()
 db = DatabaseClient()
 games_db = GamesDatabaseClient()
 load_dotenv()
 IGDB_CLIENT_ID = os.getenv("IGDB_CLIENT_ID")
 igdb_session = CachedSession("igdb_cache", expire_after=timedelta(days=25), allowable_methods=['GET', 'POST'])
+scheduler.start()
 
 def login_required(f):
     @wraps(f)
@@ -170,6 +174,12 @@ def add_player_move():
             item_length=item_length,
         )
         db.update_last_auction_result_by_player_id(player_id, None, None)
+        try:
+            scheduler.add_job(
+                notifications.on_player_move, args=[db.get_user_by_id(player_id), dice_roll, cell_from, cell_to, move_type, item_title, item_review, item_rating]
+            )
+        except Exception as e:
+            logging.error("Error send notification on player move: " + str(e))
         return jsonify(
             {"message": "Player move added and position updated successfully"}
         ), 201
