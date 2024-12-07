@@ -87,7 +87,7 @@ def on_pointauc_result(username, title):
         url = MOVES_DISCORD_WEBHOOK
         description = '🎲 Выпало на ауке: **' + str(title)  + '**'
         payload = json.dumps({
-            "content": "Выпал новый лот на аука!",
+            "content": "Выпал новый лот на ауке!",
             "embeds": [
             {
                 "title": '👉 **' + username + "**",
