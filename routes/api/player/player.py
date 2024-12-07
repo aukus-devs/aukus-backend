@@ -371,6 +371,12 @@ def pointauc_result_callback():
         try:
             if int(data["lots_count"]) > 2:
                 db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"], data["auc_value"])
+                try:
+                    scheduler.add_job(
+                        notifications.on_pointauc_result, args=[user_info["username"], data["winner_title"]]
+                    )
+                except Exception as e:
+                    logging.error("Error send notification on pointauc result: " + str(e))
         except Exception as e:
             db.update_last_auction_result_by_player_id(user_info["id"], data["winner_title"])
             logger.error("Error update_last_auction_result_by_player_id " + str(e))

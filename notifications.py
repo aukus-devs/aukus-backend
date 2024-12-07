@@ -67,3 +67,42 @@ def on_player_move(player, dice_roll, cell_from, cell_to, move_type, item_title,
         #logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send on new move to Discord: " + str(e))
+
+
+def on_pointauc_result(username, title):
+    try:
+        #send to TG
+        message = '👉 <b>' + username + '</b>\n🎲 Выпало на ауке: <b>' + str(title)  + '</b>'
+        response = requests.get('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto?chat_id=-1002372388698&caption=' + message + '&reply_markup={"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}&parse_mode=html&photo=https://aukus.fun/uploads/splash.jpg', timeout=2)
+        #logging.info("TG response: " + response.text)
+    except Exception as e:
+        logging.error("Error send pointauc result to TG: " + str(e))
+
+    try:
+        #send to Discord
+        proxies = {
+            'http' : AUKUS_SOCKS5_PROXY,
+            'https' : AUKUS_SOCKS5_PROXY,
+        }
+        url = MOVES_DISCORD_WEBHOOK
+        description = '🎲 Выпало на ауке: **' + str(title)  + '**'
+        payload = json.dumps({
+            "content": "Выпал новый лот выпал на ауке!",
+            "embeds": [
+            {
+                "title": '👉 **' + username + "**",
+                "url": "https://aukus.fun",
+                "description": description,
+                "image": {
+                    "url": "https://aukus.fun/uploads/splash.jpg"
+                }
+            }
+         ]
+        })
+        headers = {
+           'Content-Type': 'application/json',
+        }
+        response = requests.post(url, data=payload, timeout=2, proxies=proxies, headers=headers)
+        #logging.info("Discord response: " + response.text)
+    except Exception as e:
+        logging.error("Error send pointauc result to Discord: " + str(e))
