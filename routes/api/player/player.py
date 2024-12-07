@@ -18,7 +18,6 @@ db = DatabaseClient()
 games_db = GamesDatabaseClient()
 load_dotenv()
 IGDB_CLIENT_ID = os.getenv("IGDB_CLIENT_ID")
-igdb_session = CachedSession("igdb_cache", expire_after=timedelta(days=25), allowable_methods=['GET', 'POST'])
 scheduler.start()
 
 def login_required(f):
