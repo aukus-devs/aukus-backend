@@ -92,7 +92,7 @@ def get_players():
         if player["player_current_game"]:
             image = games_images_by_name.get(player["player_current_game"].lower())
         current_game_duration = None
-        if player["player_current_game"] != None and player["player_current_game"] != None:
+        if player["player_current_game"] != None:
             current_game_duration = db.calculate_time_by_category_name(player["player_current_game"], player["id"])["total_difference_in_seconds"]
         if current_game_duration is None:
             current_game_duration = 0
