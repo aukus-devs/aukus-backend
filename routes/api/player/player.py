@@ -399,6 +399,12 @@ def pointauc_timer_callback():
         return jsonify({"error": "Invalid token"}), 400
 
     db.update_last_auction_date_by_player_id(user_info["id"])
+    try:
+        scheduler.add_job(
+            notifications.on_pointauc_timer_started, args=[user_info["username"]]
+        )
+    except Exception as e:
+        logging.error("Error send notification on pointauc started: " + str(e))
     return jsonify({"message": "updated successfully"})
 
 
