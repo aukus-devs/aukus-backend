@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify, session
 from db_client.db_client import DatabaseClient
 from datetime import date
 import secrets
-from datetime import timedelta
+from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import json
 import os
@@ -398,13 +398,29 @@ def pointauc_timer_callback():
     if not user_info:
         return jsonify({"error": "Invalid token"}), 400
 
-    db.update_last_auction_date_by_player_id(user_info["id"])
-    try:
-        scheduler.add_job(
-            notifications.on_pointauc_timer_started, args=[user_info["username"]]
-        )
-    except Exception as e:
-        logging.error("Error send notification on pointauc started: " + str(e))
+    current_auc_timer_started_at = user_info["auction_timer_started_at"]
+    if current_auc_timer_started_at is None:
+        db.update_last_auction_date_by_player_id(user_info["id"])
+
+        try:
+            scheduler.add_job(
+                notifications.on_pointauc_timer_started, args=[user_info["username"]]
+            )
+        except Exception as e:
+            logging.error("Error send notification on pointauc started, current time is None: " + str(e))
+    else:
+        current_utc_time = datetime.utcnow()
+        time_difference = current_utc_time - current_auc_timer_started_at
+        if time_difference >= timedelta(minutes=80): # drop game time + auction default time
+            db.update_last_auction_date_by_player_id(user_info["id"])
+
+            try:
+                scheduler.add_job(
+                    notifications.on_pointauc_timer_started, args=[user_info["username"]]
+                )
+            except Exception as e:
+                logging.error("Error send notification on pointauc started: " + str(e))
+
     return jsonify({"message": "updated successfully"})
 
 
