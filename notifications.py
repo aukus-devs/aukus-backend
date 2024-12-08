@@ -41,7 +41,7 @@ def on_player_move(player, dice_roll, cell_from, cell_to, move_type, item_title,
             "parse_mode": "html",
             "photo": image_url,
         }
-        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=3)
+        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=30)
         #logging.info("TG response: " + response.text)
     except Exception as e:
         logging.error("Error send on new move to TG: " + str(e))
@@ -70,7 +70,7 @@ def on_player_move(player, dice_roll, cell_from, cell_to, move_type, item_title,
         headers = {
            'Content-Type': 'application/json',
         }
-        response = requests.post(url, data=payload, timeout=3, proxies=proxies, headers=headers)
+        response = requests.post(url, data=payload, timeout=30, proxies=proxies, headers=headers)
         #logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send on new move to Discord: " + str(e))
@@ -87,7 +87,7 @@ def on_pointauc_result(username, title):
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
         }
-        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=3)
+        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=30)
         #logging.info("TG response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc result to TG: " + str(e))
@@ -116,7 +116,7 @@ def on_pointauc_result(username, title):
         headers = {
            'Content-Type': 'application/json',
         }
-        response = requests.post(url, data=payload, timeout=3, proxies=proxies, headers=headers)
+        response = requests.post(url, data=payload, timeout=30, proxies=proxies, headers=headers)
         #logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc result to Discord: " + str(e))
@@ -133,7 +133,7 @@ def on_pointauc_timer_started(username):
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
         }
-        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=3)
+        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=30)
         #logging.info("TG response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc started to TG: " + str(e))
@@ -162,7 +162,7 @@ def on_pointauc_timer_started(username):
         headers = {
            'Content-Type': 'application/json',
         }
-        response = requests.post(url, data=payload, timeout=3, proxies=proxies, headers=headers)
+        response = requests.post(url, data=payload, timeout=30, proxies=proxies, headers=headers)
         #logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc started to Discord: " + str(e))
