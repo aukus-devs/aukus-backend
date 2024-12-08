@@ -170,7 +170,7 @@ def on_pointauc_result(username, title):
 def on_pointauc_timer_started(username):
     try:
         # send to TG
-        message = "👉 <b>" + username + "</b>\n⚡️ <b>Начал аукцион!</b>"
+        message = "⚡<b>" + username + "</b>\n <b>Начал аукцион!</b>"
         message_data = {
             "caption": message,
             "reply_markup":
@@ -200,7 +200,7 @@ def on_pointauc_timer_started(username):
             "content":
             "Новый аукцион!",
             "embeds": [{
-                "title": "👉 **" + username + "**",
+                "title": "⚡ **" + username + "**",
                 "url": "https://aukus.fun",
                 "description": description,
                 "image": {
