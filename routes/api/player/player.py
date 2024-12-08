@@ -91,6 +91,11 @@ def get_players():
         image = None
         if player["player_current_game"]:
             image = games_images_by_name.get(player["player_current_game"].lower())
+        current_game_duration = None
+        if player["player_current_game"] != None and player["player_current_game"] != None:
+            current_game_duration = db.calculate_time_by_category_name(player["player_current_game"], player["id"])["total_difference_in_seconds"]
+        if current_game_duration is None:
+            current_game_duration = 0
 
         player_info = {
             "id": player["id"],
@@ -103,6 +108,7 @@ def get_players():
             "is_online": bool(player["player_is_online"]),
             "online_count": int(player["online_count"]),
             "current_game": player["player_current_game"],
+            "current_game_duration": current_game_duration,
             "current_auction_total_sum": player["current_auction_total_sum"],
             "auction_timer_started_at": player["auction_timer_started_at"],
             "url_handle": player["player_url_handle"],
