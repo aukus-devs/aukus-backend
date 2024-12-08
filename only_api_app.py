@@ -39,9 +39,15 @@ def after_request(response):
     if "username" not in session:
         return response
     audit_logger = logging.getLogger('inbound_requests')
+    request_data = ""
+    try:
+        request_data = str(request.data)
+    except Exception as e:
+        logging.error("@app.after_request error converting data: " + str(e))
     audit_logger.info({
             "datetime": datetime.now().isoformat(),
             "user_name": session["username"],
+            "request": request_data,
             "method": request.method,
             "request_url": request.path,
             "ip": request.headers.get("X-Forwarded-For", ""),
