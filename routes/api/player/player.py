@@ -179,8 +179,9 @@ def add_player_move():
         )
         db.update_last_auction_result_by_player_id(player_id, None, None)
         try:
+            category_time_duration = db.calculate_time_by_category_name(item_title, player_id)["total_difference_in_seconds"]
             scheduler.add_job(
-                notifications.on_player_move, args=[db.get_user_by_id(player_id), dice_roll, cell_from, cell_to, move_type, item_title, item_review, item_rating]
+                notifications.on_player_move, args=[db.get_user_by_id(player_id)["username"], dice_roll, cell_from, cell_to, move_type, item_title, item_review, item_rating, category_time_duration]
             )
         except Exception as e:
             logging.error("Error send notification on player move: " + str(e))
