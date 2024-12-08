@@ -14,6 +14,7 @@ games_bp = Blueprint("games", __name__)
 games_db = GamesDatabaseClient()
 load_dotenv()
 
+
 @games_bp.route("/api/games", methods=["GET"])
 def search_games():
     raw_query_string = request.query_string.decode()

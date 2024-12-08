@@ -7,7 +7,6 @@ import sys
 from dotenv import load_dotenv
 from contextlib import closing
 
-
 load_dotenv()
 MYSQL_LOGIN = os.getenv("MYSQL_LOGIN")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
@@ -23,6 +22,7 @@ MYSQLCONF = {
 
 
 class GamesDatabaseClient:
+
     def __init__(self):
         self.connection = MySQLdb.connect(**MYSQLCONF)
 
@@ -46,7 +46,8 @@ class GamesDatabaseClient:
             self.connection = MySQLdb.connect(**MYSQLCONF)
             return self.connection
 
-    def insert_to_IGDB(self, game_id, name, cover_url, release_year, platforms):
+    def insert_to_IGDB(self, game_id, name, cover_url, release_year,
+                       platforms):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 """
@@ -73,7 +74,10 @@ class GamesDatabaseClient:
                         LENGTH(g.gameName) ASC
                     LIMIT 20;
                 """,
-                ("%" + title.lower() + "%", title.lower() + "%",),
+                (
+                    "%" + title.lower() + "%",
+                    title.lower() + "%",
+                ),
             )
             return cursor.fetchall()
 
@@ -91,9 +95,6 @@ class GamesDatabaseClient:
                         WHERE gp.platform_id = 6 AND g.gameName = %s
                         ORDER BY LENGTH(g.gameName) ASC
                         LIMIT 1;
-                    """,
-                    (title.lower(),)
-                )
+                    """, (title.lower(), ))
                 results.extend(cursor.fetchall())
         return results
-

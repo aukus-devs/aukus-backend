@@ -21,9 +21,13 @@ def refresh_stream_statuses():
         )
     except Exception as e:
         logging.error("Stream check failed for " + ",: " + str(e))
+
+
 #        db.update_stream_status(player_id=player["id"], is_online=False)
 
 db = DatabaseClient()
 #print(db.calculate_time_by_category_name("tes2t", 1))
-print(db.calculate_time_by_category_name("test", 1)["total_difference_in_seconds"])
+print(
+    db.calculate_time_by_category_name("test",
+                                       1)["total_difference_in_seconds"])
 refresh_stream_statuses()

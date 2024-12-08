@@ -8,8 +8,7 @@ from routes.api.canvas.canvas import canvas_bp
 from routes.api.games.games import games_bp
 import config
 
-
-logging.basicConfig(level = logging.INFO)
+logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 
@@ -45,14 +44,14 @@ def after_request(response):
     except Exception as e:
         logging.error("@app.after_request error converting data: " + str(e))
     audit_logger.info({
-            "datetime": datetime.now().isoformat(),
-            "user_name": session["username"],
-            "request": request_data,
-            "method": request.method,
-            "request_url": request.path,
-            "ip": request.headers.get("X-Forwarded-For", ""),
-            "response_status": response.status
-        })
+        "datetime": datetime.now().isoformat(),
+        "user_name": session["username"],
+        "request": request_data,
+        "method": request.method,
+        "request_url": request.path,
+        "ip": request.headers.get("X-Forwarded-For", ""),
+        "response_status": response.status
+    })
     return response
 
 
