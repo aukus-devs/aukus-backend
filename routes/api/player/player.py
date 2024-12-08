@@ -111,7 +111,7 @@ def get_players():
             "is_online": bool(player["player_is_online"]),
             "online_count": int(player["online_count"]),
             "current_game": player["player_current_game"],
-            "current_game_duration": current_game_duration,
+            "current_game_duration": int(current_game_duration),
             "current_auction_total_sum": player["current_auction_total_sum"],
             "auction_timer_started_at": player["auction_timer_started_at"],
             "url_handle": player["player_url_handle"],
