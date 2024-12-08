@@ -34,7 +34,14 @@ def on_player_move(player, dice_roll, cell_from, cell_to, move_type, item_title,
     try:
         #send to TG
         message = '👉 <b>' + str(player["username"]) + '</b>\n🎲 Ролл кубика: <b>' + str(dice_roll)  + '</b>, ход на карте: <b>'  + str(cell_from)  + '</b>-><b>'  + str(cell_to)  + '</b>\n❔ Тип хода: <b>'  + turn_description + '</b>\n🎮 Название: <b>'  + item_title  + '</b>\n⭐ ️Оценка: <b>' + str(item_rating) + '/10</b>\n✍️ Отзыв: <b>' + item_review + '</b>'
-        response = requests.get('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto?chat_id=-1002372388698&caption=' + message + '&reply_markup={"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}&parse_mode=html&photo='+ image_url, timeout=2)
+        message_data = {
+            "caption": message,
+            "reply_markup" : '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}',
+            "chat_id": "-1002372388698",
+            "parse_mode": "html",
+            "photo": image_url,
+        }
+        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=3)
         #logging.info("TG response: " + response.text)
     except Exception as e:
         logging.error("Error send on new move to TG: " + str(e))
@@ -63,7 +70,7 @@ def on_player_move(player, dice_roll, cell_from, cell_to, move_type, item_title,
         headers = {
            'Content-Type': 'application/json',
         }
-        response = requests.post(url, data=payload, timeout=2, proxies=proxies, headers=headers)
+        response = requests.post(url, data=payload, timeout=3, proxies=proxies, headers=headers)
         #logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send on new move to Discord: " + str(e))
@@ -73,7 +80,14 @@ def on_pointauc_result(username, title):
     try:
         #send to TG
         message = '👉 <b>' + username + '</b>\n🎲 Выпало на ауке: <b>' + str(title)  + '</b>'
-        response = requests.get('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto?chat_id=-1002372388698&caption=' + message + '&reply_markup={"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}&parse_mode=html&photo=https://aukus.fun/uploads/splash.jpg', timeout=2)
+        message_data = {
+            "caption": message,
+            "reply_markup" : '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}',
+            "chat_id": "-1002372388698",
+            "parse_mode": "html",
+            "photo": "https://aukus.fun/uploads/splash.jpg",
+        }
+        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=3)
         #logging.info("TG response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc result to TG: " + str(e))
@@ -102,7 +116,7 @@ def on_pointauc_result(username, title):
         headers = {
            'Content-Type': 'application/json',
         }
-        response = requests.post(url, data=payload, timeout=2, proxies=proxies, headers=headers)
+        response = requests.post(url, data=payload, timeout=3, proxies=proxies, headers=headers)
         #logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc result to Discord: " + str(e))
@@ -112,7 +126,14 @@ def on_pointauc_timer_started(username):
     try:
         #send to TG
         message = '👉 <b>' + username + '</b>\n⚡️ <b>Начал аукцион!</b>'
-        response = requests.get('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto?chat_id=-1002372388698&caption=' + message + '&reply_markup={"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}&parse_mode=html&photo=https://aukus.fun/uploads/splash.jpg', timeout=2)
+        message_data = {
+            "caption": message,
+            "reply_markup" : '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}',
+            "chat_id": "-1002372388698",
+            "parse_mode": "html",
+            "photo": "https://aukus.fun/uploads/splash.jpg",
+        }
+        response = requests.post('https://api.telegram.org/' + AUKUS_TG_BOT_TOKEN + '/sendPhoto', data=message_data, timeout=3)
         #logging.info("TG response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc started to TG: " + str(e))
@@ -141,7 +162,7 @@ def on_pointauc_timer_started(username):
         headers = {
            'Content-Type': 'application/json',
         }
-        response = requests.post(url, data=payload, timeout=2, proxies=proxies, headers=headers)
+        response = requests.post(url, data=payload, timeout=3, proxies=proxies, headers=headers)
         #logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc started to Discord: " + str(e))
