@@ -250,7 +250,7 @@ def player_stats():
             "short_games": int(stats["short_games"]),
             "medium_games": int(stats["medium_games"]),
             "long_games": int(stats["long_games"]),
-            "average_dice_roll": stats["average_dice_roll"],
+            "average_dice_roll": float(round(stats["average_dice_roll"], 2)),
         }
         players.append(player_info)
 
