@@ -250,6 +250,7 @@ def player_stats():
             "short_games": int(stats["short_games"]),
             "medium_games": int(stats["medium_games"]),
             "long_games": int(stats["long_games"]),
+            "average_dice_roll": stats["average_dice_roll"],
         }
         players.append(player_info)
 
@@ -272,6 +273,7 @@ def player_stats():
                 "short_games": 0,
                 "medium_games": 0,
                 "long_games": 0,
+                "average_dice_roll": 0,
             })
 
     return jsonify({"players": players})
