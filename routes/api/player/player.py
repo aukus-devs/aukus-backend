@@ -305,6 +305,7 @@ def reset_stats():
 def get_moves():
     player_id = request.args.get("player_id")
     date_param = request.args.get("date")
+    title_param = request.args.get("title")
     limit = min(int(request.args.get("limit", 10)), 200)
     last_move = None
     if player_id:
@@ -317,6 +318,8 @@ def get_moves():
                 {"error": "Incorrect data format, should be YYYY-MM-DD"}), 422
         moves = db.get_moves_by_date(date=date_param)
         last_move = db.get_last_move_id_to_date(date=date_param)
+    elif title_param:
+        moves = db.search_moves(title_param)
     else:
         moves = db.get_all_moves(limit=limit)
 

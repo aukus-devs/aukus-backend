@@ -218,6 +218,14 @@ class DatabaseClient:
                 (limit, ))
             return cursor.fetchall()
 
+    def search_moves(self, title):
+        """Получить все ходы"""
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                "SELECT * FROM playermoves WHERE item_title LIKE %s",
+                ("%" + title + "%", ))
+            return cursor.fetchall()
+
     def update_player_move(
         self,
         move_id,
