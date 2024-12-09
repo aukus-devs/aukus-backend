@@ -420,6 +420,13 @@ def pointauc_result_callback():
     else:
         db.update_last_auction_result_by_player_id(user_info["id"],
                                                    data["winner_title"])
+        try:
+            scheduler.add_job(
+                notifications.on_pointauc_result,
+                args=[user_info["username"], data["winner_title"]])
+        except Exception as e:
+            logging.error("Error send notification on pointauc result2: " +
+                          str(e))
     return jsonify({"message": "updated successfully"})
 
 
