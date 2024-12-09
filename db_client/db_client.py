@@ -395,7 +395,7 @@ class DatabaseClient:
                     category_name;
                 """,
                 (
-                    category_name,
+                    category_name.strip(),
                     player_id,
                 ),
             )
