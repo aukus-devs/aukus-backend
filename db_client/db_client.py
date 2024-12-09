@@ -5,6 +5,7 @@ import logging
 import os
 from dotenv import load_dotenv
 from contextlib import closing
+import re
 
 load_dotenv()
 MYSQL_LOGIN = os.getenv("MYSQL_LOGIN")
@@ -219,7 +220,7 @@ class DatabaseClient:
             return cursor.fetchall()
 
     def search_moves(self, title):
-        """Получить все ходы"""
+        """Поиск ходов по item_title"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT * FROM playermoves WHERE item_title LIKE %s",
@@ -395,7 +396,7 @@ class DatabaseClient:
                     category_name;
                 """,
                 (
-                    category_name,
+                    re.sub(r'\(.*?\)', '', category_name.strip()),
                     player_id,
                 ),
             )

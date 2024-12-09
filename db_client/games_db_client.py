@@ -75,7 +75,7 @@ class GamesDatabaseClient:
                     LIMIT 20;
                 """,
                 (
-                    "%" + title.lower() + "%",
+                    "%" + title.strip().lower() + "%",
                     title.lower() + "%",
                 ),
             )
@@ -95,6 +95,6 @@ class GamesDatabaseClient:
                         WHERE gp.platform_id = 6 AND g.gameName = %s
                         ORDER BY LENGTH(g.gameName) ASC
                         LIMIT 1;
-                    """, (title.lower(), ))
+                    """, (title.strip().lower(), ))
                 results.extend(cursor.fetchall())
         return results
