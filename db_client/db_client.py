@@ -5,6 +5,7 @@ import logging
 import os
 from dotenv import load_dotenv
 from contextlib import closing
+import re
 
 load_dotenv()
 MYSQL_LOGIN = os.getenv("MYSQL_LOGIN")
@@ -395,7 +396,7 @@ class DatabaseClient:
                     category_name;
                 """,
                 (
-                    category_name.strip(),
+                    re.sub(r'\(.*?\)', '', category_name.strip()),
                     player_id,
                 ),
             )
