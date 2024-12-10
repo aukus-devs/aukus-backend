@@ -303,6 +303,18 @@ def reset_stats():
     return jsonify({"message": "Position reset"})
 
 
+@player_bp.route("/test_api/history_moves", methods=["GET"])
+def search_history_moves():
+    title_param = request.args.get("title")
+    if title_param:
+        moves = db.search_history_moves(title_param)
+    else:
+        return jsonify({"error": f"title is required"}), 400
+    return jsonify({
+        "moves": moves
+    })
+
+
 @player_bp.route("/test_api/moves", methods=["GET"])
 def get_moves():
     player_id = request.args.get("player_id")

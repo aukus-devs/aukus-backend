@@ -227,6 +227,14 @@ class DatabaseClient:
                 ("%" + title + "%", ))
             return cursor.fetchall()
 
+    def search_history_moves(self, title):
+        """Поиск ходов по item_title"""
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                "SELECT * FROM aukus_history WHERE item_title LIKE %s",
+                ("%" + title + "%", ))
+            return cursor.fetchall()
+
     def update_player_move(
         self,
         move_id,
