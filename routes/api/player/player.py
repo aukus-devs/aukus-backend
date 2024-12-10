@@ -182,9 +182,11 @@ def add_player_move():
         try:
             category_time_duration = db.calculate_time_by_category_name(
                 item_title, player_id)["total_difference_in_seconds"]
+            player = db.get_user_by_id(player_id)
             scheduler.add_job(notifications.on_player_move,
                               args=[
-                                  db.get_user_by_id(player_id)["username"],
+                                  player["username"],
+                                  player["player_url_handle"],
                                   dice_roll, cell_from, cell_to, move_type,
                                   item_title, item_review, item_rating,
                                   category_time_duration
@@ -407,7 +409,7 @@ def pointauc_result_callback():
                 try:
                     scheduler.add_job(
                         notifications.on_pointauc_result,
-                        args=[user_info["username"], data["winner_title"]])
+                        args=[user_info["username"], user_info["player_url_handle"], data["winner_title"]])
                 except Exception as e:
                     logging.error(
                         "Error send notification on pointauc result: " +
@@ -423,7 +425,7 @@ def pointauc_result_callback():
         try:
             scheduler.add_job(
                 notifications.on_pointauc_result,
-                args=[user_info["username"], data["winner_title"]])
+                args=[user_info["username"], user_info["player_url_handle"], data["winner_title"]])
         except Exception as e:
             logging.error("Error send notification on pointauc result2: " +
                           str(e))
@@ -449,7 +451,7 @@ def pointauc_timer_callback():
 
         try:
             scheduler.add_job(notifications.on_pointauc_timer_started,
-                              args=[user_info["username"]])
+                              args=[user_info["username"], user_info["player_url_handle"]])
         except Exception as e:
             logging.error(
                 "Error send notification on pointauc started, current time is None: "
@@ -463,7 +465,7 @@ def pointauc_timer_callback():
 
             try:
                 scheduler.add_job(notifications.on_pointauc_timer_started,
-                                  args=[user_info["username"]])
+                                  args=[user_info["username"], user_info["player_url_handle"]])
             except Exception as e:
                 logging.error("Error send notification on pointauc started: " +
                               str(e))

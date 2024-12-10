@@ -16,6 +16,7 @@ games_db = GamesDatabaseClient()
 
 def on_player_move(
     username,
+    url_handle,
     dice_roll,
     cell_from,
     cell_to,
@@ -59,7 +60,7 @@ def on_player_move(
         message_data = {
             "caption": message,
             "reply_markup":
-            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}',
+            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
             "chat_id": "-1002419528013",
             "parse_mode": "html",
             "photo": image_url,
@@ -92,7 +93,7 @@ def on_player_move(
             "Новый ход!",
             "embeds": [{
                 "title": "👉 **" + username + "**",
-                "url": "https://aukus.fun",
+                "url": "https://aukus.fun/players/" + url_handle,
                 "description": description,
                 "image": {
                     "url": image_url
@@ -112,7 +113,7 @@ def on_player_move(
         logging.error("Error send on new move to Discord: " + str(e))
 
 
-def on_pointauc_result(username, title):
+def on_pointauc_result(username, url_handle, title):
     try:
         # send to TG
         message = ("👉 <b>" + username + "</b>\n🎲 Выпало на ауке: <b>" +
@@ -120,7 +121,7 @@ def on_pointauc_result(username, title):
         message_data = {
             "caption": message,
             "reply_markup":
-            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}',
+            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
             "chat_id": "-1002372388698",
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
@@ -147,7 +148,7 @@ def on_pointauc_result(username, title):
             "Выпал новый лот на ауке!",
             "embeds": [{
                 "title": "👉 **" + username + "**",
-                "url": "https://aukus.fun",
+                "url": "https://aukus.fun/players/" + url_handle,
                 "description": description,
                 "image": {
                     "url": "https://aukus.fun/uploads/splash.jpg"
@@ -167,14 +168,14 @@ def on_pointauc_result(username, title):
         logging.error("Error send pointauc result to Discord: " + str(e))
 
 
-def on_pointauc_timer_started(username):
+def on_pointauc_timer_started(username, url_handle):
     try:
         # send to TG
         message = "⚡<b>" + username + "</b>\n <b>Начал аукцион!</b>"
         message_data = {
             "caption": message,
             "reply_markup":
-            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun"}]]}',
+            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
             "chat_id": "-1002372388698",
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
@@ -201,7 +202,7 @@ def on_pointauc_timer_started(username):
             "Новый аукцион!",
             "embeds": [{
                 "title": "⚡ **" + username + "**",
-                "url": "https://aukus.fun",
+                "url": "https://aukus.fun/players/" + url_handle,
                 "description": description,
                 "image": {
                     "url": "https://aukus.fun/uploads/splash.jpg"
