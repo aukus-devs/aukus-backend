@@ -34,7 +34,7 @@ class GamesDatabaseClient:
     def conn(self):
         if self.connection.open:
             try:
-                self.connection.ping()
+                self.connection.ping(True)
                 return self.connection
             except:
                 self.safe_close()
