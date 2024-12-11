@@ -22,7 +22,6 @@ MYSQLCONF = {
 
 
 class GamesDatabaseClient:
-
     def __init__(self):
         self.connection = MySQLdb.connect(**MYSQLCONF)
 
@@ -35,7 +34,7 @@ class GamesDatabaseClient:
     def conn(self):
         if self.connection.open:
             try:
-                self.connection.ping(True)
+                self.connection.ping()
                 return self.connection
             except:
                 self.safe_close()
@@ -46,8 +45,7 @@ class GamesDatabaseClient:
             self.connection = MySQLdb.connect(**MYSQLCONF)
             return self.connection
 
-    def insert_to_IGDB(self, game_id, name, cover_url, release_year,
-                       platforms):
+    def insert_to_IGDB(self, game_id, name, cover_url, release_year, platforms):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 """
@@ -95,6 +93,8 @@ class GamesDatabaseClient:
                         WHERE gp.platform_id = 6 AND g.gameName = %s
                         ORDER BY LENGTH(g.gameName) ASC
                         LIMIT 1;
-                    """, (title.strip().lower(), ))
+                    """,
+                    (title.strip().lower(),),
+                )
                 results.extend(cursor.fetchall())
         return results
