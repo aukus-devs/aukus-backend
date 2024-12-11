@@ -266,6 +266,8 @@ def player_stats():
             "long_games": int(stats["long_games"]),
             "average_dice_roll": round(float(stats["average_dice_roll"]), 2),
             "average_move": round(float(stats["average_move"]), 2),
+            "ladders_moves_sum": int(stats["ladders_moves_sum"]),
+            "snakes_moves_sum": int(stats["snakes_moves_sum"]),
         }
         players.append(player_info)
 
@@ -291,6 +293,8 @@ def player_stats():
                     "long_games": 0,
                     "average_dice_roll": 0,
                     "average_move": 0,
+                    "ladders_moves_sum": 0,
+                    "snakes_moves_sum": 0,
                 }
             )
 

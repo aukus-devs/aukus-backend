@@ -766,6 +766,8 @@ class DatabaseClient:
                 SUM(CASE WHEN moves.type = 'completed' && moves.item_length = 'long' THEN 1 ELSE 0 END) as long_games,
                 AVG(CASE WHEN moves.type <> 'reroll' THEN ABS(moves.dice_roll) ELSE null END) as average_move,
                 AVG(CASE WHEN moves.item_length in ('tiny', 'short') THEN moves.dice_roll WHEN moves.item_length = 'medium' THEN moves.dice_roll / 2 WHEN moves.item_length = 'long' THEN moves.dice_roll / 3 ELSE NULL END) as average_dice_roll,
+                SUM(CASE WHEN moves.stair_from IS NOT NULL && moves.stair_to IS NOT NULL THEN moves.stair_to - moves.stair_from ELSE 0 END) as ladders_moves_sum,
+                SUM(CASE WHEN moves.snake_from IS NOT NULL && moves.snake_to IS NOT NULL THEN moves.snake_to - moves.snake_from ELSE 0 END) as snakes_moves_sum,
                 COALESCE((
                   SELECT subquery.cell_to
                   FROM playermoves subquery
