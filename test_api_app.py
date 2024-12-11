@@ -21,6 +21,7 @@ def create_app():
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
     app.config["DEBUG"] = True
     app.config["JSON_AS_ASCII"] = False
+    app.json.ensure_ascii = False
     app.config["JSONIFY_MIMETYPE"] = "application/json; charset=utf-8"
 
     Session(app)

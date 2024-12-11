@@ -16,7 +16,7 @@ games_db = GamesDatabaseClient()
 load_dotenv()
 
 
-@games_bp.route("/test_api/games", methods=["GET"])
+@games_bp.route("/api/games", methods=["GET"])
 def search_games():
     raw_query_string = request.query_string.decode()
     args = urllib.parse.parse_qs(raw_query_string, separator=' ')
@@ -27,7 +27,7 @@ def search_games():
     return jsonify({"games": games})
 
 
-@games_bp.route("/test_api/hltb", methods=["GET"])
+@games_bp.route("/api/hltb", methods=["GET"])
 def search_htlb():
     raw_query_string = request.query_string.decode()
     args = urllib.parse.parse_qs(raw_query_string, separator=' ')

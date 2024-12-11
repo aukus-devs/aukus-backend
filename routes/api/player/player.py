@@ -48,7 +48,7 @@ def available_for_roles(roles=None):
     return decorator
 
 
-@player_bp.route("/test_api/dons", methods=["GET"])
+@player_bp.route("/api/dons", methods=["GET"])
 def get_dons():
     dons_data = db.get_dons()
     dons = []
@@ -63,7 +63,7 @@ def get_dons():
     return jsonify({"dons": dons})
 
 
-@player_bp.route("/test_api/players", methods=["GET"])
+@player_bp.route("/api/players", methods=["GET"])
 def get_players():
     move_id = request.args.get("move_id", type=int)
     players_data = db.get_all_players()
@@ -129,7 +129,7 @@ def get_players():
     return jsonify({"players": players})
 
 
-@player_bp.route("/test_api/player_move", methods=["POST"])
+@player_bp.route("/api/player_move", methods=["POST"])
 @login_required
 def add_player_move():
     data = request.get_json()
@@ -213,7 +213,7 @@ def add_player_move():
         return jsonify({"error": str(e)}), 500
 
 
-@player_bp.route("/test_api/player_move_vod_link", methods=["POST"])
+@player_bp.route("/api/player_move_vod_link", methods=["POST"])
 @login_required
 def add_vod_link_to_player_move():
     data = request.get_json()
@@ -242,7 +242,7 @@ def add_vod_link_to_player_move():
         return jsonify({"error": str(e)}), 500
 
 
-@player_bp.route("/test_api/player_stats", methods=["GET"])
+@player_bp.route("/api/player_stats", methods=["GET"])
 def player_stats():
     # Получаем информацию обо всех игроках
     players_stats = db.get_players_stats()
@@ -301,7 +301,7 @@ def player_stats():
     return jsonify({"players": players})
 
 
-@player_bp.route("/test_api/current_user", methods=["GET"])
+@player_bp.route("/api/current_user", methods=["GET"])
 @login_required
 def current_user():
     user_info = db.get_user_by_name(session["username"])
@@ -318,14 +318,14 @@ def current_user():
     return jsonify({"error": "Not found"}), 404
 
 
-@player_bp.route("/test_api/reset_stats", methods=["GET"])
+@player_bp.route("/api/reset_stats", methods=["GET"])
 @login_required
 def reset_stats():
     db.remove_moves_by_player_name(session["username"])
     return jsonify({"message": "Position reset"})
 
 
-@player_bp.route("/test_api/history_moves", methods=["GET"])
+@player_bp.route("/api/history_moves", methods=["GET"])
 def search_history_moves():
     title_param = request.args.get("title")
     if title_param:
@@ -335,7 +335,7 @@ def search_history_moves():
     return jsonify({"moves": moves})
 
 
-@player_bp.route("/test_api/moves", methods=["GET"])
+@player_bp.route("/api/moves", methods=["GET"])
 def get_moves():
     player_id = request.args.get("player_id")
     date_param = request.args.get("date")
@@ -396,7 +396,7 @@ def get_moves():
     )
 
 
-@player_bp.route("/test_api/reset_pointauc_token", methods=["POST"])
+@player_bp.route("/api/reset_pointauc_token", methods=["POST"])
 @login_required
 def reset_pointauc_token():
     new_token = secrets.token_urlsafe(8)
@@ -405,7 +405,7 @@ def reset_pointauc_token():
     return jsonify({"token": new_token})
 
 
-@player_bp.route("/test_api/point_auc/result", methods=["POST"])
+@player_bp.route("/api/point_auc/result", methods=["POST"])
 def pointauc_result_callback():
     data = request.get_json() or {}
     logging.info(str(data))
@@ -459,7 +459,7 @@ def pointauc_result_callback():
     return jsonify({"message": "updated successfully"})
 
 
-@player_bp.route("/test_api/point_auc/timer_started", methods=["POST"])
+@player_bp.route("/api/point_auc/timer_started", methods=["POST"])
 def pointauc_timer_callback():
     data = request.get_json() or {}
     logging.info(str(data))
@@ -505,7 +505,7 @@ def pointauc_timer_callback():
     return jsonify({"message": "updated successfully"})
 
 
-@player_bp.route("/test_api/player_current_game", methods=["POST"])
+@player_bp.route("/api/player_current_game", methods=["POST"])
 @login_required
 def update_player_current_game():
     data = request.get_json()

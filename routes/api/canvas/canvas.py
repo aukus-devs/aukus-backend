@@ -36,7 +36,7 @@ def available_for_roles(roles=None):
     return decorator
 
 
-@canvas_bp.route("/test_api/canvas/<int:player_id>/upload", methods=["POST"])
+@canvas_bp.route("/api/canvas/<int:player_id>/upload", methods=["POST"])
 @login_required
 def upload_canvas_image(player_id):
     file = request.files["file"]
@@ -71,7 +71,7 @@ def upload_canvas_image(player_id):
     )
 
 
-@canvas_bp.route("/test_api/canvas/<int:player_id>", methods=["GET"])
+@canvas_bp.route("/api/canvas/<int:player_id>", methods=["GET"])
 def get_canvas_files(player_id):
     player_files = db.get_player_files_by_player_id(player_id)
     files = [
@@ -93,7 +93,7 @@ def get_canvas_files(player_id):
     return jsonify({"objects": files}), 200
 
 
-@canvas_bp.route("/test_api/canvas/<int:player_id>/update", methods=["PUT"])
+@canvas_bp.route("/api/canvas/<int:player_id>/update", methods=["PUT"])
 @login_required
 def update_canvas(player_id):
     data = request.get_json()
