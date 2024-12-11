@@ -61,7 +61,7 @@ def on_player_move(
             "caption": message,
             "reply_markup":
             '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
-            "chat_id": "-1002372388698",
+            "chat_id": "-1002419528013",
             "parse_mode": "html",
             "photo": image_url,
         }
@@ -122,7 +122,7 @@ def on_pointauc_result(username, url_handle, title):
             "caption": message,
             "reply_markup":
             '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
-            "chat_id": "-1002372388698",
+            "chat_id": "-1002419528013",
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
         }
@@ -176,7 +176,7 @@ def on_pointauc_timer_started(username, url_handle):
             "caption": message,
             "reply_markup":
             '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
-            "chat_id": "-1002372388698",
+            "chat_id": "-1002419528013",
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
         }
