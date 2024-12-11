@@ -266,6 +266,8 @@ def player_stats():
             "long_games": int(stats["long_games"]),
             "average_dice_roll": round(float(stats["average_dice_roll"]), 2),
             "average_move": round(float(stats["average_move"]), 2),
+            "ladders_moves_sum": int(stats["ladders_moves_sum"]),
+            "snakes_moves_sum": int(stats["snakes_moves_sum"]),
         }
         players.append(player_info)
 
@@ -291,6 +293,8 @@ def player_stats():
                     "long_games": 0,
                     "average_dice_roll": 0,
                     "average_move": 0,
+                    "ladders_moves_sum": 0,
+                    "snakes_moves_sum": 0,
                 }
             )
 
@@ -321,30 +325,17 @@ def reset_stats():
     return jsonify({"message": "Position reset"})
 
 
-<<<<<<< HEAD
 @player_bp.route("/test_api/history_moves", methods=["GET"])
-=======
-@player_bp.route("/api/history_moves", methods=["GET"])
->>>>>>> origin/prod
 def search_history_moves():
     title_param = request.args.get("title")
     if title_param:
         moves = db.search_history_moves(title_param)
     else:
         return jsonify({"error": f"title is required"}), 400
-<<<<<<< HEAD
-    return jsonify({
-        "moves": moves
-    })
-
-
-@player_bp.route("/test_api/moves", methods=["GET"])
-=======
     return jsonify({"moves": moves})
 
 
-@player_bp.route("/api/moves", methods=["GET"])
->>>>>>> origin/prod
+@player_bp.route("/test_api/moves", methods=["GET"])
 def get_moves():
     player_id = request.args.get("player_id")
     date_param = request.args.get("date")
@@ -435,16 +426,12 @@ def pointauc_result_callback():
                 try:
                     scheduler.add_job(
                         notifications.on_pointauc_result,
-<<<<<<< HEAD
-                        args=[user_info["username"], user_info["player_url_handle"], data["winner_title"]])
-=======
                         args=[
                             user_info["username"],
                             user_info["player_url_handle"],
                             data["winner_title"],
                         ],
                     )
->>>>>>> origin/prod
                 except Exception as e:
                     logging.error(
                         "Error send notification on pointauc result: " + str(e)
@@ -461,16 +448,12 @@ def pointauc_result_callback():
         try:
             scheduler.add_job(
                 notifications.on_pointauc_result,
-<<<<<<< HEAD
-                args=[user_info["username"], user_info["player_url_handle"], data["winner_title"]])
-=======
                 args=[
                     user_info["username"],
                     user_info["player_url_handle"],
                     data["winner_title"],
                 ],
             )
->>>>>>> origin/prod
         except Exception as e:
             logging.error("Error send notification on pointauc result2: " + str(e))
     return jsonify({"message": "updated successfully"})
@@ -494,15 +477,10 @@ def pointauc_timer_callback():
         db.update_last_auction_date_by_player_id(user_info["id"])
 
         try:
-<<<<<<< HEAD
-            scheduler.add_job(notifications.on_pointauc_timer_started,
-                              args=[user_info["username"], user_info["player_url_handle"]])
-=======
             scheduler.add_job(
                 notifications.on_pointauc_timer_started,
                 args=[user_info["username"], user_info["player_url_handle"]],
             )
->>>>>>> origin/prod
         except Exception as e:
             logging.error(
                 "Error send notification on pointauc started, current time is None: "
@@ -517,15 +495,10 @@ def pointauc_timer_callback():
             db.update_last_auction_date_by_player_id(user_info["id"])
 
             try:
-<<<<<<< HEAD
-                scheduler.add_job(notifications.on_pointauc_timer_started,
-                                  args=[user_info["username"], user_info["player_url_handle"]])
-=======
                 scheduler.add_job(
                     notifications.on_pointauc_timer_started,
                     args=[user_info["username"], user_info["player_url_handle"]],
                 )
->>>>>>> origin/prod
             except Exception as e:
                 logging.error("Error send notification on pointauc started: " + str(e))
 
