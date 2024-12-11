@@ -34,7 +34,7 @@ class DatabaseClient:
     def conn(self):
         if self.connection.open:
             try:
-                self.connection.ping(True)
+                self.connection.ping()
                 return self.connection
             except:
                 self.safe_close()
