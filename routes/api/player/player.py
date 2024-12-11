@@ -290,6 +290,7 @@ def player_stats():
                     "medium_games": 0,
                     "long_games": 0,
                     "average_dice_roll": 0,
+                    "average_move": 0,
                 }
             )
 
