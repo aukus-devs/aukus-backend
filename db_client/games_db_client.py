@@ -36,7 +36,8 @@ class GamesDatabaseClient:
             try:
                 self.connection.ping()
                 return self.connection
-            except:
+            except Exception as e:
+                logging.error("MySQL games DB ping error: " + str(e))
                 self.safe_close()
                 self.connection = MySQLdb.connect(**MYSQLCONF)
                 return self.connection
