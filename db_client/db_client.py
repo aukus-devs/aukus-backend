@@ -309,7 +309,7 @@ class DatabaseClient:
 
     # --- Методы для получения игроков с позицией на карте ---
 
-    def get_all_players(self):
+    def get_all_players(self) -> list[dict]:
         """Получить всех игроков с их текущей позицией на карте"""
         query = """
         SELECT *
