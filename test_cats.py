@@ -31,10 +31,12 @@ for player in players:
     print(player["username"])
     print(player["player_current_game"])
     print(
-        db.calculate_time_by_category_name(player["player_current_game"],
-                                       player["id"])["total_difference_in_seconds"])
-#print(db.calculate_time_by_category_name("tes2t", 1))
-#print(
+        db.calculate_time_by_category_name(player["player_current_game"], player["id"])[
+            "total_difference_in_seconds"
+        ]
+    )
+# print(db.calculate_time_by_category_name("tes2t", 1))
+# print(
 #    db.calculate_time_by_category_name("Finding Paradise",
 #                                       15)["total_difference_in_seconds"])
-#refresh_stream_statuses()
+# refresh_stream_statuses()
