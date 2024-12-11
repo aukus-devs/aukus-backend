@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 MOVES_DISCORD_WEBHOOK = os.getenv("MOVES_DISCORD_WEBHOOK")
 AUKUS_TG_BOT_TOKEN = os.getenv("AUKUS_TG_BOT_TOKEN")
+AUKUS_TG_CHAT_ID = os.getenv("AUKUS_TG_CHAT_ID")
 AUKUS_SOCKS5_PROXY = os.getenv("AUKUS_SOCKS5_PROXY")
 
 games_db = GamesDatabaseClient()
@@ -61,7 +62,7 @@ def on_player_move(
             "caption": message,
             "reply_markup":
             '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
-            "chat_id": "-1002419528013",
+            "chat_id": AUKUS_TG_CHAT_ID,
             "parse_mode": "html",
             "photo": image_url,
         }
@@ -122,7 +123,7 @@ def on_pointauc_result(username, url_handle, title):
             "caption": message,
             "reply_markup":
             '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
-            "chat_id": "-1002419528013",
+            "chat_id": AUKUS_TG_CHAT_ID,
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
         }
@@ -176,7 +177,7 @@ def on_pointauc_timer_started(username, url_handle):
             "caption": message,
             "reply_markup":
             '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
-            "chat_id": "-1002419528013",
+            "chat_id": AUKUS_TG_CHAT_ID,
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
         }
