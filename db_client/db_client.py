@@ -22,7 +22,6 @@ MYSQLCONF = {
 
 
 class DatabaseClient:
-
     def __init__(self):
         self.connection = MySQLdb.connect(**MYSQLCONF)
 
@@ -93,8 +92,8 @@ class DatabaseClient:
         """Получить пользователя по ID"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                "SELECT * FROM users WHERE id = %s and is_active = 1",
-                (user_id, ))
+                "SELECT * FROM users WHERE id = %s and is_active = 1", (user_id,)
+            )
             return cursor.fetchone()
 
     def get_user_by_logpass(self, username, password):
@@ -180,7 +179,7 @@ class DatabaseClient:
     def delete_user(self, user_id):
         """Удалить пользователя по ID"""
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM users WHERE id = %s", (user_id, ))
+            cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
 
     # --- Методы для работы с таблицей playermoves ---
 
@@ -189,7 +188,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT * FROM playermoves WHERE player_id = %s order by id desc",
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchall()
 
@@ -198,7 +197,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT * FROM playermoves WHERE DATE(created_at) = %s order by id desc",
-                (date, ),
+                (date,),
             )
             return cursor.fetchall()
 
@@ -207,7 +206,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT MAX(id) as id FROM playermoves WHERE DATE(created_at) < %s",
-                (date, ),
+                (date,),
             )
             return cursor.fetchone()
 
@@ -215,8 +214,8 @@ class DatabaseClient:
         """Получить все ходы"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                "SELECT * FROM playermoves order by id desc limit %s",
-                (limit, ))
+                "SELECT * FROM playermoves order by id desc limit %s", (limit,)
+            )
             return cursor.fetchall()
 
     def search_moves(self, title):
@@ -224,7 +223,8 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT * FROM playermoves WHERE item_title LIKE %s",
-                ("%" + title + "%", ))
+                ("%" + title + "%",),
+            )
             return cursor.fetchall()
 
     def search_history_moves(self, title):
@@ -232,7 +232,8 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT * FROM aukus_history WHERE item_title LIKE %s",
-                ("%" + title + "%", ))
+                ("%" + title + "%",),
+            )
             return cursor.fetchall()
 
     def update_player_move(
@@ -304,8 +305,7 @@ class DatabaseClient:
     def delete_player_move(self, move_id):
         """Удалить ход игрока по ID"""
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM playermoves WHERE id = %s",
-                           (move_id, ))
+            cursor.execute("DELETE FROM playermoves WHERE id = %s", (move_id,))
 
     # --- Методы для получения игроков с позицией на карте ---
 
@@ -404,7 +404,7 @@ class DatabaseClient:
                     category_name;
                 """,
                 (
-                    re.sub(r'\(.*?\)', '', category_name.strip()),
+                    re.sub(r"\(.*?\)", "", category_name.strip()),
                     player_id,
                 ),
             )
@@ -450,8 +450,7 @@ class DatabaseClient:
                 (new_position, player_id),
             )
 
-    def update_player_stream_category(self, player_id,
-                                      player_stream_current_category):
+    def update_player_stream_category(self, player_id, player_stream_current_category):
         """Обновить поле player_stream_current_category в таблице users"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
@@ -466,14 +465,14 @@ class DatabaseClient:
     def get_move_by_id(self, move_id):
         """Получить ход игрока по ID"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("SELECT * FROM playermoves WHERE id = %s",
-                           (move_id, ))
+            cursor.execute("SELECT * FROM playermoves WHERE id = %s", (move_id,))
             return cursor.fetchone()
 
     def get_players_last_cell_number(self):
         """Получить последние ячейки игроков"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT moves.player_id as player_id, moves.id as id, moves.cell_to as cell_to
                 FROM playermoves moves
                 JOIN (
@@ -482,7 +481,8 @@ class DatabaseClient:
                     GROUP BY player_id
                 ) sub
                 on moves.id = sub.max_id
-                """)
+                """
+            )
             return cursor.fetchall()
 
     def get_players_positions_by_move_id(self, move_id: int):
@@ -500,7 +500,7 @@ class DatabaseClient:
                 ) sub
                 on moves.id = sub.max_id
             """,
-                (move_id, ),
+                (move_id,),
             )
             return cursor.fetchall()
 
@@ -509,7 +509,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s",
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
@@ -518,7 +518,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "completed"',
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
@@ -527,7 +527,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "drop"',
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
@@ -536,7 +536,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "sheikh"',
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
@@ -545,7 +545,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "reroll"',
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
@@ -554,7 +554,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 'SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND type = "movie"',
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
@@ -563,7 +563,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND stair_from IS NOT NULL",
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
@@ -572,7 +572,7 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT COUNT(*) as count FROM playermoves WHERE player_id = %s AND snake_from IS NOT NULL",
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
@@ -581,29 +581,26 @@ class DatabaseClient:
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
                 "SELECT * FROM users WHERE UPPER(username) = UPPER(%s) and is_active = 1",
-                (username, ),
+                (username,),
             )
             return cursor.fetchone()
 
     def get_user_by_token(self, token: str):
         """Получить инфу пользователя по токену"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("SELECT * FROM users WHERE pointauc_token = %s",
-                           (token, ))
+            cursor.execute("SELECT * FROM users WHERE pointauc_token = %s", (token,))
             return cursor.fetchone()
 
     def remove_moves_by_player_name(self, username):
         """Удалить все ходы игрока"""
         player_id = self.get_user_by_name(username)["id"]
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM playermoves WHERE player_id = %s",
-                           (player_id, ))
+            cursor.execute("DELETE FROM playermoves WHERE player_id = %s", (player_id,))
 
     def remove_moves_by_player_id(self, player_id):
         """Удалить все ходы игрока"""
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM playermoves WHERE player_id = %s",
-                           (player_id, ))
+            cursor.execute("DELETE FROM playermoves WHERE player_id = %s", (player_id,))
 
     def reset_finished_players(self):
         last_cells = self.get_players_last_cell_number()
@@ -616,8 +613,8 @@ class DatabaseClient:
         """Добавить изображение"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
-                "SELECT MAX(zIndex) FROM PlayerFiles WHERE player_id = %s",
-                (player_id, ))
+                "SELECT MAX(zIndex) FROM PlayerFiles WHERE player_id = %s", (player_id,)
+            )
             z_index = cursor.fetchone()
             z_index = (z_index[0] + 1) if z_index[0] is not None else 0
             cursor.execute(
@@ -632,22 +629,20 @@ class DatabaseClient:
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "SELECT id FROM PlayerFiles WHERE player_id = %s ORDER BY id DESC LIMIT 1",
-                (player_id, ),
+                (player_id,),
             )
             return cursor.fetchone()
 
-    def update_last_auction_result_by_player_id(self,
-                                                player_id,
-                                                game,
-                                                auc_value=0):
+    def update_last_auction_result_by_player_id(
+        self, player_id: int, game: str | None, auc_value: int | None = 0
+    ):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "UPDATE users SET player_current_game = %s, current_game_updated_at = %s, current_auction_total_sum = %s, auction_timer_started_at = NULL WHERE id = %s",
                 (game, datetime.datetime.utcnow(), auc_value, player_id),
             )
 
-    def update_current_online_count_by_player_id(self, player_id,
-                                                 online_count):
+    def update_current_online_count_by_player_id(self, player_id, online_count):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "UPDATE users SET online_count = %s WHERE id = %s",
@@ -668,49 +663,38 @@ class DatabaseClient:
             WHERE player_id = %s
         """
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute(sql, (player_id, ))
+            cursor.execute(sql, (player_id,))
             return cursor.fetchall()
 
     def delete_file(self, file_id):
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM PlayerFiles WHERE id = %s",
-                           (file_id, ))
+            cursor.execute("DELETE FROM PlayerFiles WHERE id = %s", (file_id,))
 
     def delete_files_by_player_id(self, player_id):
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM PlayerFiles WHERE player_id = %s",
-                           (player_id, ))
+            cursor.execute("DELETE FROM PlayerFiles WHERE player_id = %s", (player_id,))
 
-    def update_player_files_by_file_id(self,
-                                       file_id,
-                                       width,
-                                       height,
-                                       x,
-                                       y,
-                                       rotation,
-                                       z_index,
-                                       scale_x=1,
-                                       scale_y=1):
+    def update_player_files_by_file_id(
+        self, file_id, width, height, x, y, rotation, z_index, scale_x=1, scale_y=1
+    ):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "UPDATE PlayerFiles SET width = %s, height = %s, x = %s, y = %s, rotation = %s, zIndex = %s, scaleX = %s, scaleY = %s WHERE id = %s",
-                (width, height, x, y, rotation, z_index, scale_x, scale_y,
-                 file_id),
+                (width, height, x, y, rotation, z_index, scale_x, scale_y, file_id),
             )
 
-    def insert_player_files_by_player_id(self, player_id, width, height, x, y,
-                                         rotation, url):
+    def insert_player_files_by_player_id(
+        self, player_id, width, height, x, y, rotation, url
+    ):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "INSERT INTO PlayerFiles (player_id, width, height, x, y, rotation, url) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                 (player_id, width, height, x, y, rotation, url),
             )
 
-    def update_stream_status(self,
-                             player_id,
-                             is_online,
-                             online_count: int = 0,
-                             category=None):
+    def update_stream_status(
+        self, player_id, is_online, online_count: int = 0, category=None
+    ):
         """Обновить поля player_is_online и player_stream_current_category в таблице users"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
@@ -763,7 +747,8 @@ class DatabaseClient:
     def get_players_stats(self):
         """Получить статистику всех игроков"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT
                 moves.player_id,
                 COUNT(*) as total_moves,
@@ -788,7 +773,8 @@ class DatabaseClient:
                 ), 0) as map_position
                 FROM playermoves moves
                 GROUP BY moves.player_id
-                """)
+                """
+            )
             stats = cursor.fetchall()
             return stats
 
