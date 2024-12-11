@@ -61,7 +61,7 @@ def on_player_move(
             "caption": message,
             "reply_markup":
             '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
-            "chat_id": "-1002419528013",
+            "chat_id": "-1002372388698",
             "parse_mode": "html",
             "photo": image_url,
         }

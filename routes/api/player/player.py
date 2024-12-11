@@ -21,7 +21,6 @@ scheduler.start()
 
 
 def login_required(f):
-
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if "username" not in session and "role" not in session:
@@ -36,7 +35,6 @@ def available_for_roles(roles=None):
         roles = ["player", "moder", "admin"]
 
     def decorator(f):
-
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if "username" not in session and "role" not in session:
@@ -55,17 +53,19 @@ def get_dons():
     dons_data = db.get_dons()
     dons = []
     for donate in dons_data:
-        dons.append({
-            "name": donate["name"],
-            "text": donate["text"],
-            "type": "big" if int(donate["sum"]) >= 5000 else "small",
-        })
+        dons.append(
+            {
+                "name": donate["name"],
+                "text": donate["text"],
+                "type": "big" if int(donate["sum"]) >= 5000 else "small",
+            }
+        )
     return jsonify({"dons": dons})
 
 
 @player_bp.route("/test_api/players", methods=["GET"])
 def get_players():
-    move_id = request.args.get("move_id")
+    move_id = request.args.get("move_id", type=int)
     players_data = db.get_all_players()
     if move_id:
         last_cells = db.get_players_positions_by_move_id(move_id)
@@ -73,30 +73,32 @@ def get_players():
         last_cells = db.get_players_last_cell_number()
     players = []
     players_games = [
-        player["player_current_game"] for player in players_data
+        player["player_current_game"]
+        for player in players_data
         if player["player_current_game"]
     ]
     games_images = games_db.search_games_multiple_igdb(players_games)
     games_images_by_name = {
-        game["gameName"].lower(): game["box_art_url"]
-        for game in games_images
+        game["gameName"].lower(): game["box_art_url"] for game in games_images
     }
 
     for player in players_data:
         last_cell = next(
-            (cell["cell_to"]
-             for cell in last_cells if cell["player_id"] == player["id"]),
+            (
+                cell["cell_to"]
+                for cell in last_cells
+                if cell["player_id"] == player["id"]
+            ),
             0,
         )
         image = None
         if player["player_current_game"]:
-            image = games_images_by_name.get(
-                player["player_current_game"].lower())
+            image = games_images_by_name.get(player["player_current_game"].lower())
         current_game_duration = None
         if player["player_current_game"] != None:
             current_game_duration = db.calculate_time_by_category_name(
-                player["player_current_game"],
-                player["id"])["total_difference_in_seconds"]
+                player["player_current_game"], player["id"]
+            )["total_difference_in_seconds"]
         if current_game_duration is None:
             current_game_duration = 0
 
@@ -131,20 +133,22 @@ def get_players():
 @login_required
 def add_player_move():
     data = request.get_json()
-    required_fields = [
-        "player_id", "dice_roll", "type", "item_title", "item_review"
-    ]
+    required_fields = ["player_id", "dice_roll", "type", "item_title", "item_review"]
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
     if data.get("stair_from") and data.get("snake_from"):
         return jsonify(
-            {"error": f"Stair and snake cannot be used at the same time"}), 400
+            {"error": f"Stair and snake cannot be used at the same time"}
+        ), 400
 
     last_cells = db.get_players_last_cell_number()
     last_cell_number = next(
-        (cell["cell_to"]
-         for cell in last_cells if cell["player_id"] == data["player_id"]),
+        (
+            cell["cell_to"]
+            for cell in last_cells
+            if cell["player_id"] == data["player_id"]
+        ),
         0,
     )
 
@@ -181,21 +185,29 @@ def add_player_move():
         db.update_last_auction_result_by_player_id(player_id, None, None)
         try:
             category_time_duration = db.calculate_time_by_category_name(
-                item_title, player_id)["total_difference_in_seconds"]
+                item_title, player_id
+            )["total_difference_in_seconds"]
             player = db.get_user_by_id(player_id)
-            scheduler.add_job(notifications.on_player_move,
-                              args=[
-                                  player["username"],
-                                  player["player_url_handle"],
-                                  dice_roll, cell_from, cell_to, move_type,
-                                  item_title, item_review, item_rating,
-                                  category_time_duration
-                              ])
+            scheduler.add_job(
+                notifications.on_player_move,
+                args=[
+                    player["username"],
+                    player["player_url_handle"],
+                    dice_roll,
+                    cell_from,
+                    cell_to,
+                    move_type,
+                    item_title,
+                    item_review,
+                    item_rating,
+                    category_time_duration,
+                ],
+            )
         except Exception as e:
             logging.error("Error send notification on player move: " + str(e))
         return jsonify(
-            {"message":
-             "Player move added and position updated successfully"}), 201
+            {"message": "Player move added and position updated successfully"}
+        ), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -217,14 +229,14 @@ def add_vod_link_to_player_move():
 
         player_move = db.get_move_by_id(move_id)
         if player_move:
-            db.update_player_move_vod_link(move_id=move_id,
-                                           vod_link=vod_link,
-                                           title=title)
+            db.update_player_move_vod_link(
+                move_id=move_id, vod_link=vod_link, title=title
+            )
             return jsonify(
-                {"message": "Player move vod link updated successfully"}), 200
+                {"message": "Player move vod link updated successfully"}
+            ), 200
         else:
-            return jsonify(
-                {"error": f"Player move with id {move_id} not found"}), 404
+            return jsonify({"error": f"Player move with id {move_id} not found"}), 404
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -252,7 +264,8 @@ def player_stats():
             "short_games": int(stats["short_games"]),
             "medium_games": int(stats["medium_games"]),
             "long_games": int(stats["long_games"]),
-            "average_dice_roll": float(round(stats["average_dice_roll"], 2)),
+            "average_dice_roll": round(float(stats["average_dice_roll"]), 2),
+            "average_move": round(float(stats["average_move"]), 2),
         }
         players.append(player_info)
 
@@ -260,23 +273,26 @@ def player_stats():
     all_players = db.get_all_players()
     for player in all_players:
         if player["id"] not in players_with_stats:
-            players.append({
-                "id": player["id"],
-                "map_position": 0,
-                "total_moves": 0,
-                "games_completed": 0,
-                "games_dropped": 0,
-                "sheikh_moments": 0,
-                "rerolls": 0,
-                "movies": 0,
-                "ladders": 0,
-                "snakes": 0,
-                "tiny_games": 0,
-                "short_games": 0,
-                "medium_games": 0,
-                "long_games": 0,
-                "average_dice_roll": 0,
-            })
+            players.append(
+                {
+                    "id": player["id"],
+                    "map_position": 0,
+                    "total_moves": 0,
+                    "games_completed": 0,
+                    "games_dropped": 0,
+                    "sheikh_moments": 0,
+                    "rerolls": 0,
+                    "movies": 0,
+                    "ladders": 0,
+                    "snakes": 0,
+                    "tiny_games": 0,
+                    "short_games": 0,
+                    "medium_games": 0,
+                    "long_games": 0,
+                    "average_dice_roll": 0,
+                    "average_move": 0,
+                }
+            )
 
     return jsonify({"players": players})
 
@@ -286,13 +302,15 @@ def player_stats():
 def current_user():
     user_info = db.get_user_by_name(session["username"])
     if user_info:
-        return jsonify({
-            "user_id": user_info["id"],
-            "role": user_info["role"],
-            "moder_for": user_info["moder_for"],
-            "url_handle": user_info["player_url_handle"],
-            "name": user_info["username"],
-        })
+        return jsonify(
+            {
+                "user_id": user_info["id"],
+                "role": user_info["role"],
+                "moder_for": user_info["moder_for"],
+                "url_handle": user_info["player_url_handle"],
+                "name": user_info["username"],
+            }
+        )
     return jsonify({"error": "Not found"}), 404
 
 
@@ -303,19 +321,30 @@ def reset_stats():
     return jsonify({"message": "Position reset"})
 
 
+<<<<<<< HEAD
 @player_bp.route("/test_api/history_moves", methods=["GET"])
+=======
+@player_bp.route("/api/history_moves", methods=["GET"])
+>>>>>>> origin/prod
 def search_history_moves():
     title_param = request.args.get("title")
     if title_param:
         moves = db.search_history_moves(title_param)
     else:
         return jsonify({"error": f"title is required"}), 400
+<<<<<<< HEAD
     return jsonify({
         "moves": moves
     })
 
 
 @player_bp.route("/test_api/moves", methods=["GET"])
+=======
+    return jsonify({"moves": moves})
+
+
+@player_bp.route("/api/moves", methods=["GET"])
+>>>>>>> origin/prod
 def get_moves():
     player_id = request.args.get("player_id")
     date_param = request.args.get("date")
@@ -329,7 +358,8 @@ def get_moves():
             date.fromisoformat(date_param)
         except ValueError:
             return jsonify(
-                {"error": "Incorrect data format, should be YYYY-MM-DD"}), 422
+                {"error": "Incorrect data format, should be YYYY-MM-DD"}
+            ), 422
         moves = db.get_moves_by_date(date=date_param)
         last_move = db.get_last_move_id_to_date(date=date_param)
     elif title_param:
@@ -338,58 +368,41 @@ def get_moves():
         moves = db.get_all_moves(limit=limit)
 
     last_move_id = last_move["id"] if last_move else None
-    moves_titles = [
-        m["item_title"] for m in moves if m["item_title"] is not None
-    ]
+    moves_titles = [m["item_title"] for m in moves if m["item_title"] is not None]
     games = games_db.search_games_multiple_igdb(moves_titles)
     games_images = {g["gameName"].lower(): g["box_art_url"] for g in games}
 
-    return jsonify({
-        "last_move_id":
-        last_move_id,
-        "moves": [{
-            "id":
-            m["id"],
-            "created_at":
-            m["created_at"],
-            "dice_roll":
-            m["dice_roll"],
-            "cell_from":
-            m["cell_from"],
-            "cell_to":
-            m["cell_to"],
-            "stair_from":
-            m["stair_from"],
-            "stair_to":
-            m["stair_to"],
-            "snake_from":
-            m["snake_from"],
-            "snake_to":
-            m["snake_to"],
-            "type":
-            m["type"],
-            "item_title":
-            m["item_title"],
-            "item_review":
-            m["item_review"],
-            "item_rating":
-            m["item_rating"],
-            "item_length":
-            m["item_length"],
-            "vod_link":
-            m["vod_link"],
-            "player_id":
-            m["player_id"],
-            "player_move_id":
-            m["player_move_id"],
-            "item_image":
-            games_images.get(m["item_title"].lower()),
-            "stream_title_category_duration":
-            db.calculate_time_by_category_name(
-                m["item_title"],
-                m["player_id"])["total_difference_in_seconds"],
-        } for m in moves],
-    })
+    return jsonify(
+        {
+            "last_move_id": last_move_id,
+            "moves": [
+                {
+                    "id": m["id"],
+                    "created_at": m["created_at"],
+                    "dice_roll": m["dice_roll"],
+                    "cell_from": m["cell_from"],
+                    "cell_to": m["cell_to"],
+                    "stair_from": m["stair_from"],
+                    "stair_to": m["stair_to"],
+                    "snake_from": m["snake_from"],
+                    "snake_to": m["snake_to"],
+                    "type": m["type"],
+                    "item_title": m["item_title"],
+                    "item_review": m["item_review"],
+                    "item_rating": m["item_rating"],
+                    "item_length": m["item_length"],
+                    "vod_link": m["vod_link"],
+                    "player_id": m["player_id"],
+                    "player_move_id": m["player_move_id"],
+                    "item_image": games_images.get(m["item_title"].lower()),
+                    "stream_title_category_duration": db.calculate_time_by_category_name(
+                        m["item_title"], m["player_id"]
+                    )["total_difference_in_seconds"],
+                }
+                for m in moves
+            ],
+        }
+    )
 
 
 @player_bp.route("/test_api/reset_pointauc_token", methods=["POST"])
@@ -407,7 +420,7 @@ def pointauc_result_callback():
     logging.info(str(data))
     require_fields = ["token", "winner_title"]
     for field in require_fields:
-        if field not in request.json:
+        if field not in data:
             return jsonify({"error": f"{field} is required"}), 400
 
     user_info = db.get_user_by_token(data["token"])
@@ -417,30 +430,49 @@ def pointauc_result_callback():
         try:
             if int(data["lots_count"]) > 2:
                 db.update_last_auction_result_by_player_id(
-                    user_info["id"], data["winner_title"], data["auc_value"])
+                    user_info["id"], data["winner_title"], data["auc_value"]
+                )
                 try:
                     scheduler.add_job(
                         notifications.on_pointauc_result,
+<<<<<<< HEAD
                         args=[user_info["username"], user_info["player_url_handle"], data["winner_title"]])
+=======
+                        args=[
+                            user_info["username"],
+                            user_info["player_url_handle"],
+                            data["winner_title"],
+                        ],
+                    )
+>>>>>>> origin/prod
                 except Exception as e:
                     logging.error(
-                        "Error send notification on pointauc result: " +
-                        str(e))
+                        "Error send notification on pointauc result: " + str(e)
+                    )
         except Exception as e:
-            db.update_last_auction_result_by_player_id(user_info["id"],
-                                                       data["winner_title"])
-            logger.error("Error update_last_auction_result_by_player_id " +
-                         str(e))
+            db.update_last_auction_result_by_player_id(
+                user_info["id"], data["winner_title"]
+            )
+            logging.error("Error update_last_auction_result_by_player_id " + str(e))
     else:
-        db.update_last_auction_result_by_player_id(user_info["id"],
-                                                   data["winner_title"])
+        db.update_last_auction_result_by_player_id(
+            user_info["id"], data["winner_title"]
+        )
         try:
             scheduler.add_job(
                 notifications.on_pointauc_result,
+<<<<<<< HEAD
                 args=[user_info["username"], user_info["player_url_handle"], data["winner_title"]])
+=======
+                args=[
+                    user_info["username"],
+                    user_info["player_url_handle"],
+                    data["winner_title"],
+                ],
+            )
+>>>>>>> origin/prod
         except Exception as e:
-            logging.error("Error send notification on pointauc result2: " +
-                          str(e))
+            logging.error("Error send notification on pointauc result2: " + str(e))
     return jsonify({"message": "updated successfully"})
 
 
@@ -450,7 +482,7 @@ def pointauc_timer_callback():
     logging.info(str(data))
     require_fields = ["token"]
     for field in require_fields:
-        if field not in request.json:
+        if field not in data:
             return jsonify({"error": f"{field} is required"}), 400
 
     user_info = db.get_user_by_token(data["token"])
@@ -462,25 +494,40 @@ def pointauc_timer_callback():
         db.update_last_auction_date_by_player_id(user_info["id"])
 
         try:
+<<<<<<< HEAD
             scheduler.add_job(notifications.on_pointauc_timer_started,
                               args=[user_info["username"], user_info["player_url_handle"]])
+=======
+            scheduler.add_job(
+                notifications.on_pointauc_timer_started,
+                args=[user_info["username"], user_info["player_url_handle"]],
+            )
+>>>>>>> origin/prod
         except Exception as e:
             logging.error(
                 "Error send notification on pointauc started, current time is None: "
-                + str(e))
+                + str(e)
+            )
     else:
         current_utc_time = datetime.utcnow()
         time_difference = current_utc_time - current_auc_timer_started_at
         if time_difference >= timedelta(
-                minutes=80):  # drop game time + auction default time
+            minutes=80
+        ):  # drop game time + auction default time
             db.update_last_auction_date_by_player_id(user_info["id"])
 
             try:
+<<<<<<< HEAD
                 scheduler.add_job(notifications.on_pointauc_timer_started,
                                   args=[user_info["username"], user_info["player_url_handle"]])
+=======
+                scheduler.add_job(
+                    notifications.on_pointauc_timer_started,
+                    args=[user_info["username"], user_info["player_url_handle"]],
+                )
+>>>>>>> origin/prod
             except Exception as e:
-                logging.error("Error send notification on pointauc started: " +
-                              str(e))
+                logging.error("Error send notification on pointauc started: " + str(e))
 
     return jsonify({"message": "updated successfully"})
 
