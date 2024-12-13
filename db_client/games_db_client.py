@@ -62,9 +62,7 @@ class GamesDatabaseClient:
                 """
                     SELECT g.gameName, g.box_art_url, g.release_year, g.game_id
                     FROM igdb_games g
-                    JOIN game_platforms gp ON g.id = gp.game_id
-                    WHERE gp.platform_id = 6
-                    AND LOWER(g.gameName) LIKE %s
+                    WHERE LOWER(g.gameName) LIKE %s
                     ORDER BY
                         CASE
                             WHEN LOWER(g.gameName) LIKE %s THEN 0
@@ -90,8 +88,7 @@ class GamesDatabaseClient:
                     """
                         SELECT g.gameName, g.box_art_url, g.release_year, g.game_id
                         FROM igdb_games g
-                        JOIN game_platforms gp ON g.id = gp.game_id
-                        WHERE gp.platform_id = 6 AND g.gameName = %s
+                        WHERE g.gameName = %s
                         ORDER BY LENGTH(g.gameName) ASC
                         LIMIT 1;
                     """,
