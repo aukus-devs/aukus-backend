@@ -9,6 +9,7 @@ from apscheduler.schedulers.background import BlockingScheduler
 from db_client.db_client import DatabaseClient
 import config
 import json
+import html
 
 load_dotenv()
 twitch_headers = {
@@ -156,7 +157,7 @@ def refresh_stream_statuses():
                         content = content["livestream"]
                         is_online = content["is_live"]
                         online_count = int(content["viewer_count"])
-                        category = content["categories"][0]["name"]
+                        category = html.unescape(content["categories"][0]["name"])
                         if (
                             category != player["player_stream_current_category"]
                             or player["player_is_online"] != is_online
