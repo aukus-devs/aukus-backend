@@ -767,6 +767,8 @@ class DatabaseClient:
                 AVG(CASE WHEN moves.type <> 'reroll' THEN ABS(moves.dice_roll) ELSE null END) as average_move,
                 AVG(
                   CASE
+                    WHEN moves.cell_to > 101
+                    THEN NULL
                     WHEN moves.item_length in ('tiny', 'short')
                     THEN ABS(moves.dice_roll)
                     WHEN moves.item_length = 'medium' and moves.cell_from < 81
