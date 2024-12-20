@@ -11,4 +11,4 @@ mv backend.log old_logs/backend_$d.log
 #nohup python3.10 only_api_app.py >> backend.log &
 nohup gunicorn 'only_api_app:create_app()'  --log-level debug --workers 4 --bind 127.0.0.1:5000  >> ./backend.log 2>&1 &
 nohup python background_jobs.py  >> ./backend.log 2>&1 &
-nohup sh aukus_logs_alert.sh >/dev/null 2>&1 &
+#nohup sh aukus_logs_alert.sh >/dev/null 2>&1 &
