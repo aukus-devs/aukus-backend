@@ -14,7 +14,7 @@ MYSQLCONF = {
     "host": "127.0.0.1",
     "user": MYSQL_LOGIN,
     "password": MYSQL_PASSWORD,
-    "db": "aukus_db",
+    "db": "aukus_2025_db",
     "port": 3306,
     "charset": "utf8mb4",
     "autocommit": True,
