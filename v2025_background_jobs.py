@@ -126,7 +126,7 @@ def refresh_stream_statuses():
                         + ",: "
                         + str(e)
                     )
-            elif player["kick_stream_link"]:
+            elif player["disabled_kick_stream_link"]: #disabled
                 # logging.info("Start kick check for " + player["username"] + ", URL: " + player["kick_stream_link"])
                 try:
                     url = "http://localhost:20080/v1"  # cloudflare bypass proxy
