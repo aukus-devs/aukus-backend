@@ -2,7 +2,7 @@ name: Rollup
 
 on:
   push:
-    branches: [ "prod" ]
+    branches: [ "v2024/prod" ]
 
 jobs:
   deploy:
