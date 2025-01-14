@@ -1,12 +1,13 @@
 from functools import wraps
 from db_client.games_db_client import GamesDatabaseClient
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, Response
 from db_client.db_client import DatabaseClient
 from datetime import date
 import secrets
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 import json
+import requests
 import os
 from dotenv import load_dotenv
 import logging
@@ -17,6 +18,7 @@ scheduler = BackgroundScheduler()
 db = DatabaseClient()
 games_db = GamesDatabaseClient()
 load_dotenv()
+random_org_api_key = os.getenv("RANDOM_ORG_API_KEY")
 scheduler.start()
 
 
@@ -527,3 +529,34 @@ def update_player_current_game():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@player_bp.route("/api/random", methods=["POST"])
+#@login_required
+def get_random():
+    data = request.get_json()
+    required_fields = ["num", "min", "max"]
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+    url = "https://api.random.org/json-rpc/4/invoke"
+    payload = json.dumps({
+      "jsonrpc": "2.0",
+      "method": "generateSignedIntegers",
+      "params": {
+        "apiKey": random_org_api_key,
+        "n": data["num"],
+        "min": data["min"],
+        "max": data["max"],
+        "replacement": True,
+    #    "pregeneratedRandomization": {
+    #      "id": "player_move_id=44"
+    #    }
+      },
+      "id": 1
+    })
+    headers = {
+      'Content-Type': 'application/json',
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return Response(response.text, mimetype='application/json')
