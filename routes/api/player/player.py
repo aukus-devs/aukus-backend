@@ -558,5 +558,6 @@ def get_random():
     headers = {
       'Content-Type': 'application/json',
     }
-    response = requests.request("POST", url, headers=headers, data=payload)
+    response = requests.request("POST", url, headers=headers, data=payload, timeout=5)
+    #TODO return own random nums if error
     return Response(response.text, mimetype='application/json')
