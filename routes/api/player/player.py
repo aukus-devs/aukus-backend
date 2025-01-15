@@ -12,6 +12,9 @@ import os
 from dotenv import load_dotenv
 import logging
 import notifications
+from random import randrange
+import base64
+import urllib.parse
 
 player_bp = Blueprint("player", __name__)
 scheduler = BackgroundScheduler()
@@ -531,6 +534,14 @@ def update_player_current_game():
         return jsonify({"error": str(e)}), 500
 
 
+def b64e(s):
+    sample_string = s
+    sample_string_bytes = sample_string.encode("utf-8")
+    base64_bytes = base64.b64encode(sample_string_bytes)
+    base64_string = base64_bytes.decode("utf-8")
+    return base64_string
+
+
 @player_bp.route("/api/random", methods=["POST"])
 #@login_required
 def get_random():
@@ -540,18 +551,21 @@ def get_random():
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
     url = "https://api.random.org/json-rpc/4/invoke"
+    num = int(data["num"])
+    max = int(data["max"])
+    min = int(data["min"])
     payload = json.dumps({
       "jsonrpc": "2.0",
       "method": "generateSignedIntegers",
       "params": {
         "apiKey": random_org_api_key,
-        "n": data["num"],
-        "min": data["min"],
-        "max": data["max"],
+        "n": num,
+        "min": min,
+        "max": max,
         "replacement": True,
-    #    "pregeneratedRandomization": {
-    #      "id": "player_move_id=44"
-    #    }
+        "pregeneratedRandomization": {
+          "id": "player_move_id="+str(randrange(500))
+        }
       },
       "id": 1
     })
@@ -559,5 +573,21 @@ def get_random():
       'Content-Type': 'application/json',
     }
     response = requests.request("POST", url, headers=headers, data=payload, timeout=5)
-    #TODO return own random nums if error
-    return Response(response.text, mimetype='application/json')
+    if response.status_code == 200 and "signature" in response.text:
+        result = json.dumps({
+          "isRandomOrgResult": True,
+          "randomOrgCheckForm": "https://api.random.org/signatures/form?format=json&random=" + urllib.parse.quote_plus(b64e(json.dumps(response.json()["result"]["random"], separators=(',', ':')))) + "&signature=" + urllib.parse.quote_plus(response.json()["result"]["signature"]),
+          "data": response.json()["result"]["random"]["data"]
+        })
+        #return jsonify(result), 200
+        return Response(result, mimetype='application/json')
+    else:
+        data = []
+        for i in range(num):
+            data.append(randrange(min, max + 1))
+        result = json.dumps({
+          "isRandomOrgResult": False,
+          "randomOrgCheckForm": None,
+          "data": data
+        })
+        return Response(result, mimetype='application/json')
