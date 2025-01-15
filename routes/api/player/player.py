@@ -547,19 +547,18 @@ def b64e(s):
 @login_required
 def get_random():
     data = request.get_json()
-    required_fields = ["num", "min", "max"]
+    required_fields = ["num", "min", "max", "is_test"]
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
-    is_test = True if "is_test" in data else False
+    is_test = data["is_test"]
     url = "https://api.random.org/json-rpc/4/invoke"
     num = int(data["num"])
     max = int(data["max"])
     min = int(data["min"])
     player_id = db.get_user_by_name(session["username"])["id"]
     last_player_move_id = db.get_last_move_id_by_player(player_id)
-    last_move_id = db.get_last_move_id()["id"]
-    next_player_move_id = last_player_move_id["id"] + 1 if last_player_move_id["id"] != None else last_move_id["id"] + 1 if last_move_id != None else 1
+    next_player_move_id = last_player_move_id["id"] + 1 if last_player_move_id["id"] != None else 1
     saved_random_result = db.get_random_result(player_id, next_player_move_id)
     if saved_random_result and is_test == False:
         return Response(saved_random_result["json_short_data"], mimetype='application/json')
