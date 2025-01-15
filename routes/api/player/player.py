@@ -543,7 +543,7 @@ def b64e(s):
 
 
 @player_bp.route("/api/random", methods=["POST"])
-#@login_required
+@login_required
 def get_random():
     data = request.get_json()
     required_fields = ["num", "min", "max"]
@@ -554,6 +554,21 @@ def get_random():
     num = int(data["num"])
     max = int(data["max"])
     min = int(data["min"])
+    last_cells = db.get_players_last_cell_number()
+    player_id = db.get_user_by_name(session["username"])["id"]
+    last_cell_number = next(
+        (
+            cell["cell_to"]
+            for cell in last_cells
+            if cell["player_id"] == player_id
+        ),
+        0,
+    )
+    next_player_move_id = last_cell_number + 1
+    saved_random_result = db.get_random_result(player_id, next_player_move_id)
+    if saved_random_result:
+        return Response(saved_random_result["json_short_data"], mimetype='application/json')
+
     payload = json.dumps({
       "jsonrpc": "2.0",
       "method": "generateSignedIntegers",
@@ -564,7 +579,7 @@ def get_random():
         "max": max,
         "replacement": True,
         "pregeneratedRandomization": {
-          "id": "player_move_id="+str(randrange(500))
+          "id": f"player_id={player_id}&player_move_id={next_player_move_id}"
         }
       },
       "id": 1
@@ -573,13 +588,19 @@ def get_random():
       'Content-Type': 'application/json',
     }
     response = requests.request("POST", url, headers=headers, data=payload, timeout=5)
+    result = None
+    random_org_result = None
+    try:
+        random_org_result = json.dumps(response.json())
+    except:
+        pass
     if response.status_code == 200 and "signature" in response.text:
         result = json.dumps({
           "isRandomOrgResult": True,
           "randomOrgCheckForm": "https://api.random.org/signatures/form?format=json&random=" + urllib.parse.quote_plus(b64e(json.dumps(response.json()["result"]["random"], separators=(',', ':')))) + "&signature=" + urllib.parse.quote_plus(response.json()["result"]["signature"]),
           "data": response.json()["result"]["random"]["data"]
         })
-        #return jsonify(result), 200
+        db.insert_random_result(player_id, next_player_move_id, True, result, random_org_result)
         return Response(result, mimetype='application/json')
     else:
         data = []
@@ -590,4 +611,5 @@ def get_random():
           "randomOrgCheckForm": None,
           "data": data
         })
+        db.insert_random_result(player_id, next_player_move_id, False, result, random_org_result)
         return Response(result, mimetype='application/json')

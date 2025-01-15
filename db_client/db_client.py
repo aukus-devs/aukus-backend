@@ -813,6 +813,25 @@ class DatabaseClient:
             cursor.execute("SELECT * FROM igdb_token")
             return cursor.fetchone()
 
+    def insert_random_result(
+        self, player_id, player_move_id, is_from_random_org, json_short_data, json_full_data = None
+    ):
+        with closing(self.conn().cursor()) as cursor:
+            cursor.execute(
+                "INSERT INTO random_results (player_id, player_move_id, json_short_data, json_full_data, is_from_random_org) VALUES (%s, %s, %s, %s, %s)",
+                (player_id, player_move_id, json_short_data, json_full_data, is_from_random_org),
+            )
+
+    def get_random_result(self, player_id, player_move_id):
+        sql = """
+            SELECT json_short_data, is_from_random_org
+            FROM random_results
+            WHERE player_id = %s and player_move_id = %s
+        """
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(sql, (player_id, player_move_id,))
+            return cursor.fetchone()
+
     def close(self):
         """Закрыть соединение с базой данных"""
         self.conn().close()
