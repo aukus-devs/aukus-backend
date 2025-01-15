@@ -394,6 +394,7 @@ def get_moves():
                     "stream_title_category_duration": db.calculate_time_by_category_name(
                         m["item_title"], m["player_id"]
                     )["total_difference_in_seconds"],
+                    "random_result": json.loads(db.get_random_result(player_id, m["player_move_id"])["json_short_data"]) if db.get_random_result(player_id, m["player_move_id"]) else None
                 }
                 for m in moves
             ],
