@@ -212,6 +212,24 @@ class DatabaseClient:
             )
             return cursor.fetchone()
 
+    def get_last_move_id_by_player(self, player_id):
+        """Получить последний ход перед днем"""
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                "SELECT MAX(id) as id FROM playermoves WHERE player_id = %s",
+                (player_id,),
+            )
+            return cursor.fetchone()
+
+    def get_last_move_id(self):
+        """Получить последний ход перед днем"""
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(
+                "SELECT MAX(id) as id FROM playermoves",
+                (),
+            )
+            return cursor.fetchone()
+
     def get_all_moves(self, limit: int = 50):
         """Получить все ходы"""
         with closing(self.conn().cursor(DictCursor)) as cursor:

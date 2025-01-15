@@ -551,25 +551,21 @@ def get_random():
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
+    is_test = True if "is_test" in data else False
     url = "https://api.random.org/json-rpc/4/invoke"
     num = int(data["num"])
     max = int(data["max"])
     min = int(data["min"])
-    last_cells = db.get_players_last_cell_number()
     player_id = db.get_user_by_name(session["username"])["id"]
-    last_cell_number = next(
-        (
-            cell["cell_to"]
-            for cell in last_cells
-            if cell["player_id"] == player_id
-        ),
-        0,
-    )
-    next_player_move_id = last_cell_number + 1
+    last_player_move_id = db.get_last_move_id_by_player(player_id)
+    last_move_id = db.get_last_move_id()["id"]
+    next_player_move_id = last_player_move_id["id"] + 1 if last_player_move_id["id"] != None else last_move_id["id"] + 1 if last_move_id != None else 1
     saved_random_result = db.get_random_result(player_id, next_player_move_id)
-    if saved_random_result:
+    if saved_random_result and is_test == False:
         return Response(saved_random_result["json_short_data"], mimetype='application/json')
-
+    metadata = f"player_id={player_id}&player_move_id={next_player_move_id}"
+    if is_test:
+        metadata = metadata + "&test=" + str(randrange(500))
     payload = json.dumps({
       "jsonrpc": "2.0",
       "method": "generateSignedIntegers",
@@ -580,7 +576,7 @@ def get_random():
         "max": max,
         "replacement": True,
         "pregeneratedRandomization": {
-          "id": f"player_id={player_id}&player_move_id={next_player_move_id}"
+          "id": metadata
         }
       },
       "id": 1
@@ -593,6 +589,7 @@ def get_random():
     random_org_result = None
     try:
         random_org_result = json.dumps(response.json())
+        logging.info("resp: " + response.text)
     except:
         pass
     if response.status_code == 200 and "signature" in response.text:
@@ -601,7 +598,8 @@ def get_random():
           "randomOrgCheckForm": "https://api.random.org/signatures/form?format=json&random=" + urllib.parse.quote_plus(b64e(json.dumps(response.json()["result"]["random"], separators=(',', ':')))) + "&signature=" + urllib.parse.quote_plus(response.json()["result"]["signature"]),
           "data": response.json()["result"]["random"]["data"]
         })
-        db.insert_random_result(player_id, next_player_move_id, True, result, random_org_result)
+        if is_test == False:
+            db.insert_random_result(player_id, next_player_move_id, True, result, random_org_result)
         return Response(result, mimetype='application/json')
     else:
         data = []
@@ -612,5 +610,6 @@ def get_random():
           "randomOrgCheckForm": None,
           "data": data
         })
-        db.insert_random_result(player_id, next_player_move_id, False, result, random_org_result)
+        if is_test == False:
+            db.insert_random_result(player_id, next_player_move_id, False, result, random_org_result)
         return Response(result, mimetype='application/json')
