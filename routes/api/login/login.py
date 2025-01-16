@@ -26,7 +26,6 @@ def login():
         password = request.form["password"].strip()
         user = db.get_user_by_login(username=username)
         if user:
-            password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
             is_valid = bcrypt.check_password_hash(user["password_hash"], password)
             if is_valid:
                 session["username"] = user["username"]
