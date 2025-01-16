@@ -17,6 +17,7 @@ jobs:
           port: ${{ secrets.PORT }}
           command_timeout: 2m
           script: cd ${{ secrets.APP_PATH_v2025 }} && git pull && sh restart.sh
+
       - name: Success to discord
         uses: rjstone/discord-webhook-notify@v1
         if: success()
@@ -24,9 +25,6 @@ jobs:
           severity: info
           details: Aukus backend v2025 upload success!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-
-      - name: Checkout repository
-        uses: actions/checkout@v2
 
       - name: Aukus backend v2025 upload failure!
         uses: rjstone/discord-webhook-notify@v1
