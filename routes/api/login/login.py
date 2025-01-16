@@ -14,18 +14,26 @@ auth_bp = Blueprint("auth", __name__)
 db = DatabaseClient()
 
 
+def init_bcrypt(bcrypt_instance):
+    global bcrypt
+    bcrypt = bcrypt_instance
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form["username"].strip()
         password = request.form["password"].strip()
-        user = db.get_user_by_logpass(username=username, password=password)
-
+        user = db.get_user_by_login(username=username)
         if user:
-            session["username"] = user["username"]
-            session["role"] = user["role"]
-            return redirect("/")
+            password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+            is_valid = bcrypt.check_password_hash(user["password_hash"], password)
+            if is_valid:
+                session["username"] = user["username"]
+                session["role"] = user["role"]
+                return redirect("/")
+            else:
+                flash("Неверное имя пользователя или пароль. Попробуйте снова.")
         else:
-            flash("Неверное имя пользователя или пароль. Попробуйте снова.")
-
+            flash("Пользователь не найден или отключён")
     return render_template("login.html")

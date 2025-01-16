@@ -98,11 +98,11 @@ class DatabaseClient:
             )
             return cursor.fetchone()
 
-    def get_user_by_logpass(self, username, password):
+    def get_user_by_login(self, username):
         with closing(self.conn().cursor(DictCursor)) as cursor:
             cursor.execute(
-                "SELECT * FROM users WHERE UPPER(username) = UPPER(%s) AND password = %s AND is_active = 1",
-                (username, password),
+                "SELECT * FROM users WHERE UPPER(username) = UPPER(%s) AND is_active = 1",
+                (username,),
             )
             return cursor.fetchone()
 
@@ -122,7 +122,7 @@ class DatabaseClient:
         current_game=None,
         url_handle=None,
         moder_for=None,
-        password=None,
+        password_hash=None,
         vk_stream_link=None,
         donation_link=None,
         player_stream_current_category=None,
@@ -154,9 +154,9 @@ class DatabaseClient:
         if moder_for is not None:
             updates.append("moder_for = %s")
             params.append(moder_for)
-        if password:
-            updates.append("password = %s")
-            params.append(password)
+        if password_hash:
+            updates.append("password_hash = %s")
+            params.append(password_hash)
         if vk_stream_link:
             updates.append("vk_stream_link = %s")
             params.append(vk_stream_link)

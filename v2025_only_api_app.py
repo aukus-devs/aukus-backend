@@ -2,7 +2,8 @@ import logging
 from datetime import datetime, timedelta
 from flask import Flask, session, request
 from flask_session.__init__ import Session
-from routes.api.login.login import auth_bp
+from flask_bcrypt import Bcrypt
+from routes.api.login.login import auth_bp, init_bcrypt
 from routes.api.player.player import player_bp
 from routes.api.canvas.canvas import canvas_bp
 from routes.api.games.games import games_bp
@@ -10,6 +11,7 @@ import config
 
 logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 
 
 def create_app():
@@ -25,7 +27,7 @@ def create_app():
     app.config["JSONIFY_MIMETYPE"] = "application/json; charset=utf-8"
 
     Session(app)
-
+    init_bcrypt(bcrypt)
     app.register_blueprint(auth_bp)
     app.register_blueprint(player_bp)
     app.register_blueprint(canvas_bp)
