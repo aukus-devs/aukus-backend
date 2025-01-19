@@ -1,20 +1,8 @@
 from functools import wraps
-from db_client.games_db_client import GamesDatabaseClient
 from flask import Blueprint, request, jsonify, session, Response
 from db_client.db_client import DatabaseClient
-from datetime import date
-import secrets
-from datetime import datetime, timedelta
-from apscheduler.schedulers.background import BackgroundScheduler
 import json
-import requests
-import os
-from dotenv import load_dotenv
 import logging
-import notifications
-from random import randrange
-import base64
-import urllib.parse
 
 rules_bp = Blueprint("rules", __name__)
 db = DatabaseClient()
