@@ -51,18 +51,32 @@ def on_player_move(
         turn_description = "Шейх-момент"
     try:
         # send to TG
-        message = ("👉 <b>" + username + "</b>\n🎲 Ролл кубика: <b>" +
-                   str(dice_roll) + "</b>, ход на карте: <b>" +
-                   str(cell_from) + "</b>-><b>" + str(cell_to) +
-                   "</b>\n⌛️ Играл: <b>" + time_duration +
-                   "</b>\n❔ Тип хода: <b>" + turn_description +
-                   "</b>\n🎮 Название: <b>" + item_title +
-                   "</b>\n⭐ ️Оценка: <b>" + str(item_rating) +
-                   "/10</b>\n✍️ Отзыв: <b>" + item_review + "</b>")
+        message = (
+            "👉 <b>"
+            + username
+            + "</b>\n🎲 Ролл кубика: <b>"
+            + str(dice_roll)
+            + "</b>, ход на карте: <b>"
+            + str(cell_from)
+            + "</b>-><b>"
+            + str(cell_to)
+            + "</b>\n⌛️ Играл: <b>"
+            + time_duration
+            + "</b>\n❔ Тип хода: <b>"
+            + turn_description
+            + "</b>\n🎮 Название: <b>"
+            + item_title
+            + "</b>\n⭐ ️Оценка: <b>"
+            + str(item_rating)
+            + "/10</b>\n✍️ Отзыв: <b>"
+            + item_review
+            + "</b>"
+        )
         message_data = {
             "caption": message,
-            "reply_markup":
-            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
+            "reply_markup": '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/'
+            + url_handle
+            + '"}]]}',
             "chat_id": AUKUS_TG_CHAT_ID,
             "parse_mode": "html",
             "photo": image_url,
@@ -83,33 +97,44 @@ def on_player_move(
             "https": AUKUS_SOCKS5_PROXY,
         }
         url = MOVES_DISCORD_WEBHOOK
-        description = ("🎲 Ролл кубика: **" + str(dice_roll) +
-                       "**, ход на карте: **" + str(cell_from) + "**->**" +
-                       str(cell_to) + "**\n⌛️ Играл: **" + time_duration +
-                       "**\n❔ Тип хода: **" + turn_description +
-                       "**\n 🎮Название: **" + item_title +
-                       "**\n⭐ ️Оценка: **" + str(item_rating) +
-                       "/10**\n✍ ️Отзыв: **" + item_review + "**")
-        payload = json.dumps({
-            "content":
-            "Новый ход!",
-            "embeds": [{
-                "title": "👉 **" + username + "**",
-                "url": "https://aukus.fun/players/" + url_handle,
-                "description": description,
-                "image": {
-                    "url": image_url
-                },
-            }],
-        })
+        description = (
+            "🎲 Ролл кубика: **"
+            + str(dice_roll)
+            + "**, ход на карте: **"
+            + str(cell_from)
+            + "**->**"
+            + str(cell_to)
+            + "**\n⌛️ Играл: **"
+            + time_duration
+            + "**\n❔ Тип хода: **"
+            + turn_description
+            + "**\n 🎮Название: **"
+            + item_title
+            + "**\n⭐ ️Оценка: **"
+            + str(item_rating)
+            + "/10**\n✍ ️Отзыв: **"
+            + item_review
+            + "**"
+        )
+        payload = json.dumps(
+            {
+                "content": "Новый ход!",
+                "embeds": [
+                    {
+                        "title": "👉 **" + username + "**",
+                        "url": "https://aukus.fun/players/" + url_handle,
+                        "description": description,
+                        "image": {"url": image_url},
+                    }
+                ],
+            }
+        )
         headers = {
             "Content-Type": "application/json",
         }
-        response = requests.post(url,
-                                 data=payload,
-                                 timeout=30,
-                                 proxies=proxies,
-                                 headers=headers)
+        response = requests.post(
+            url, data=payload, timeout=30, proxies=proxies, headers=headers
+        )
         # logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send on new move to Discord: " + str(e))
@@ -119,12 +144,14 @@ def on_pointauc_result(username, url_handle, title):
     try:
         return
         # send to TG
-        message = ("👉 <b>" + username + "</b>\n🎲 Выпало на ауке: <b>" +
-                   str(title) + "</b>")
+        message = (
+            "👉 <b>" + username + "</b>\n🎲 Выпало на ауке: <b>" + str(title) + "</b>"
+        )
         message_data = {
             "caption": message,
-            "reply_markup":
-            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
+            "reply_markup": '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/'
+            + url_handle
+            + '"}]]}',
             "chat_id": AUKUS_TG_CHAT_ID,
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
@@ -146,26 +173,25 @@ def on_pointauc_result(username, url_handle, title):
         }
         url = MOVES_DISCORD_WEBHOOK
         description = "🎲 Выпало на ауке: **" + str(title) + "**"
-        payload = json.dumps({
-            "content":
-            "Выпал новый лот на ауке!",
-            "embeds": [{
-                "title": "👉 **" + username + "**",
-                "url": "https://aukus.fun/players/" + url_handle,
-                "description": description,
-                "image": {
-                    "url": "https://aukus.fun/uploads/splash.jpg"
-                },
-            }],
-        })
+        payload = json.dumps(
+            {
+                "content": "Выпал новый лот на ауке!",
+                "embeds": [
+                    {
+                        "title": "👉 **" + username + "**",
+                        "url": "https://aukus.fun/players/" + url_handle,
+                        "description": description,
+                        "image": {"url": "https://aukus.fun/uploads/splash.jpg"},
+                    }
+                ],
+            }
+        )
         headers = {
             "Content-Type": "application/json",
         }
-        response = requests.post(url,
-                                 data=payload,
-                                 timeout=30,
-                                 proxies=proxies,
-                                 headers=headers)
+        response = requests.post(
+            url, data=payload, timeout=30, proxies=proxies, headers=headers
+        )
         # logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc result to Discord: " + str(e))
@@ -178,8 +204,9 @@ def on_pointauc_timer_started(username, url_handle):
         message = "⚡<b>" + username + "</b>\n <b>Начал аукцион!</b>"
         message_data = {
             "caption": message,
-            "reply_markup":
-            '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/' + url_handle + '"}]]}',
+            "reply_markup": '{"inline_keyboard": [[{"text": "Посмотреть на сайте", "url": "https://aukus.fun/players/'
+            + url_handle
+            + '"}]]}',
             "chat_id": AUKUS_TG_CHAT_ID,
             "parse_mode": "html",
             "photo": "https://aukus.fun/uploads/splash.jpg",
@@ -201,26 +228,25 @@ def on_pointauc_timer_started(username, url_handle):
         }
         url = MOVES_DISCORD_WEBHOOK
         description = "⚡️ **Начал аукцион!**"
-        payload = json.dumps({
-            "content":
-            "Новый аукцион!",
-            "embeds": [{
-                "title": "⚡ **" + username + "**",
-                "url": "https://aukus.fun/players/" + url_handle,
-                "description": description,
-                "image": {
-                    "url": "https://aukus.fun/uploads/splash.jpg"
-                },
-            }],
-        })
+        payload = json.dumps(
+            {
+                "content": "Новый аукцион!",
+                "embeds": [
+                    {
+                        "title": "⚡ **" + username + "**",
+                        "url": "https://aukus.fun/players/" + url_handle,
+                        "description": description,
+                        "image": {"url": "https://aukus.fun/uploads/splash.jpg"},
+                    }
+                ],
+            }
+        )
         headers = {
             "Content-Type": "application/json",
         }
-        response = requests.post(url,
-                                 data=payload,
-                                 timeout=30,
-                                 proxies=proxies,
-                                 headers=headers)
+        response = requests.post(
+            url, data=payload, timeout=30, proxies=proxies, headers=headers
+        )
         # logging.info("Discord response: " + response.text)
     except Exception as e:
         logging.error("Error send pointauc started to Discord: " + str(e))

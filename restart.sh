@@ -1,10 +1,10 @@
 #!/usr/bin/sh
 ps -ef | grep 'aukus_2025_logs_alert.sh' | awk '{print $2}'  | xargs -r kill -9
-sleep 2
+#sleep 2
 ps -ef | grep 'v2025_only_api_app' | awk '{print $2}'  | xargs -r kill -9
 ps -ef | grep 'v2025_only_api_app' | awk '{print $2}'  | xargs -r kill -9
 ps -ef | grep 'v2025_background_jobs' | awk '{print $2}'  | xargs -r kill -9
-sleep 2
+#sleep 2
 mkdir old_logs
 d=$(date +%Y-%m-%d-%H-%M-%S)
 mv backend.log old_logs/backend_$d.log

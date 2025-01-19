@@ -7,6 +7,7 @@ from routes.api.login.login import auth_bp, init_bcrypt
 from routes.api.player.player import player_bp
 from routes.api.canvas.canvas import canvas_bp
 from routes.api.games.games import games_bp
+from routes.api.rules.rules import rules_bp
 import config
 
 logging.basicConfig(level=logging.DEBUG)
@@ -32,6 +33,7 @@ def create_app():
     app.register_blueprint(player_bp)
     app.register_blueprint(canvas_bp)
     app.register_blueprint(games_bp)
+    app.register_blueprint(rules_bp)
     return app
 
 

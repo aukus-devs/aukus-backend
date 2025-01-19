@@ -394,7 +394,13 @@ def get_moves():
                     "stream_title_category_duration": db.calculate_time_by_category_name(
                         m["item_title"], m["player_id"]
                     )["total_difference_in_seconds"],
-                    "random_result": json.loads(db.get_random_result(player_id, m["player_move_id"])["json_short_data"]) if db.get_random_result(player_id, m["player_move_id"]) else None
+                    "random_result": json.loads(
+                        db.get_random_result(player_id, m["player_move_id"])[
+                            "json_short_data"
+                        ]
+                    )
+                    if db.get_random_result(player_id, m["player_move_id"])
+                    else None,
                 }
                 for m in moves
             ],
@@ -558,30 +564,34 @@ def get_random():
     min = int(data["min"])
     player_id = db.get_user_by_name(session["username"])["id"]
     last_player_move_id = db.get_last_move_id_by_player(player_id)
-    next_player_move_id = last_player_move_id["id"] + 1 if last_player_move_id["id"] != None else 1
+    next_player_move_id = (
+        last_player_move_id["id"] + 1 if last_player_move_id["id"] != None else 1
+    )
     saved_random_result = db.get_random_result(player_id, next_player_move_id)
     if saved_random_result and is_test == False:
-        return Response(saved_random_result["json_short_data"], mimetype='application/json')
+        return Response(
+            saved_random_result["json_short_data"], mimetype="application/json"
+        )
     metadata = f"player_id={player_id}&player_move_id={next_player_move_id}"
     if is_test:
         metadata = metadata + "&test=" + str(randrange(500))
-    payload = json.dumps({
-      "jsonrpc": "2.0",
-      "method": "generateSignedIntegers",
-      "params": {
-        "apiKey": random_org_api_key,
-        "n": num,
-        "min": min,
-        "max": max,
-        "replacement": True,
-        "pregeneratedRandomization": {
-          "id": metadata
+    payload = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "method": "generateSignedIntegers",
+            "params": {
+                "apiKey": random_org_api_key,
+                "n": num,
+                "min": min,
+                "max": max,
+                "replacement": True,
+                "pregeneratedRandomization": {"id": metadata},
+            },
+            "id": 1,
         }
-      },
-      "id": 1
-    })
+    )
     headers = {
-      'Content-Type': 'application/json',
+        "Content-Type": "application/json",
     }
     response = requests.request("POST", url, headers=headers, data=payload, timeout=5)
     result = None
@@ -592,23 +602,36 @@ def get_random():
     except:
         pass
     if response.status_code == 200 and "signature" in response.text:
-        result = json.dumps({
-          "isRandomOrgResult": True,
-          "randomOrgCheckForm": "https://api.random.org/signatures/form?format=json&random=" + urllib.parse.quote_plus(b64e(json.dumps(response.json()["result"]["random"], separators=(',', ':')))) + "&signature=" + urllib.parse.quote_plus(response.json()["result"]["signature"]),
-          "data": response.json()["result"]["random"]["data"]
-        })
+        result = json.dumps(
+            {
+                "isRandomOrgResult": True,
+                "randomOrgCheckForm": "https://api.random.org/signatures/form?format=json&random="
+                + urllib.parse.quote_plus(
+                    b64e(
+                        json.dumps(
+                            response.json()["result"]["random"], separators=(",", ":")
+                        )
+                    )
+                )
+                + "&signature="
+                + urllib.parse.quote_plus(response.json()["result"]["signature"]),
+                "data": response.json()["result"]["random"]["data"],
+            }
+        )
         if is_test == False:
-            db.insert_random_result(player_id, next_player_move_id, True, result, random_org_result)
-        return Response(result, mimetype='application/json')
+            db.insert_random_result(
+                player_id, next_player_move_id, True, result, random_org_result
+            )
+        return Response(result, mimetype="application/json")
     else:
         data = []
         for i in range(num):
             data.append(randrange(min, max + 1))
-        result = json.dumps({
-          "isRandomOrgResult": False,
-          "randomOrgCheckForm": None,
-          "data": data
-        })
+        result = json.dumps(
+            {"isRandomOrgResult": False, "randomOrgCheckForm": None, "data": data}
+        )
         if is_test == False:
-            db.insert_random_result(player_id, next_player_move_id, False, result, random_org_result)
-        return Response(result, mimetype='application/json')
+            db.insert_random_result(
+                player_id, next_player_move_id, False, result, random_org_result
+            )
+        return Response(result, mimetype="application/json")

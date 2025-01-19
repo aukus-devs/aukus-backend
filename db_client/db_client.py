@@ -734,23 +734,23 @@ class DatabaseClient:
                 """,
                     (category, online_count, player_id),
                 )
-                #cursor.execute(
+                # cursor.execute(
                 #    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
                 #    (
                 #        category,
                 #        online_count,
                 #        player_id,
                 #    ),
-                #)
-            #else:
-                #cursor.execute(
-                #    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
-                #    (
-                #        "Offline",
-                #        online_count,
-                #        player_id,
-                #    ),
-                #)
+                # )
+            # else:
+            # cursor.execute(
+            #    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
+            #    (
+            #        "Offline",
+            #        online_count,
+            #        player_id,
+            #    ),
+            # )
 
     def update_player_pointauc_token(self, player_id: int, token: str):
         """Обновить поле pointauc_token в таблице users"""
@@ -832,12 +832,23 @@ class DatabaseClient:
             return cursor.fetchone()
 
     def insert_random_result(
-        self, player_id, player_move_id, is_from_random_org, json_short_data, json_full_data = None
+        self,
+        player_id,
+        player_move_id,
+        is_from_random_org,
+        json_short_data,
+        json_full_data=None,
     ):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "INSERT INTO random_results (player_id, player_move_id, json_short_data, json_full_data, is_from_random_org) VALUES (%s, %s, %s, %s, %s)",
-                (player_id, player_move_id, json_short_data, json_full_data, is_from_random_org),
+                (
+                    player_id,
+                    player_move_id,
+                    json_short_data,
+                    json_full_data,
+                    is_from_random_org,
+                ),
             )
 
     def get_random_result(self, player_id, player_move_id):
@@ -847,8 +858,33 @@ class DatabaseClient:
             WHERE player_id = %s and player_move_id = %s
         """
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute(sql, (player_id, player_move_id,))
+            cursor.execute(
+                sql,
+                (
+                    player_id,
+                    player_move_id,
+                ),
+            )
             return cursor.fetchone()
+
+    def insert_rules(self, rules_json):
+        with closing(self.conn().cursor()) as cursor:
+            cursor.execute(
+                "INSERT INTO rules (rules_data) VALUES (%s)",
+                (rules_json,),
+            )
+
+    def get_rules(self, all=False):
+        sql = """
+            SELECT *
+            FROM rules
+            ORDER BY version DESC
+        """
+        if not all:
+            sql += " LIMIT 1"
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()
 
     def close(self):
         """Закрыть соединение с базой данных"""
