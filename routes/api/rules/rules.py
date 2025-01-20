@@ -38,7 +38,7 @@ def available_for_roles(roles=None):
 
 @rules_bp.route("/api/rules", methods=["POST"])
 @login_required
-@available_for_roles(["admin"])
+@available_for_roles(["admin", "player"])
 def insert_rules():
     data = request.get_json()
     required_fields = ["rule_data"]
