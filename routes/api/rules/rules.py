@@ -60,7 +60,7 @@ def get_rules():
         rule = db.get_rules()[0]
         result = {
             "rules_data": rule["rules_data"],
-            "version": rule["version"],
+            "version": str(rule["version"]),
             "id": rule["id"],
         }
         return jsonify(result), 200
@@ -75,7 +75,7 @@ def get_all_rules():
         result = [
             {
                 "rules_data": rule["rules_data"],
-                "version": rule["version"],
+                "version": str(rule["version"]),
                 "id": rule["id"],
             }
             for rule in rules
