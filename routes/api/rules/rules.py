@@ -59,7 +59,7 @@ def get_rules():
     try:
         rule = db.get_rules()[0]
         result = {
-            "rules_data": json.loads(rule["rules_data"]),
+            "rules_data": rule["rules_data"],
             "version": rule["version"],
             "id": rule["id"],
         }
@@ -74,7 +74,7 @@ def get_all_rules():
         rules = db.get_rules(all=True)
         result = [
             {
-                "rules_data": json.loads(rule["rules_data"]),
+                "rules_data": rule["rules_data"],
                 "version": rule["version"],
                 "id": rule["id"],
             }
