@@ -105,10 +105,13 @@ class DatabaseClient:
             )
             return cursor.fetchone()
 
-    def get_all_users(self):
+    def get_all_users(self, only_is_active=True):
         """Получить всех пользователей"""
         with closing(self.conn().cursor(DictCursor)) as cursor:
-            cursor.execute("SELECT * FROM users WHERE is_active = 1")
+            if only_is_active:
+                cursor.execute("SELECT * FROM users WHERE is_active = 1")
+            else:
+                cursor.execute("SELECT * FROM users")
             return cursor.fetchall()
 
     def update_user(
@@ -625,13 +628,14 @@ class DatabaseClient:
             )
             return z_index
 
-    def get_last_image_id(self, player_id):
-        """Получить ID последнего изображения игрока"""
+    def get_last_image_id(self):
+        """Получить ID последнего изображения"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
-                "SELECT id FROM PlayerFiles WHERE player_id = %s ORDER BY id DESC LIMIT 1",
-                (player_id,),
-            )
+                """SELECT COALESCE(
+                       (SELECT MAX(id) FROM PlayerFiles),
+                       0
+                   ) AS max_id;""")
             return cursor.fetchone()
 
     def update_last_auction_result_by_player_id(
@@ -667,6 +671,16 @@ class DatabaseClient:
             cursor.execute(sql, (player_id,))
             return cursor.fetchall()
 
+    def get_player_files_dict_by_player_id(self, player_id):
+        sql = """
+            SELECT *
+            FROM PlayerFiles
+            WHERE player_id = %s
+        """
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute(sql, (player_id,))
+            return cursor.fetchall()
+
     def delete_file(self, file_id):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute("DELETE FROM PlayerFiles WHERE id = %s", (file_id,))
@@ -682,6 +696,15 @@ class DatabaseClient:
             cursor.execute(
                 "UPDATE PlayerFiles SET width = %s, height = %s, x = %s, y = %s, rotation = %s, zIndex = %s, scaleX = %s, scaleY = %s WHERE id = %s",
                 (width, height, x, y, rotation, z_index, scale_x, scale_y, file_id),
+            )
+
+    def update_player_files_url_by_file_id(
+        self, file_id, url
+    ):
+        with closing(self.conn().cursor()) as cursor:
+            cursor.execute(
+                "UPDATE PlayerFiles SET url = %s WHERE id = %s",
+                (url, file_id),
             )
 
     def insert_player_files_by_player_id(
