@@ -644,13 +644,14 @@ class DatabaseClient:
             )
             return z_index
 
-    def get_last_image_id(self, player_id):
-        """Получить ID последнего изображения игрока"""
+    def get_last_image_id(self):
+        """Получить ID последнего изображения"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
-                "SELECT id FROM PlayerFiles WHERE player_id = %s ORDER BY id DESC LIMIT 1",
-                (player_id,),
-            )
+                """SELECT COALESCE(
+                       (SELECT MAX(id) FROM PlayerFiles),
+                       0
+                   ) AS max_id;""")
             return cursor.fetchone()
 
     def update_last_auction_result_by_player_id(
