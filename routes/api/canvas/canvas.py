@@ -1,7 +1,6 @@
 from functools import wraps
 from flask import request, session, jsonify, Blueprint
 
-from config import UPLOAD_FOLDER, BASE_DIR
 from db_client.db_client import DatabaseClient
 from boto_s3 import upload_file_s3, delete_file_s3
 import urllib.parse
