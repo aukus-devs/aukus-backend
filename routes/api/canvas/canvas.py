@@ -3,6 +3,7 @@ from flask import request, session, jsonify, Blueprint
 
 from config import UPLOAD_FOLDER, BASE_DIR
 from db_client.db_client import DatabaseClient
+from boto_s3 import upload_file_s3, delete_file_s3
 
 canvas_bp = Blueprint("canvas", __name__)
 db = DatabaseClient()
@@ -42,22 +43,14 @@ def upload_canvas_image(player_id):
     file = request.files["file"]
     width = request.form["width"]
     height = request.form["height"]
-    last_file_id = db.get_last_image_id(player_id=player_id)
+    id = db.get_last_image_id()[0] + 1
     if not file.filename:
         return jsonify({"error": "No file found"})
-
-    file_extension = file.filename.rsplit(".", 1)[1].lower()
-    name = (
-        str(player_id) + "-" + str(last_file_id[0] + 1) + "." + file_extension
-        if last_file_id
-        else str(player_id) + "-" + str("1") + "." + file_extension
-    )
-    file.save(BASE_DIR + UPLOAD_FOLDER + "/" + name)
-    url = str("/uploads/" + name)
+    url = upload_file_s3(file, f"{player_id}-{id}-{file.filename}")
     z_index = db.add_image(player_id=player_id, url=url, width=width, height=height)
     return jsonify(
         {
-            "id": last_file_id[0] + 1 if last_file_id else 1,
+            "id": id,
             "rotation": 0.0,
             "x": 0.0,
             "y": 0.0,
@@ -137,6 +130,7 @@ def update_canvas(player_id):
             )
         for i in ids_to_delete:
             db.delete_file(file_id=i)
+            delete_file_s3(i)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
