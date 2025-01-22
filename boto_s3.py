@@ -13,7 +13,7 @@ bucket = conn.get_bucket('aukus-2025-prod')
 
 def upload_file_s3(file, file_id) -> tuple[str | None, Exception | None]:
     try:
-        file_key_1 = Key(conn.get_bucket('aukus-2025-prod2'))
+        file_key_1 = Key(bucket)
         file_key_1.key = file_id
         file_key_1.set_contents_from_file(file)
         return f'https://storage.yandexcloud.net/aukus-2025-prod/{file_id}', None
