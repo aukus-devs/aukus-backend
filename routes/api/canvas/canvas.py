@@ -1,9 +1,10 @@
 from functools import wraps
 from flask import request, session, jsonify, Blueprint
 
-from config import UPLOAD_FOLDER, BASE_DIR
 from db_client.db_client import DatabaseClient
 from boto_s3 import upload_file_s3, delete_file_s3
+import urllib.parse
+import logging
 
 canvas_bp = Blueprint("canvas", __name__)
 db = DatabaseClient()
@@ -46,7 +47,9 @@ def upload_canvas_image(player_id):
     id = db.get_last_image_id()[0] + 1
     if not file.filename:
         return jsonify({"error": "No file found"})
-    url = upload_file_s3(file, f"{player_id}-{id}-{file.filename}")
+    url, s3error = upload_file_s3(file, urllib.parse.quote_plus(f"{player_id}-{id}-{file.filename}"))
+    if s3error:
+        return jsonify({"error": f"Error upload file to s3: {s3error}"}), 500
     z_index = db.add_image(player_id=player_id, url=url, width=width, height=height)
     return jsonify(
         {
@@ -132,6 +135,7 @@ def update_canvas(player_id):
             db.delete_file(file_id=i)
             delete_file_s3(i)
     except Exception as e:
+        logging.error(str(e))
         return jsonify({"error": str(e)}), 500
 
     return jsonify(

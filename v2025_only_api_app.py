@@ -17,7 +17,6 @@ bcrypt = Bcrypt(app)
 
 def create_app():
     app.secret_key = config.SESSION_SECRET
-    app.config["UPLOAD_FOLDER"] = config.UPLOAD_FOLDER
     app.config["SESSION_PERMANENT"] = True
     app.config["SESSION_TYPE"] = "filesystem"
     app.config["SESSION_FILE_THRESHOLD"] = 250
