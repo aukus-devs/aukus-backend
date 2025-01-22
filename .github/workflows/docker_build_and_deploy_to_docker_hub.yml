@@ -1,4 +1,4 @@
-name: Docker build and deploy to aukus.su
+name: Docker build and deploy to docker hub
 
 on:
   push:

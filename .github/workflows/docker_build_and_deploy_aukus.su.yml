@@ -1,4 +1,4 @@
-name: Docker build and deploy to aukus.su
+name: Docker pull to aukus.su
 
 on:
   workflow_call:
@@ -6,6 +6,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: v2025-prod
     steps:
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
