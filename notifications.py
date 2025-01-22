@@ -27,7 +27,6 @@ def on_player_move(
     item_rating,
     time_duration,
 ):
-    return
     if time_duration is None:
         time_duration = "[ДАННЫЕ УДАЛЕНЫ]"
     else:
@@ -142,7 +141,6 @@ def on_player_move(
 
 def on_pointauc_result(username, url_handle, title):
     try:
-        return
         # send to TG
         message = (
             "👉 <b>" + username + "</b>\n🎲 Выпало на ауке: <b>" + str(title) + "</b>"
@@ -199,7 +197,6 @@ def on_pointauc_result(username, url_handle, title):
 
 def on_pointauc_timer_started(username, url_handle):
     try:
-        return
         # send to TG
         message = "⚡<b>" + username + "</b>\n <b>Начал аукцион!</b>"
         message_data = {

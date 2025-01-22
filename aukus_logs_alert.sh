@@ -1,5 +1,5 @@
 #!/usr/bin/sh
-tail -fn0 backend.log | \
+tail -Fn0 backend.log | \
 while read line ; do
         echo "$line" | grep -i "error" | grep -v "errorlog" | grep -v "See wait_timeout and interactive_timeout"
         if [ $? = 0 ]
