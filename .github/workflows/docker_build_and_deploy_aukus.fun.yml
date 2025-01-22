@@ -1,4 +1,4 @@
-name: Docker build and deploy
+name: Docker build and deploy to aukus.fun
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.HOST }}
+          host: ${{ secrets.HOST_AUKUS_FUN }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
@@ -41,7 +41,7 @@ jobs:
         if: success()
         with:
           severity: info
-          details: Aukus backend v2025 upload success!
+          details: Aukus backend v2025 upload to aukus.fun success!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
 
       - name: Aukus backend v2025 upload failure!
@@ -49,5 +49,5 @@ jobs:
         if: failure()
         with:
           severity: error
-          details: Aukus backend upload failure!
+          details: Aukus backend upload to aukus.fun failure!
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
