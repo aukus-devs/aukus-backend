@@ -3,7 +3,6 @@ from flask import request, session, jsonify, Blueprint
 
 from db_client.db_client import DatabaseClient
 from boto_s3 import upload_file_s3, delete_file_s3
-import urllib.parse
 import logging
 
 canvas_bp = Blueprint("canvas", __name__)
@@ -48,10 +47,11 @@ def upload_canvas_image(player_id):
     if not file.filename:
         return jsonify({"error": "No file found"})
 
-    url = upload_file_s3(file, urllib.parse.quote_plus(f"{player_id}-{id}-{file.filename}"))
-    if url is Exception:
-        return jsonify({"error": "Error upload file to s3: ${url}"}), 500
-    z_index = db.add_image(player_id=player_id, url=url, width=width, height=height)
+    s3_file_id = f"{player_id}-{id}-{file.filename}"
+    url, s3error = upload_file_s3(file, s3_file_id)
+    if s3error:
+        return jsonify({"error": f"Error upload file to s3: {s3error}"}), 500
+    z_index = db.add_image(player_id=player_id, url=url, s3_file_id=s3_file_id, width=width, height=height)
     return jsonify(
         {
             "id": id,
@@ -133,8 +133,8 @@ def update_canvas(player_id):
                 scale_y=i["scaleY"],
             )
         for i in ids_to_delete:
+            delete_file_s3(db.get_file(file_id=i)["s3_file_id"])
             db.delete_file(file_id=i)
-            delete_file_s3(i)
     except Exception as e:
         logging.error(str(e))
         return jsonify({"error": str(e)}), 500
