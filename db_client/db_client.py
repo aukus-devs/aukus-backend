@@ -632,7 +632,7 @@ class DatabaseClient:
                 self.remove_moves_by_player_id(i["player_id"])
         return True
 
-    def add_image(self, player_id, url, width, height, x=0, y=0, rotation=0):
+    def add_image(self, player_id, url, s3_file_id, width, height, x=0, y=0, rotation=0):
         """Добавить изображение"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
@@ -641,9 +641,9 @@ class DatabaseClient:
             z_index = cursor.fetchone()
             z_index = (z_index[0] + 1) if z_index[0] is not None else 0
             cursor.execute(
-                "INSERT INTO PlayerFiles (player_id, rotation, x, y, url, width, height, zIndex)"
-                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                (player_id, rotation, x, y, url, width, height, z_index),
+                "INSERT INTO PlayerFiles (player_id, rotation, x, y, url, s3_file_id, width, height, zIndex)"
+                " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (player_id, rotation, x, y, url, s3_file_id, width, height, z_index),
             )
             return z_index
 
@@ -712,6 +712,11 @@ class DatabaseClient:
     def delete_file(self, file_id):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute("DELETE FROM PlayerFiles WHERE id = %s", (file_id,))
+
+    def get_file(self, file_id):
+        with closing(self.conn().cursor(DictCursor)) as cursor:
+            cursor.execute("SELECT * FROM PlayerFiles WHERE id = %s", (file_id,))
+            return cursor.fetchone()
 
     def delete_files_by_player_id(self, player_id):
         with closing(self.conn().cursor()) as cursor:
