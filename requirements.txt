@@ -18,4 +18,6 @@ Flask-Session==0.8.0
 mysqlclient==2.2.4
 Flask-Bcrypt==1.0.1
 boto==2.49.0
+requests
+requests[socks]
 botocore==1.36.2
