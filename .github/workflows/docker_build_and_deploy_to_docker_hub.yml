@@ -37,7 +37,19 @@ jobs:
   call-deploy-to-aukus-fun:
     needs: deploy
     uses: ./.github/workflows/docker_build_and_deploy_aukus.fun.yml
+    with:
+      host: ${{ secrets.HOST_AUKUS_FUN }}
+      username: ${{ secrets.USERNAME }}
+      password: ${{ secrets.PASSWORD }}
+      port: ${{ secrets.PORT }}
+      webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
 
   call-deploy-to-aukus-su:
     needs: deploy
     uses: ./.github/workflows/docker_build_and_deploy_aukus.su.yml
+    with:
+      host: ${{ secrets.HOST_AUKUS_SU }}
+      username: ${{ secrets.USERNAME }}
+      password: ${{ secrets.PASSWORD }}
+      port: ${{ secrets.PORT }}
+      webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
