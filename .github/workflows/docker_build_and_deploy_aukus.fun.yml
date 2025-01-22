@@ -5,24 +5,14 @@ on:
     secrets:
       host:
         description: "Host for SSH"
-        required: true
-        type: string
       username:
         description: "Username for SSH"
-        required: true
-        type: string
       password:
         description: "Password for SSH"
-        required: true
-        type: string
       port:
         description: "Port for SSH"
-        required: true
-        type: string
       webhook_url:
         description: "Discord webhook URL"
-        required: true
-        type: string
 
 jobs:
   deploy:
