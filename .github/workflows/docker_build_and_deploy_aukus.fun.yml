@@ -2,7 +2,7 @@ name: Docker pull to aukus.fun
 
 on:
   workflow_call:
-    inputs:
+    secrets:
       host:
         description: "Host for SSH"
         required: true
@@ -31,10 +31,10 @@ jobs:
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ inputs.host }}
-          username: ${{ inputs.username }}
-          password: ${{ inputs.password }}
-          port: ${{ inputs.port }}
+          host: ${{ secrets.host }}
+          username: ${{ secrets.username }}
+          password: ${{ secrets.password }}
+          port: ${{ secrets.port }}
           command_timeout: 2m
           script: docker pull olegsvs/aukus:2025-prod && docker stop aukus_2025_prod || true && docker rm aukus_2025_prod || true && docker run -d --env-file /home/aukus/.env_2025_prod --net=host --name aukus_2025_prod -it olegsvs/aukus:2025-prod
 
@@ -44,7 +44,7 @@ jobs:
         with:
           severity: info
           details: Aukus backend v2025 upload to aukus.fun success!
-          webhookUrl: ${{ inputs.webhook_url }}
+          webhookUrl: ${{ secrets.webhook_url }}
 
       - name: Aukus backend v2025 upload failure!
         uses: rjstone/discord-webhook-notify@v1
@@ -52,4 +52,4 @@ jobs:
         with:
           severity: error
           details: Aukus backend upload to aukus.fun failure!
-          webhookUrl: ${{ inputs.webhook_url }}
+          webhookUrl: ${{ secrets.webhook_url }}
