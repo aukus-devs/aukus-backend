@@ -34,7 +34,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
           command_timeout: 2m
-          script: docker pull olegsvs/aukus:2024-prod && docker stop aukus_2024_prod || true && docker rm aukus_2024_prod || true && docker run -d --env-file /home/aukus/.env_2024_prod --net=host -v "/home/aukus/2024_prod_uploads":/app/static/uploads --name aukus_2024_prod -it olegsvs/aukus:2024-prod
+          script: docker pull olegsvs/aukus:2024-prod && docker stop aukus_2024_prod || true && docker rm aukus_2024_prod || true && docker run -d --env-file /home/aukus/.env_2024_prod --net=host --name aukus_2024_prod -it olegsvs/aukus:2024-prod
 
       - name: Success to discord
         uses: rjstone/discord-webhook-notify@v1
