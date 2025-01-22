@@ -6,6 +6,6 @@ while read line ; do
         then
              msg=${line//\"/\\\"} ; \
              #echo "test $msg"
-             curl -x $SOCKS_5_PROXY -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"v2025: $msg\"}" $DISCORD_WEBHOOK
+             curl -x $SOCKS_5_PROXY -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST --data "{\"content\": \"v2025: $msg\"}" $LOGS_DISCORD_WEBHOOK
         fi
 done
