@@ -11,11 +11,12 @@ load_dotenv()
 MYSQL_LOGIN = os.getenv("MYSQL_LOGIN")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 MYSQL_HOST = os.getenv("MYSQL_HOST")
+MYSQL_GAMES_DB_NAME = os.getenv("MYSQL_GAMES_DB_NAME")
 MYSQLCONF = {
     "host": MYSQL_HOST,
     "user": MYSQL_LOGIN,
     "password": MYSQL_PASSWORD,
-    "db": "twitch_games_db",
+    "db": MYSQL_GAMES_DB_NAME,
     "port": 3306,
     "charset": "utf8mb4",
     "autocommit": True,
