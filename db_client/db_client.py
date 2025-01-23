@@ -11,11 +11,12 @@ load_dotenv()
 MYSQL_LOGIN = os.getenv("MYSQL_LOGIN")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 MYSQL_HOST = os.getenv("MYSQL_HOST")
+MYSQL_AUKUS_DB_NAME = os.getenv("MYSQL_AUKUS_DB_NAME")
 MYSQLCONF = {
     "host": MYSQL_HOST,
     "user": MYSQL_LOGIN,
     "password": MYSQL_PASSWORD,
-    "db": "aukus_db",
+    "db": MYSQL_AUKUS_DB_NAME,
     "port": 3306,
     "charset": "utf8mb4",
     "autocommit": True,
