@@ -25,10 +25,12 @@ bcrypt = Bcrypt(app)
 def create_app():
     app.secret_key = config.SESSION_SECRET
     app.config["SESSION_PERMANENT"] = True
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://{MYSQL_LOGIN}:{MYSQL_PASSWORD}@{MYSQL_HOST}/aukus_2025_db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"mysql://{MYSQL_LOGIN}:{MYSQL_PASSWORD}@{MYSQL_HOST}/aukus_2025_db"
+    )
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SESSION_TYPE"] = "sqlalchemy"
-    app.config['SESSION_SQLALCHEMY'] = SQLAlchemy(app)
+    app.config["SESSION_SQLALCHEMY"] = SQLAlchemy(app)
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
     app.config["DEBUG"] = True
     app.config["JSON_AS_ASCII"] = False

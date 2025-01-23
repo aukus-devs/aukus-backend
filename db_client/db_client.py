@@ -620,12 +620,16 @@ class DatabaseClient:
         """Удалить все ходы игрока"""
         player_id = self.get_user_by_name(username)["id"]
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM player_moves WHERE player_id = %s", (player_id,))
+            cursor.execute(
+                "DELETE FROM player_moves WHERE player_id = %s", (player_id,)
+            )
 
     def remove_moves_by_player_id(self, player_id):
         """Удалить все ходы игрока"""
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM player_moves WHERE player_id = %s", (player_id,))
+            cursor.execute(
+                "DELETE FROM player_moves WHERE player_id = %s", (player_id,)
+            )
 
     def reset_finished_players(self):
         last_cells = self.get_players_last_cell_number()
@@ -634,11 +638,14 @@ class DatabaseClient:
                 self.remove_moves_by_player_id(i["player_id"])
         return True
 
-    def add_image(self, player_id, url, s3_file_id, width, height, x=0, y=0, rotation=0):
+    def add_image(
+        self, player_id, url, s3_file_id, width, height, x=0, y=0, rotation=0
+    ):
         """Добавить изображение"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
-                "SELECT MAX(zIndex) FROM player_files WHERE player_id = %s", (player_id,)
+                "SELECT MAX(zIndex) FROM player_files WHERE player_id = %s",
+                (player_id,),
             )
             z_index = cursor.fetchone()
             z_index = (z_index[0] + 1) if z_index[0] is not None else 0
@@ -656,7 +663,8 @@ class DatabaseClient:
                 """SELECT COALESCE(
                        (SELECT MAX(id) FROM player_files),
                        0
-                   ) AS max_id;""")
+                   ) AS max_id;"""
+            )
             return cursor.fetchone()
 
     def update_last_auction_result_by_player_id(
@@ -702,9 +710,7 @@ class DatabaseClient:
             cursor.execute(sql, (player_id,))
             return cursor.fetchall()
 
-    def update_player_files_url_by_file_id(
-        self, file_id, url
-    ):
+    def update_player_files_url_by_file_id(self, file_id, url):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "UPDATE player_files SET url = %s WHERE id = %s",
@@ -722,7 +728,9 @@ class DatabaseClient:
 
     def delete_files_by_player_id(self, player_id):
         with closing(self.conn().cursor()) as cursor:
-            cursor.execute("DELETE FROM player_files WHERE player_id = %s", (player_id,))
+            cursor.execute(
+                "DELETE FROM player_files WHERE player_id = %s", (player_id,)
+            )
 
     def update_player_files_by_file_id(
         self, file_id, width, height, x, y, rotation, z_index, scale_x=1, scale_y=1
