@@ -12,6 +12,7 @@ MYSQL_LOGIN = os.getenv("MYSQL_LOGIN")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 MYSQL_HOST = os.getenv("MYSQL_HOST")
 MYSQL_AUKUS_DB_NAME = os.getenv("MYSQL_AUKUS_DB_NAME")
+AUKUS_SAVE_STREAM_CATEGORIES = os.getenv("AUKUS_SAVE_STREAM_CATEGORIES")
 MYSQLCONF = {
     "host": MYSQL_HOST,
     "user": MYSQL_LOGIN,
@@ -763,23 +764,25 @@ class DatabaseClient:
                 """,
                     (category, online_count, player_id),
                 )
-                # cursor.execute(
-                #    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
-                #    (
-                #        category,
-                #        online_count,
-                #        player_id,
-                #    ),
-                # )
-            # else:
-            # cursor.execute(
-            #    "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
-            #    (
-            #        "Offline",
-            #        online_count,
-            #        player_id,
-            #    ),
-            # )
+                if AUKUS_SAVE_STREAM_CATEGORIES:
+                    cursor.execute(
+                        "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
+                        (
+                            category,
+                            online_count,
+                            player_id,
+                        ),
+                    )
+            else:
+                if AUKUS_SAVE_STREAM_CATEGORIES:
+                    cursor.execute(
+                        "INSERT INTO categories_history (category_name, online_count, player_id) VALUES (%s, %s, %s)",
+                        (
+                            "Offline",
+                            online_count,
+                            player_id,
+                        ),
+                    )
 
     def update_player_pointauc_token(self, player_id: int, token: str):
         """Обновить поле pointauc_token в таблице users"""
