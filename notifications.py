@@ -11,6 +11,7 @@ MOVES_DISCORD_WEBHOOK = os.getenv("MOVES_DISCORD_WEBHOOK")
 AUKUS_TG_BOT_TOKEN = os.getenv("AUKUS_TG_BOT_TOKEN")
 AUKUS_TG_CHAT_ID = os.getenv("AUKUS_TG_CHAT_ID")
 AUKUS_SOCKS5_PROXY = os.getenv("AUKUS_SOCKS5_PROXY")
+AUKUS_SEND_NOTIFICATIONS = os.getenv("AUKUS_SEND_NOTIFICATIONS")
 
 games_db = GamesDatabaseClient()
 
@@ -27,6 +28,8 @@ def on_player_move(
     item_rating,
     time_duration,
 ):
+    if not AUKUS_SEND_NOTIFICATIONS:
+        return
     if time_duration is None:
         time_duration = "[ДАННЫЕ УДАЛЕНЫ]"
     else:
@@ -115,6 +118,8 @@ def on_player_move(
 
 
 def on_pointauc_result(username, url_handle, title):
+    if not AUKUS_SEND_NOTIFICATIONS:
+        return
     try:
         # send to TG
         message = ("👉 <b>" + username + "</b>\n🎲 Выпало на ауке: <b>" +
@@ -170,6 +175,8 @@ def on_pointauc_result(username, url_handle, title):
 
 
 def on_pointauc_timer_started(username, url_handle):
+    if not AUKUS_SEND_NOTIFICATIONS:
+        return
     try:
         # send to TG
         message = "⚡<b>" + username + "</b>\n <b>Начал аукцион!</b>"
