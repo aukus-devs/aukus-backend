@@ -6,11 +6,9 @@ import urllib.parse
 from dotenv import load_dotenv
 
 load_dotenv()
-os.environ['S3_USE_SIGV4'] = 'True'
-conn = S3Connection(
-    host='storage.yandexcloud.net'
-)
-conn.auth_region_name = 'ru-central1'
+os.environ["S3_USE_SIGV4"] = "True"
+conn = S3Connection(host="storage.yandexcloud.net")
+conn.auth_region_name = "ru-central1"
 
 bucket_name = os.getenv("S3_BUCKET_NAME")
 bucket = conn.get_bucket(bucket_name)

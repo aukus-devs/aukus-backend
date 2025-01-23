@@ -18,7 +18,7 @@ load_dotenv()
 @games_bp.route("/api/games", methods=["GET"])
 def search_games():
     raw_query_string = request.query_string.decode()
-    args = urllib.parse.parse_qs(raw_query_string, separator=' ')
+    args = urllib.parse.parse_qs(raw_query_string, separator=" ")
     if not "title" in args:
         return jsonify({"error": f"Missing required field: title"}), 400
     title = args["title"][0].lower()

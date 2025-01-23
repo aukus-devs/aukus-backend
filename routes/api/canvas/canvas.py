@@ -51,7 +51,9 @@ def upload_canvas_image(player_id):
     url, s3error = upload_file_s3(file, s3_file_id)
     if s3error:
         return jsonify({"error": f"Error upload file to s3: {s3error}"}), 500
-    z_index = db.add_image(player_id=player_id, url=url, s3_file_id=s3_file_id, width=width, height=height)
+    z_index = db.add_image(
+        player_id=player_id, url=url, s3_file_id=s3_file_id, width=width, height=height
+    )
     return jsonify(
         {
             "id": id,

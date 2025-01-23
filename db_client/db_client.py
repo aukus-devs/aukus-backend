@@ -616,7 +616,9 @@ class DatabaseClient:
                 self.remove_moves_by_player_id(i["player_id"])
         return True
 
-    def add_image(self, player_id, url, s3_file_id, width, height, x=0, y=0, rotation=0):
+    def add_image(
+        self, player_id, url, s3_file_id, width, height, x=0, y=0, rotation=0
+    ):
         """Добавить изображение"""
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
@@ -638,7 +640,8 @@ class DatabaseClient:
                 """SELECT COALESCE(
                        (SELECT MAX(id) FROM PlayerFiles),
                        0
-                   ) AS max_id;""")
+                   ) AS max_id;"""
+            )
             return cursor.fetchone()
 
     def update_last_auction_result_by_player_id(
@@ -701,9 +704,7 @@ class DatabaseClient:
                 (width, height, x, y, rotation, z_index, scale_x, scale_y, file_id),
             )
 
-    def update_player_files_url_by_file_id(
-        self, file_id, url
-    ):
+    def update_player_files_url_by_file_id(self, file_id, url):
         with closing(self.conn().cursor()) as cursor:
             cursor.execute(
                 "UPDATE PlayerFiles SET url = %s WHERE id = %s",
