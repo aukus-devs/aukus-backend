@@ -2,9 +2,8 @@ import logging
 from datetime import datetime, timedelta
 from flask import Flask, session, request
 from flask_session.__init__ import Session
-from flask_bcrypt import Bcrypt
-from flask_sqlalchemy import SQLAlchemy
-from routes.api.login.login import auth_bp, init_bcrypt
+from src.core.extensions import db, bcrypt
+from src.users.api import users_bp
 from routes.api.player.player import player_bp
 from routes.api.canvas.canvas import canvas_bp
 from routes.api.games.games import games_bp
@@ -19,27 +18,27 @@ MYSQL_LOGIN = os.getenv("MYSQL_LOGIN")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 MYSQL_HOST = os.getenv("MYSQL_HOST")
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
 
 
 def create_app():
     app.secret_key = config.SESSION_SECRET
     app.config["SESSION_PERMANENT"] = True
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"mysql://{MYSQL_LOGIN}:{MYSQL_PASSWORD}@{MYSQL_HOST}/aukus_2025_db"
-    )
+    app.config[
+        "SQLALCHEMY_DATABASE_URI"
+    ] = f"mysql://{MYSQL_LOGIN}:{MYSQL_PASSWORD}@{MYSQL_HOST}/aukus_2025_db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SESSION_TYPE"] = "sqlalchemy"
-    app.config["SESSION_SQLALCHEMY"] = SQLAlchemy(app)
+    app.config["SESSION_SQLALCHEMY"] = db.init_app(app)
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
     app.config["DEBUG"] = True
     app.config["JSON_AS_ASCII"] = False
-    app.json.ensure_ascii = False
+    # app.json.ensure_ascii = False
     app.config["JSONIFY_MIMETYPE"] = "application/json; charset=utf-8"
 
     Session(app)
-    init_bcrypt(bcrypt)
-    app.register_blueprint(auth_bp)
+    bcrypt.init_app(app)
+
+    app.register_blueprint(users_bp)
     app.register_blueprint(player_bp)
     app.register_blueprint(canvas_bp)
     app.register_blueprint(games_bp)
@@ -57,7 +56,7 @@ def after_request(response):
     try:
         request_data = str(request.data)
     except Exception as e:
-        logging.error("@app.after_request error converting data: " + str(e))
+        logging.error(f"@app.after_request error converting data: {str(e)}")
     audit_logger.info(
         {
             "datetime": datetime.now().isoformat(),

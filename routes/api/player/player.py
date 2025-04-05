@@ -134,88 +134,88 @@ def get_players():
     return jsonify({"players": players})
 
 
-@player_bp.route("/api/player_move", methods=["POST"])
-@login_required
-def add_player_move():
-    data = request.get_json()
-    required_fields = ["player_id", "dice_roll", "type", "item_title", "item_review"]
-    for field in required_fields:
-        if field not in data:
-            return jsonify({"error": f"Missing required field: {field}"}), 400
-    if data.get("stair_from") and data.get("snake_from"):
-        return jsonify(
-            {"error": f"Stair and snake cannot be used at the same time"}
-        ), 400
+# @player_bp.route("/api/player_move", methods=["POST"])
+# @login_required
+# def add_player_move():
+#     data = request.get_json()
+#     required_fields = ["player_id", "dice_roll", "type", "item_title", "item_review"]
+#     for field in required_fields:
+#         if field not in data:
+#             return jsonify({"error": f"Missing required field: {field}"}), 400
+#     if data.get("stair_from") and data.get("snake_from"):
+#         return jsonify(
+#             {"error": f"Stair and snake cannot be used at the same time"}
+#         ), 400
 
-    last_cells = db.get_players_last_cell_number()
-    last_cell_number = next(
-        (
-            cell["cell_to"]
-            for cell in last_cells
-            if cell["player_id"] == data["player_id"]
-        ),
-        0,
-    )
+#     last_cells = db.get_players_last_cell_number()
+#     last_cell_number = next(
+#         (
+#             cell["cell_to"]
+#             for cell in last_cells
+#             if cell["player_id"] == data["player_id"]
+#         ),
+#         0,
+#     )
 
-    try:
-        player_id = data["player_id"]
-        dice_roll = data["dice_roll"]
-        cell_from = last_cell_number
-        cell_to = data["move_to"]
-        stair_from = data.get("stair_from")
-        stair_to = data.get("stair_to")
-        snake_from = data.get("snake_from")
-        snake_to = data.get("snake_to")
-        move_type = data["type"]
-        item_title = data["item_title"]
-        item_review = data["item_review"]
-        item_rating = data.get("item_rating")
-        item_length = data.get("item_length")
+#     try:
+#         player_id = data["player_id"]
+#         dice_roll = data["dice_roll"]
+#         cell_from = last_cell_number
+#         cell_to = data["move_to"]
+#         stair_from = data.get("stair_from")
+#         stair_to = data.get("stair_to")
+#         snake_from = data.get("snake_from")
+#         snake_to = data.get("snake_to")
+#         move_type = data["type"]
+#         item_title = data["item_title"]
+#         item_review = data["item_review"]
+#         item_rating = data.get("item_rating")
+#         item_length = data.get("item_length")
 
-        db.add_player_move(
-            player_id=player_id,
-            dice_roll=dice_roll,
-            cell_from=cell_from,
-            cell_to=cell_to,
-            stair_from=stair_from,
-            stair_to=stair_to,
-            snake_from=snake_from,
-            snake_to=snake_to,
-            move_type=move_type,
-            item_title=item_title,
-            item_review=item_review,
-            item_rating=item_rating,
-            item_length=item_length,
-        )
-        db.update_last_auction_result_by_player_id(player_id, None, None)
-        try:
-            category_time_duration = db.calculate_time_by_category_name(
-                item_title, player_id
-            )["total_difference_in_seconds"]
-            player = db.get_user_by_id(player_id)
-            scheduler.add_job(
-                notifications.on_player_move,
-                args=[
-                    player["username"],
-                    player["player_url_handle"],
-                    dice_roll,
-                    cell_from,
-                    cell_to,
-                    move_type,
-                    item_title,
-                    item_review,
-                    item_rating,
-                    category_time_duration,
-                ],
-            )
-        except Exception as e:
-            logging.error("Error send notification on player move: " + str(e))
-        return jsonify(
-            {"message": "Player move added and position updated successfully"}
-        ), 201
+#         db.add_player_move(
+#             player_id=player_id,
+#             dice_roll=dice_roll,
+#             cell_from=cell_from,
+#             cell_to=cell_to,
+#             stair_from=stair_from,
+#             stair_to=stair_to,
+#             snake_from=snake_from,
+#             snake_to=snake_to,
+#             move_type=move_type,
+#             item_title=item_title,
+#             item_review=item_review,
+#             item_rating=item_rating,
+#             item_length=item_length,
+#         )
+#         db.update_last_auction_result_by_player_id(player_id, None, None)
+#         try:
+#             category_time_duration = db.calculate_time_by_category_name(
+#                 item_title, player_id
+#             )["total_difference_in_seconds"]
+#             player = db.get_user_by_id(player_id)
+#             scheduler.add_job(
+#                 notifications.on_player_move,
+#                 args=[
+#                     player["username"],
+#                     player["player_url_handle"],
+#                     dice_roll,
+#                     cell_from,
+#                     cell_to,
+#                     move_type,
+#                     item_title,
+#                     item_review,
+#                     item_rating,
+#                     category_time_duration,
+#                 ],
+#             )
+#         except Exception as e:
+#             logging.error("Error send notification on player move: " + str(e))
+#         return jsonify(
+#             {"message": "Player move added and position updated successfully"}
+#         ), 201
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
 @player_bp.route("/api/player_move_vod_link", methods=["POST"])

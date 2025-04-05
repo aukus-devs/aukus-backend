@@ -80,7 +80,7 @@ def refresh_stream_statuses():
                         vkplay_page = requests.get(
                             player["vk_stream_link"], timeout=110
                         )
-                    except Exception as e:
+                    except Exception:
                         pass
                     if vkplay_page is None:
                         vkplay_page = requests.get(
@@ -175,13 +175,10 @@ def refresh_stream_statuses():
                         )
                 except Exception as e:
                     exc_type, exc_obj, exc_tb = sys.exc_info()
+                    line = exc_tb.tb_lineno if exc_tb else "unknown"
+                    player_name = player.get("username", "no_name")
                     logging.error(
-                        "Stream check failed for "
-                        + player["username"]
-                        + ",: "
-                        + str(e)
-                        + ", line: "
-                        + str(exc_tb.tb_lineno)
+                        f"Stream check failed for {player_name},: {e}, line: {line}"
                     )
                     if player["player_is_online"] == True:
                         db.update_stream_status(player_id=player["id"], is_online=False)
