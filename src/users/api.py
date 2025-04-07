@@ -14,7 +14,7 @@ def login():
         user = get_user_by_login(username)
 
         if user:
-            is_valid = bcrypt.check_password_hash(user.password, password)
+            is_valid = bcrypt.check_password_hash(user.password_hash, password)
             if is_valid:
                 session["username"] = user.name
                 session["role"] = user.role
