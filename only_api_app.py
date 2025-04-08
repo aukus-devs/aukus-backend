@@ -28,7 +28,8 @@ def create_app():
     ] = f"mysql://{MYSQL_LOGIN}:{MYSQL_PASSWORD}@{MYSQL_HOST}/aukus_2025_db"
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SESSION_TYPE"] = "sqlalchemy"
-    app.config["SESSION_SQLALCHEMY"] = db.init_app(app)
+    db.init_app(app)
+    app.config["SESSION_SQLALCHEMY"] = db
     app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
     app.config["DEBUG"] = True
     app.config["JSON_AS_ASCII"] = False
