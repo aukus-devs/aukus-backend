@@ -14,9 +14,12 @@ import config
 
 logging.basicConfig(level=logging.DEBUG)
 load_dotenv()
+
 MYSQL_LOGIN = os.getenv("MYSQL_LOGIN")
 MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
 MYSQL_HOST = os.getenv("MYSQL_HOST")
+MYSQL_GAMES_DB_NAME = os.getenv("MYSQL_GAMES_DB_NAME")
+
 app = Flask(__name__)
 
 
@@ -26,6 +29,10 @@ def create_app():
     app.config[
         "SQLALCHEMY_DATABASE_URI"
     ] = f"mysql://{MYSQL_LOGIN}:{MYSQL_PASSWORD}@{MYSQL_HOST}/aukus_2025_db"
+    app.config["SQLALCHEMY_BINDS"] = {
+        "games_db": f"mysql://{MYSQL_LOGIN}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_GAMES_DB_NAME}"
+    }
+
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SESSION_TYPE"] = "sqlalchemy"
     db.init_app(app)
