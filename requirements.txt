@@ -22,3 +22,4 @@ requests[socks]
 Flask-Bcrypt==1.0.1
 boto==2.49.0
 botocore==1.36.2
+pydantic==2.10.6
