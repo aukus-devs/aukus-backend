@@ -340,7 +340,7 @@ def get_moves():
     player_id = request.args.get("player_id")
     date_param = request.args.get("date")
     title_param = request.args.get("title")
-    limit = min(int(request.args.get("limit", 10)), 200)
+    limit = min(int(request.args.get("limit", 10)), 300)
     last_move = None
     if player_id:
         moves = db.get_moves_by_player(player_id=player_id)
