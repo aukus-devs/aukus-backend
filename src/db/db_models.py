@@ -35,3 +35,52 @@ class Player(DbBase):
     slug: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
     )
+
+
+class PlayerMove(DbBase):
+    __tablename__ = "player_moves"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    updated_at: Mapped[int] = mapped_column(
+        Integer, default=utc_now_ts, onupdate=utc_now_ts
+    )
+    player_slug: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    item_duration: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    type: Mapped[str] = mapped_column(String(255))
+    item_review: Mapped[str] = mapped_column(Text, nullable=False)
+    item_rating: Mapped[float] = mapped_column(Float, nullable=False)
+    item_length: Mapped[str] = mapped_column(String(255), nullable=False)
+    vod_links: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    game_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    difficulty_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    dice_roll_id: Mapped[int] = mapped_column(Integer)
+
+
+class DiceRoll(DbBase):
+    __tablename__ = "dice_rolls"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    player_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    used: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    is_random_org_result: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False
+    )
+    random_org_fail_reason: Mapped[str] = mapped_column(Text, nullable=True)
+    json_short_data: Mapped[str] = mapped_column(Text, nullable=False)
+    random_org_result: Mapped[str] = mapped_column(Text, nullable=True)
+    dice_values: Mapped[str] = mapped_column(String(255), nullable=False)
+    random_org_check_url: Mapped[str] = mapped_column(Text, nullable=True)
+
+
+class EventSettings(DbBase):
+    __tablename__ = "event_settings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    updated_at: Mapped[int] = mapped_column(
+        Integer, default=utc_now_ts, onupdate=utc_now_ts
+    )
+    key_name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    value: Mapped[str | None] = mapped_column(Text, nullable=True)
