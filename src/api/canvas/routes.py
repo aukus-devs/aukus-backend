@@ -1,11 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Response
-
 # from boto_s3 import upload_file_s3, delete_file_s3
 
-router = APIRouter(tags=["canvas"])
-
 from typing import Annotated, List
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status, Response
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    UploadFile,
+    File,
+    Form,
+    status,
+    Response,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.db_session import get_db
@@ -27,22 +32,26 @@ router = APIRouter(tags=["canvas"])
 
 @router.get("/api/canvas/{player_id}", response_model=List[CanvasFile])
 async def get_canvas_files(
-        player_id: int,
-        current_user: Annotated[User, Depends(get_current_user_for_update)],
-        db: Annotated[AsyncSession, Depends(get_db)],
+    player_id: int,
+    current_user: Annotated[User, Depends(get_current_user_for_update)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     rows = await get_player_files(db, player_id)
     return [CanvasFile.model_validate(r) for r in rows]
 
 
-@router.post("/api/canvas/{player_id}/upload", response_model=CanvasFile, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/api/canvas/{player_id}/upload",
+    response_model=CanvasFile,
+    status_code=status.HTTP_201_CREATED,
+)
 async def upload_canvas_image(
-        player_id: int,
-        current_user: Annotated[User, Depends(get_current_user_for_update)],
-        db: Annotated[AsyncSession, Depends(get_db)],
-        file: UploadFile = File(...),
-        width: float = Form(...),
-        height: float = Form(...),
+    player_id: int,
+    current_user: Annotated[User, Depends(get_current_user_for_update)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    file: UploadFile = File(...),
+    width: float = Form(...),
+    height: float = Form(...),
 ):
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file found")
@@ -72,10 +81,10 @@ async def upload_canvas_image(
 
 @router.put("/api/canvas/{player_id}/update", status_code=status.HTTP_204_NO_CONTENT)
 async def update_canvas(
-        player_id: int,
-        payload: CanvasUpdateRequest,
-        current_user: Annotated[User, Depends(get_current_user_for_update)],
-        db: Annotated[AsyncSession, Depends(get_db)],
+    player_id: int,
+    payload: CanvasUpdateRequest,
+    current_user: Annotated[User, Depends(get_current_user_for_update)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     for item in payload.files:
         if item.scale_x > 1 or item.scale_x < -1:
@@ -102,6 +111,4 @@ async def update_canvas(
     if payload.delete_ids:
         await delete_player_files(db, player_id=player_id, ids=payload.delete_ids)
 
-    # один общий коммит на всё обновление
-    await db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

@@ -15,14 +15,6 @@ from src.db.db_models import (
 is_sqlite = DATABASE_URL.startswith("sqlite")
 
 
-# print(f"Using database URL: {DATABASE_URL}")
-
-
-# def make_statement_name():
-#     """Generate a unique statement name for asyncpg."""
-#     return f"__asyncpg_{uuid4()}__"
-
-
 if is_sqlite:
     engine = create_async_engine(
         DATABASE_URL,
@@ -70,16 +62,6 @@ async def init_db_async():
         await conn.run_sync(DbBase.metadata.create_all)
 
 
-# async def test_connection():
-#     print(f"Using database URL: {DATABASE_URL}")
-#     print(f"Testing database connection: {TEST_DB_URL}")
-#     conn = await asyncpg.connect(TEST_DB_URL, statement_cache_size=0)
-#     version = await conn.fetchval("SELECT version();")
-#     print(f"Connected! PostgreSQL version: {version}")
-#     await conn.close()
-
-
 if __name__ == "__main__":
-    # asyncio.run(test_connection())
     asyncio.run(init_db_async())
     print("Database initialized successfully.")

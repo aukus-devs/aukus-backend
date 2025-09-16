@@ -9,7 +9,7 @@ async def get_player_files(db: AsyncSession, player_id: int) -> list[PlayerFile]
     res = await db.execute(
         select(PlayerFile)
         .where(PlayerFile.player_id == player_id)
-        .order_by(PlayerFile.z_index.asc(), PlayerFile.id.asc())
+        .order_by(PlayerFile.z_index.asc(), PlayerFile.id.asc())  # type: ignore
     )
     return res.scalars().all()
 
@@ -26,7 +26,9 @@ async def get_top_z_for_player(db: AsyncSession, player_id: int) -> int:
     return (await db.execute(q)).scalar_one()
 
 
-async def get_player_file(db: AsyncSession, *, id: int, player_id: int) -> Optional[PlayerFile]:
+async def get_player_file(
+    db: AsyncSession, *, id: int, player_id: int
+) -> Optional[PlayerFile]:
     res = await db.execute(
         select(PlayerFile).where(PlayerFile.id == id, PlayerFile.player_id == player_id)
     )
@@ -34,19 +36,19 @@ async def get_player_file(db: AsyncSession, *, id: int, player_id: int) -> Optio
 
 
 async def create_player_file(
-        db: AsyncSession,
-        *,
-        id: int,
-        player_id: int,
-        url: str,
-        width: float,
-        height: float,
-        rotation: float = 0.0,
-        x: float = 0.0,
-        y: float = 0.0,
-        z_index: int = 0,
-        scale_x: int = 1,
-        scale_y: int = 1,
+    db: AsyncSession,
+    *,
+    id: int,
+    player_id: int,
+    url: str,
+    width: float,
+    height: float,
+    rotation: float = 0.0,
+    x: float = 0.0,
+    y: float = 0.0,
+    z_index: int = 0,
+    scale_x: int = 1,
+    scale_y: int = 1,
 ) -> PlayerFile:
     row = PlayerFile(
         id=id,
@@ -68,18 +70,18 @@ async def create_player_file(
 
 
 async def update_player_file_fields(
-        db: AsyncSession,
-        *,
-        id: int,
-        player_id: int,
-        rotation: float,
-        x: float,
-        y: float,
-        width: float,
-        height: float,
-        z_index: int,
-        scale_x: int,
-        scale_y: int,
+    db: AsyncSession,
+    *,
+    id: int,
+    player_id: int,
+    rotation: float,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z_index: int,
+    scale_x: int,
+    scale_y: int,
 ) -> bool:
     pf = await get_player_file(db, id=id, player_id=player_id)
     if not pf:
@@ -99,9 +101,14 @@ async def update_player_file_fields(
     return True
 
 
-async def delete_player_files(db: AsyncSession, *, player_id: int, ids: Iterable[int]) -> list[PlayerFile]:
+async def delete_player_files(
+    db: AsyncSession, *, player_id: int, ids: Iterable[int]
+) -> list[PlayerFile]:
     res = await db.execute(
-        select(PlayerFile).where(PlayerFile.id.in_(list(ids)), PlayerFile.player_id == player_id)
+        select(PlayerFile).where(
+            PlayerFile.id.in_(list(ids)),  # type: ignore
+            PlayerFile.player_id == player_id,
+        )
     )
     rows = res.scalars().all()
     for r in rows:
