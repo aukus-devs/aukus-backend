@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column  # type: ignore
 from sqlalchemy.orm.decl_api import declarative_base
 from sqlalchemy import Float, Integer, String, Text
+from src.utils.db import utc_now_ts
 
 DbBase = declarative_base()
 
@@ -9,6 +10,11 @@ class PlayerFile(DbBase):
     __tablename__ = "player_files"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    updated_at: Mapped[int] = mapped_column(
+        Integer, default=utc_now_ts, onupdate=utc_now_ts
+    )
+
     rotation: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     player_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     x: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
