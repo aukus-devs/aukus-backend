@@ -1,6 +1,6 @@
 # from boto_s3 import upload_file_s3, delete_file_s3
 
-from typing import Annotated, List
+from typing import Annotated
 from fastapi import (
     APIRouter,
     Depends,
@@ -14,9 +14,9 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.db_session import get_db
-from src.db.db_models import User
-from src.utils.auth import get_current_user_for_update
-from src.api.canvas.models import CanvasFile, CanvasUpdateRequest
+from src.db.db_models import Player
+from src.utils.auth import get_current_user
+from src.api.canvas.models import CanvasFile, CanvasFilesResponse, CanvasUpdateRequest
 
 from src.db.queries.player_files import (
     get_player_files,
@@ -30,10 +30,10 @@ from src.db.queries.player_files import (
 router = APIRouter(tags=["canvas"])
 
 
-@router.get("/api/canvas/{player_id}", response_model=List[CanvasFile])
+@router.get("/api/canvas/{player_id}", response_model=CanvasFilesResponse)
 async def get_canvas_files(
     player_id: int,
-    current_user: Annotated[User, Depends(get_current_user_for_update)],
+    current_user: Annotated[Player, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     rows = await get_player_files(db, player_id)
@@ -47,7 +47,7 @@ async def get_canvas_files(
 )
 async def upload_canvas_image(
     player_id: int,
-    current_user: Annotated[User, Depends(get_current_user_for_update)],
+    current_user: Annotated[Player, Depends(get_current_user_for_update)],
     db: Annotated[AsyncSession, Depends(get_db)],
     file: UploadFile = File(...),
     width: float = Form(...),
@@ -83,7 +83,7 @@ async def upload_canvas_image(
 async def update_canvas(
     player_id: int,
     payload: CanvasUpdateRequest,
-    current_user: Annotated[User, Depends(get_current_user_for_update)],
+    current_user: Annotated[Player, Depends(get_current_user_for_update)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     for item in payload.files:

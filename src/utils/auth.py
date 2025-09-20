@@ -4,23 +4,22 @@ from jose import JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.db_models import User
+from src.db.db_models import Player
 from src.db.db_session import get_db
-from src.api.enums import Role
 from src.utils.jwt import decode_access_token
 
 security = HTTPBearer()
 
 
-def get_username(token: str):
+def parse_token(token: str): dict[str, Any]:
     try:
         payload = decode_access_token(token)
-        username: str | None = payload.get("sub")
-        if username is None:
+        slug: str | None = payload.get("slug")
+        if slug is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
             )
-        return username
+        return payload
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
@@ -28,17 +27,17 @@ def get_username(token: str):
 
 
 async def get_current_user(
-        request: Request,
-        credentials: HTTPAuthorizationCredentials = Depends(security),
-        db: AsyncSession = Depends(get_db),
-        for_update: bool = False,
-        allow_acting: bool = True,
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
+    for_update: bool = False,
+    allow_acting: bool = True,
 ):
     token = credentials.credentials
-    username = get_username(token)
+    user_data = parse_token(token)
 
     # Fetch the user making the request
-    query = select(User).where(User.username == username)
+    query = select(Player).where(Player.slug == token.slug)
     result = await db.execute(query)
     requesting_user = result.scalars().first()
 
@@ -50,7 +49,7 @@ async def get_current_user(
     # Check if an admin is acting as another user
     acting_user_id_str = request.headers.get("x-acting-user-id")
     is_acting = (
-            allow_acting and requesting_user.role == Role.ADMIN.value and acting_user_id_str
+        allow_acting and requesting_user.role == Role.ADMIN.value and acting_user_id_str
     )
 
     if is_acting and acting_user_id_str:
@@ -83,16 +82,16 @@ async def get_current_user(
 
 
 async def get_current_user_for_update(
-        request: Request,
-        credentials: HTTPAuthorizationCredentials = Depends(security),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
 ):
     return await get_current_user(request, credentials, db, for_update=True)
 
 
 async def get_current_user_direct(
-        request: Request,
-        credentials: HTTPAuthorizationCredentials = Depends(security),
-        db: AsyncSession = Depends(get_db),
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
 ):
     return await get_current_user(request, credentials, db, allow_acting=False)

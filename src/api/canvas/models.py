@@ -1,6 +1,6 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field, RootModel
+from pydantic import BaseModel, Field
 from pydantic.config import ConfigDict
+
 
 class CanvasFile(BaseModel):
     id: int
@@ -16,12 +16,11 @@ class CanvasFile(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, from_attributes=True)
 
+
 class CanvasUpdateRequest(BaseModel):
-    files: List[CanvasFile]
-    delete_ids: Optional[List[int]] = None
+    files: list[CanvasFile]
+    delete_ids: list[int] | None = None
 
-class CanvasFileResponse(CanvasFile):
-    pass
 
-class CanvasFilesResponse(RootModel[List[CanvasFileResponse]]):
-    pass
+class CanvasFilesResponse(BaseModel):
+    files: list[CanvasFile]

@@ -16,7 +16,7 @@ class PlayerFile(DbBase):
     )
 
     rotation: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    player_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
+    player_slug: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     x: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     y: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     url: Mapped[str] = mapped_column(Text, nullable=False)
@@ -46,15 +46,16 @@ class PlayerMove(DbBase):
         Integer, default=utc_now_ts, onupdate=utc_now_ts
     )
     player_slug: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    item_duration: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     type: Mapped[str] = mapped_column(String(255))
+    item_title: Mapped[str] = mapped_column(String(255), nullable=False)
+    item_duration: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     item_review: Mapped[str] = mapped_column(Text, nullable=False)
     item_rating: Mapped[float] = mapped_column(Float, nullable=False)
     item_length: Mapped[str] = mapped_column(String(255), nullable=False)
     vod_links: Mapped[str | None] = mapped_column(String(255), nullable=True)
     game_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     difficulty_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    dice_roll_id: Mapped[int] = mapped_column(Integer)
+    dice_roll_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class DiceRoll(DbBase):
