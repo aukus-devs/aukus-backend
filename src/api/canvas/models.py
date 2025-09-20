@@ -1,3 +1,4 @@
+from typing import ClassVar
 from pydantic import BaseModel, Field
 from pydantic.config import ConfigDict
 
@@ -14,7 +15,9 @@ class CanvasFile(BaseModel):
     scale_x: int = Field(alias="scaleX")
     scale_y: int = Field(alias="scaleY")
 
-    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        populate_by_name=True, from_attributes=True
+    )
 
 
 class CanvasUpdateRequest(BaseModel):
