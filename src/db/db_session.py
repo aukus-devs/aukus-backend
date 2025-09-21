@@ -1,9 +1,12 @@
 # database.py
 import asyncio
 from contextlib import asynccontextmanager
+from typing import Callable
+
 
 from sqlalchemy.ext.asyncio import (
-    async_sessionmaker,  # pyright: ignore[reportAttributeAccessIssue]
+    AsyncSession,
+    async_sessionmaker,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     create_async_engine,
 )
 
@@ -36,7 +39,10 @@ else:
         #     "prepared_statement_name_func": make_statement_name,
         # },
     )
-SessionLocal = async_sessionmaker(bind=engine, expire_on_commit=False)
+
+SessionLocal: Callable[[], AsyncSession] = async_sessionmaker(  # pyright: ignore[reportUnknownVariableType]
+    bind=engine, expire_on_commit=False
+)
 
 
 async def get_db():
@@ -59,7 +65,7 @@ async def get_session():
 
 async def init_db_async():
     async with engine.begin() as conn:
-        await conn.run_sync(DbBase.metadata.create_all)
+        await conn.run_sync(DbBase.metadata.create_all)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
 
 if __name__ == "__main__":
