@@ -23,7 +23,7 @@ class SkinItem(ApiModel):
 class AchievementItem(ApiModel):
     id: int
     description: str
-    skin_reward_id: int
+    reward_skin_id: int
 
 
 class EventDataResponse(ApiModel):
