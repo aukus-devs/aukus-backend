@@ -98,3 +98,52 @@ class Rules(DbBase):
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
     category: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+
+
+class Skin(DbBase):
+    __tablename__: str = "skins"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    updated_at: Mapped[int] = mapped_column(
+        Integer, default=utc_now_ts, onupdate=utc_now_ts
+    )
+    slot: Mapped[str] = mapped_column(String(255), nullable=False)
+    image_url: Mapped[str] = mapped_column(Text, nullable=False)
+
+
+class PlayerSkin(DbBase):
+    __tablename__: str = "player_skins"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    updated_at: Mapped[int] = mapped_column(
+        Integer, default=utc_now_ts, onupdate=utc_now_ts
+    )
+    player_slug: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    skin_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_equipped: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False, index=True
+    )
+
+
+class Achievement(DbBase):
+    __tablename__: str = "achievements"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    updated_at: Mapped[int] = mapped_column(
+        Integer, default=utc_now_ts, onupdate=utc_now_ts
+    )
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    reward_skin_id: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class PlayerAchievement(DbBase):
+    __tablename__: str = "player_achievements"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    player_slug: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    achievement_id: Mapped[int] = mapped_column(Integer, nullable=False)

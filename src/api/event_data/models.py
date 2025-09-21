@@ -17,7 +17,7 @@ class PlayerItem(ApiModel):
 class SkinItem(ApiModel):
     id: int
     slot: SkinSlot
-    image: str
+    image_url: str
 
 
 class AchievementItem(ApiModel):

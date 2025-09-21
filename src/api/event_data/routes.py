@@ -8,8 +8,16 @@ from src.api.event_data.models import (
     EventDataResponse,
     PlayerItem,
     SkinItem,
+    UnlockedAchievementItem,
 )
-from src.db.db_models import Player
+from src.db.db_models import (
+    Achievement,
+    EventSettings,
+    Player,
+    PlayerAchievement,
+    PlayerSkin,
+    Skin,
+)
 from src.db.db_session import get_db
 
 router = APIRouter(tags=["event_data"])
@@ -20,22 +28,55 @@ async def get_event_data(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     event_settings: dict[str, int | str | None] = {}
+    event_settings_query = await db.execute(select(EventSettings))
+    event_settings_raw: list[EventSettings] = event_settings_query.scalars().all()
+    for setting in event_settings_raw:
+        event_settings[setting.key_name] = setting.value
 
     players_query = await db.execute(select(Player))
     players_raw: list[Player] = players_query.scalars().all()
+
+    equipped_skins_query = await db.execute(
+        select(PlayerSkin).where(PlayerSkin.is_equipped == 1)
+    )
+    equipped_skins: list[PlayerSkin] = equipped_skins_query.scalars().all()
+
+    unlocked_achievements_query = await db.execute(select(PlayerAchievement))
+    unlocked_achievements: list[PlayerAchievement] = (
+        unlocked_achievements_query.scalars().all()
+    )
+
     players: list[PlayerItem] = []
     for player in players_raw:
+        player_skins = [
+            skin.id for skin in equipped_skins if skin.player_slug == player.slug
+        ]
+        player_achievements = [
+            UnlockedAchievementItem(
+                id=achievement.achievement_id, unlocked_at=achievement.created_at
+            )
+            for achievement in unlocked_achievements
+            if achievement.player_slug == player.slug
+        ]
+
         players.append(
             PlayerItem(
                 slug=player.slug,
                 map_position=0,
-                equipped_skins=[],
-                unlocked_achievements=[],
+                equipped_skins=player_skins,
+                unlocked_achievements=player_achievements,
             )
         )
 
-    skins: list[SkinItem] = []
-    achievements: list[AchievementItem] = []
+    skins_query = await db.execute(select(Skin))
+    skins_raw: list[Skin] = skins_query.scalars().all()
+    skins = [SkinItem.model_validate(skin) for skin in skins_raw]
+
+    achievements_query = await db.execute(select(Achievement))
+    achievements_raw: list[Achievement] = achievements_query.scalars().all()
+    achievements = [
+        AchievementItem.model_validate(achievement) for achievement in achievements_raw
+    ]
 
     return EventDataResponse(
         players=players,
