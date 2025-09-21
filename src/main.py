@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import uvicorn
+from src.api.event_data import routes as event_data
 from src.api.canvas import routes as canvas
 from src.utils.auth import get_current_player
 from src.config import DEBUG_NO_LOGIN
@@ -7,6 +8,7 @@ from types import SimpleNamespace
 
 app = FastAPI(title="Aukus Backend")
 app.include_router(canvas.router)
+app.include_router(event_data.router)
 
 if DEBUG_NO_LOGIN:
 

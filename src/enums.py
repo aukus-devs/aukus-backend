@@ -24,3 +24,9 @@ class RulesCategory(Enum):
     GENERAL = "general"
     GAMEPLAY = "gameplay"
     DONATIONS = "donations"
+
+
+class SkinSlot(Enum):
+    HEAD = "head"
+    BODY = "body"
+    SIDE = "side"
