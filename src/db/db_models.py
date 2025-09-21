@@ -1,7 +1,8 @@
-from sqlalchemy.orm import Mapped, mapped_column  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
-from sqlalchemy.orm.decl_api import declarative_base
+# pyright: reportUnknownVariableType=false, reportUntypedBaseClass=false
+
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column  # pyright: ignore[reportAttributeAccessIssue]
 from sqlalchemy import Float, Integer, String, Text
-from src.utils.db import utc_now_ts
+from .utils import utc_now_ts
 
 DbBase = declarative_base()
 
@@ -28,7 +29,7 @@ class PlayerFile(DbBase):
 
 
 class Player(DbBase):
-    __tablename__ = "players"
+    __tablename__: str = "players"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     color: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -38,7 +39,7 @@ class Player(DbBase):
 
 
 class PlayerMove(DbBase):
-    __tablename__ = "player_moves"
+    __tablename__: str = "player_moves"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
@@ -59,7 +60,7 @@ class PlayerMove(DbBase):
 
 
 class DiceRoll(DbBase):
-    __tablename__ = "dice_rolls"
+    __tablename__: str = "dice_rolls"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
@@ -76,7 +77,7 @@ class DiceRoll(DbBase):
 
 
 class EventSettings(DbBase):
-    __tablename__ = "event_settings"
+    __tablename__: str = "event_settings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
