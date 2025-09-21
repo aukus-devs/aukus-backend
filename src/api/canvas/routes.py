@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.db_session import get_db
 from src.db.db_models import Player
-from src.utils.auth import get_current_user
+from src.utils.auth import get_current_player
 from src.api.canvas.models import CanvasFile, CanvasFilesResponse, CanvasUpdateRequest
 
 from src.db.queries.player_files import (
@@ -30,34 +30,33 @@ from src.db.queries.player_files import (
 router = APIRouter(tags=["canvas"])
 
 
-@router.get("/api/canvas/{player_id}", response_model=CanvasFilesResponse)
+@router.get("/api/canvas/{player_slug}", response_model=CanvasFilesResponse)
 async def get_canvas_files(
-    player_id: int,
-    current_user: Annotated[Player, Depends(get_current_user)],
+    player_slug: str,
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    rows = await get_player_files(db, player_id)
-    return [CanvasFile.model_validate(r) for r in rows]
+    rows = await get_player_files(db, player_slug)
+    return {"files": rows}
 
 
 @router.post(
-    "/api/canvas/{player_id}/upload",
+    "/api/canvas/{player_slug}/upload",
     response_model=CanvasFile,
     status_code=status.HTTP_201_CREATED,
 )
 async def upload_canvas_image(
-    player_id: int,
-    current_user: Annotated[Player, Depends(get_current_user_for_update)],
+    player_slug: str,
+    current_user: Annotated[Player, Depends(get_current_player)],  # pyright: ignore[reportUnusedParameter]
     db: Annotated[AsyncSession, Depends(get_db)],
-    file: UploadFile = File(...),
-    width: float = Form(...),
-    height: float = Form(...),
+    file: UploadFile = File(...),  # pyright: ignore[reportCallInDefaultInitializer]
+    width: float = Form(...),  # pyright: ignore[reportCallInDefaultInitializer]
+    height: float = Form(...),  # pyright: ignore[reportCallInDefaultInitializer]
 ):
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file found")
 
     next_id = await get_next_player_file_id(db)
-    top_z = await get_top_z_for_player(db, player_id)
+    top_z = await get_top_z_for_player(db, player_slug)
 
     # Локальная заглушка вместо S3 — можно заменить на реальную загрузку
     url = "https://aboba.ru"
@@ -65,7 +64,7 @@ async def upload_canvas_image(
     row = await create_player_file(
         db,
         id=next_id,
-        player_id=player_id,
+        player_slug=player_slug,
         url=url,
         width=width,
         height=height,
@@ -79,11 +78,11 @@ async def upload_canvas_image(
     return CanvasFile.model_validate(row)
 
 
-@router.put("/api/canvas/{player_id}/update", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/api/canvas/{player_slug}/update", status_code=status.HTTP_204_NO_CONTENT)
 async def update_canvas(
-    player_id: int,
+    player_slug: str,
     payload: CanvasUpdateRequest,
-    current_user: Annotated[Player, Depends(get_current_user_for_update)],
+    current_user: Annotated[Player, Depends(get_current_player)],  # pyright: ignore[reportUnusedParameter]
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     for item in payload.files:
@@ -95,7 +94,7 @@ async def update_canvas(
         ok = await update_player_file_fields(
             db,
             id=item.id,
-            player_id=player_id,
+            player_slug=player_slug,
             rotation=item.rotation,
             x=item.x,
             y=item.y,
@@ -109,6 +108,8 @@ async def update_canvas(
             raise HTTPException(status_code=404, detail=f"File {item.id} not found")
 
     if payload.delete_ids:
-        await delete_player_files(db, player_id=player_id, ids=payload.delete_ids)
+        _ = await delete_player_files(
+            db, player_slug=player_slug, ids=payload.delete_ids
+        )
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)

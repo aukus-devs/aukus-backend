@@ -13,3 +13,8 @@ class PlayerMoveType(Enum):
     DROP = "drop"
     MOVIE = "movie"
     SHEIKH_MOMENT = "sheikh_moment"
+
+
+class UserRole(Enum):
+    ADMIN = "admin"
+    STREAMER = "streamer"

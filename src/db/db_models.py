@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Mapped, mapped_column  # type: ignore
+from sqlalchemy.orm import Mapped, mapped_column  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
 from sqlalchemy.orm.decl_api import declarative_base
 from sqlalchemy import Float, Integer, String, Text
 from src.utils.db import utc_now_ts
@@ -7,7 +7,7 @@ DbBase = declarative_base()
 
 
 class PlayerFile(DbBase):
-    __tablename__ = "player_files"
+    __tablename__: str = "player_files"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)

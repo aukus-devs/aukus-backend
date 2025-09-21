@@ -2,7 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-from src.db.db_models import EventSettings, PlayerGame
+from src.db.db_models import EventSettings
 from src.enums import (
     EventSetting,
 )

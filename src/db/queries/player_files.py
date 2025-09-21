@@ -1,36 +1,40 @@
-# src/db/queries/player_files.py
-from typing import Iterable, Optional
-from sqlalchemy import select, func
+from collections.abc import Iterable
+from typing import cast
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import func, select
 from src.db.db_models import PlayerFile
 
 
-async def get_player_files(db: AsyncSession, player_id: int) -> list[PlayerFile]:
+async def get_player_files(db: AsyncSession, player_slug: str) -> list[PlayerFile]:
     res = await db.execute(
         select(PlayerFile)
-        .where(PlayerFile.player_id == player_id)
-        .order_by(PlayerFile.z_index.asc(), PlayerFile.id.asc())  # type: ignore
+        .where(PlayerFile.player_slug == player_slug)
+        .order_by(PlayerFile.z_index.asc(), PlayerFile.id.asc())
     )
     return res.scalars().all()
 
 
 async def get_next_player_file_id(db: AsyncSession) -> int:
     q = select(func.coalesce(func.max(PlayerFile.id), 0) + 1)
-    return (await db.execute(q)).scalar_one()
+    result = (await db.execute(q)).scalar_one()  # pyright: ignore[reportAny]
+    return cast(int, result)
 
 
-async def get_top_z_for_player(db: AsyncSession, player_id: int) -> int:
+async def get_top_z_for_player(db: AsyncSession, player_slug: str) -> int:
     q = select(func.coalesce(func.max(PlayerFile.z_index), 0)).where(
-        PlayerFile.player_id == player_id
+        PlayerFile.player_slug == player_slug
     )
-    return (await db.execute(q)).scalar_one()
+    result = (await db.execute(q)).scalar_one()  # pyright: ignore[reportAny]
+    return cast(int, result)
 
 
 async def get_player_file(
-    db: AsyncSession, *, id: int, player_id: int
-) -> Optional[PlayerFile]:
+    db: AsyncSession, *, id: int, player_slug: str
+) -> PlayerFile | None:
     res = await db.execute(
-        select(PlayerFile).where(PlayerFile.id == id, PlayerFile.player_id == player_id)
+        select(PlayerFile).where(
+            PlayerFile.id == id, PlayerFile.player_slug == player_slug
+        )
     )
     return res.scalars().first()
 
@@ -39,7 +43,7 @@ async def create_player_file(
     db: AsyncSession,
     *,
     id: int,
-    player_id: int,
+    player_slug: str,
     url: str,
     width: float,
     height: float,
@@ -52,7 +56,7 @@ async def create_player_file(
 ) -> PlayerFile:
     row = PlayerFile(
         id=id,
-        player_id=player_id,
+        player_slug=player_slug,
         rotation=rotation,
         x=x,
         y=y,
@@ -73,7 +77,7 @@ async def update_player_file_fields(
     db: AsyncSession,
     *,
     id: int,
-    player_id: int,
+    player_slug: str,
     rotation: float,
     x: float,
     y: float,
@@ -83,7 +87,7 @@ async def update_player_file_fields(
     scale_x: int,
     scale_y: int,
 ) -> bool:
-    pf = await get_player_file(db, id=id, player_id=player_id)
+    pf = await get_player_file(db, id=id, player_slug=player_slug)
     if not pf:
         return False
 
@@ -102,16 +106,16 @@ async def update_player_file_fields(
 
 
 async def delete_player_files(
-    db: AsyncSession, *, player_id: int, ids: Iterable[int]
+    db: AsyncSession, *, player_slug: str, ids: Iterable[int]
 ) -> list[PlayerFile]:
     res = await db.execute(
         select(PlayerFile).where(
-            PlayerFile.id.in_(list(ids)),  # type: ignore
-            PlayerFile.player_id == player_id,
+            PlayerFile.id.in_(list(ids)),
+            PlayerFile.player_slug == player_slug,
         )
     )
     rows = res.scalars().all()
-    for r in rows:
+    for r in rows:  # pyright: ignore[reportAny]
         await db.delete(r)
     await db.flush()
     return rows
