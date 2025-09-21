@@ -57,6 +57,13 @@ class PlayerMove(DbBase):
     game_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     difficulty_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     dice_roll_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    dice_roll: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    cell_from: Mapped[int] = mapped_column(Integer, nullable=False)
+    cell_to: Mapped[int] = mapped_column(Integer, nullable=False)
+    ladder_from: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ladder_to: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    snake_from: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    snake_to: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class DiceRoll(DbBase):

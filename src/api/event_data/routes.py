@@ -19,6 +19,7 @@ from src.db.db_models import (
     Skin,
 )
 from src.db.db_session import get_db
+from src.db.queries.player_moves import get_players_latest_moves
 
 router = APIRouter(tags=["event_data"])
 
@@ -46,6 +47,9 @@ async def get_event_data(
         unlocked_achievements_query.scalars().all()
     )
 
+    players_slugs = [player.slug for player in players_raw]
+    players_last_moves = await get_players_latest_moves(db, slugs=players_slugs)
+
     players: list[PlayerItem] = []
     for player in players_raw:
         player_skins = [
@@ -58,11 +62,13 @@ async def get_event_data(
             for achievement in unlocked_achievements
             if achievement.player_slug == player.slug
         ]
+        last_move = players_last_moves.get(player.slug)
+        map_position = last_move.cell_to if last_move else 0
 
         players.append(
             PlayerItem(
                 slug=player.slug,
-                map_position=0,
+                map_position=map_position,
                 equipped_skins=player_skins,
                 unlocked_achievements=player_achievements,
             )
