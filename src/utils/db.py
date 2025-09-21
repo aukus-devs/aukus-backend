@@ -1,12 +1,5 @@
-from datetime import datetime, timezone
-
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
-
-
-def utc_now_ts():
-    utc_now = datetime.now(timezone.utc)
-    return int(utc_now.timestamp())
 
 
 async def safe_commit(session: AsyncSession):
@@ -42,7 +35,6 @@ async def reset_database(db: AsyncSession):
     from src.db.db_models import (
         DiceRoll,
         PlayerMove,
-        Player,
     )
 
     # reset rules to the before specific date
@@ -50,8 +42,8 @@ async def reset_database(db: AsyncSession):
     #     Rules.category, func.max(Rules.id).label("max_id")
     # ).group_by(Rules.category)
 
-    delete_to_date = datetime(2025, 8, 14, 0, 0, tzinfo=timezone.utc)
-    date_ts = int(delete_to_date.timestamp())
+    # delete_to_date = datetime(2025, 8, 14, 0, 0, tzinfo=timezone.utc)
+    # date_ts = int(delete_to_date.timestamp())
 
     # rules_by_category = await db.execute(rules_max_ids_by_category_query)
     # for category, max_id in rules_by_category:
