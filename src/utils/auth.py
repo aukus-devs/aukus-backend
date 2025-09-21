@@ -1,4 +1,7 @@
+# pyright: reportCallInDefaultInitializer=false
+
 from datetime import datetime, timezone
+from typing import Literal
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
@@ -17,6 +20,7 @@ security = HTTPBearer()
 class TokenPayload(BaseModel):
     slug: str
     exp: int
+    role: Literal["admin"] | Literal["streamer"]
 
 
 def parse_token(token: str) -> TokenPayload:
@@ -63,9 +67,7 @@ async def get_current_player(
     # Check if an admin is acting as another user
     acting_user_id_str = request.headers.get("x-acting-user-id")
     is_acting = (
-        allow_acting
-        and requesting_player.role == UserRole.ADMIN.value
-        and acting_user_id_str
+        allow_acting and payload.role == UserRole.ADMIN.value and acting_user_id_str
     )
 
     if is_acting and acting_user_id_str:
@@ -75,7 +77,7 @@ async def get_current_player(
             target_query = target_query.with_for_update()
 
         target_result = await db.execute(target_query)
-        target_player = target_result.scalars().first()
+        target_player: Player | None = target_result.scalars().first()
 
         if target_player is None:
             raise HTTPException(
