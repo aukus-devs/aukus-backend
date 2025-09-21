@@ -18,3 +18,9 @@ class PlayerMoveType(Enum):
 class UserRole(Enum):
     ADMIN = "admin"
     STREAMER = "streamer"
+
+
+class RulesCategory(Enum):
+    GENERAL = "general"
+    GAMEPLAY = "gameplay"
+    DONATIONS = "donations"

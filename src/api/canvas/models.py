@@ -1,9 +1,11 @@
 from typing import ClassVar
-from pydantic import BaseModel, Field
+from pydantic import Field
 from pydantic.config import ConfigDict
 
+from src.api.utils import ApiModel
 
-class CanvasFile(BaseModel):
+
+class CanvasFile(ApiModel):
     id: int
     rotation: float
     x: float
@@ -20,10 +22,10 @@ class CanvasFile(BaseModel):
     )
 
 
-class CanvasUpdateRequest(BaseModel):
+class CanvasUpdateRequest(ApiModel):
     files: list[CanvasFile]
     delete_ids: list[int] | None = None
 
 
-class CanvasFilesResponse(BaseModel):
+class CanvasFilesResponse(ApiModel):
     files: list[CanvasFile]
