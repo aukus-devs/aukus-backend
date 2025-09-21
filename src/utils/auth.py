@@ -44,7 +44,7 @@ async def get_current_player(
     db: AsyncSession = Depends(get_db),
     for_update: bool = False,
     allow_acting: bool = True,
-):
+) -> Player:
     token = credentials.credentials
     payload = parse_token(token)
 
@@ -94,7 +94,12 @@ async def get_current_player(
         )
         locked_result = await db.execute(locked_query)
         # The user must exist, so we can safely return it
-        return locked_result.scalars().first()
+        locked_player: Player | None = locked_result.scalars().first()
+        if locked_player is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
+            )
+        return locked_player
 
     # Otherwise, return the user we already fetched
     return requesting_player
