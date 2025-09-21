@@ -1,0 +1,11 @@
+fastapi[all]
+sqlalchemy[asyncio]
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt<4.0
+asyncmy
+requests
+lxml
+cloudscraper
+ua_generator
+httpx
