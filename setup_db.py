@@ -1,15 +1,15 @@
-from pathlib import Path
-from sqlalchemy import create_engine
+# setup_db_async.py
+import asyncio
+from sqlalchemy.ext.asyncio import create_async_engine
 from src.db.db_models import DbBase
+from src.config import DATABASE_URL
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-DB_PATH = "./sqlite"
-DATABASE_URL = f"sqlite:///{DB_PATH}"
-
-def setup_db():
-    engine = create_engine(DATABASE_URL, echo=False)
-    DbBase.metadata.create_all(engine)
+async def setup_db():
+    engine = create_async_engine(DATABASE_URL, echo=False)
+    async with engine.begin() as conn:
+        await conn.run_sync(DbBase.metadata.create_all)
+    await engine.dispose()
 
 if __name__ == "__main__":
-    setup_db()
-    print(f"Database created at {DB_PATH}")
+    asyncio.run(setup_db())
+    print(f"Database created at {DATABASE_URL}")
