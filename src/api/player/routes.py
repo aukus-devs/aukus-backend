@@ -1,4 +1,4 @@
-from src.db.queries.player_moves import get_players_stats as q_get_players_stats, get_all_players as q_get_all_players
+from src.db.queries.player_moves import get_players_stats as get_players_stats, get_all_players as q_get_all_players
 from src.api.player.models import PlayerStatsItem, PlayerStatsResponse
 from typing import Annotated
 from fastapi import APIRouter, Depends
@@ -22,7 +22,7 @@ async def player_stats(
         # current_player: Annotated[Player, Depends(get_current_player)],
         db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    stats = await q_get_players_stats(db)
+    stats = await get_players_stats(db)
 
     players: list[PlayerStatsItem] = [
         PlayerStatsItem(
@@ -77,9 +77,6 @@ async def player_stats(
             )
 
     return PlayerStatsResponse(players=players)
-
-
-router = APIRouter(tags=["player"])
 
 
 @router.post("/api/player/move", response_model=PlayerMoveResponse)
