@@ -30,3 +30,19 @@ class SkinSlot(Enum):
     HEAD = "head"
     BODY = "body"
     SIDE = "side"
+
+
+class GameLength(Enum):
+    T1 = "0-3"
+    T2 = "3-5"
+    T3 = "5-10"
+    T4 = "10-20"
+    T5 = "20-25"
+    T6 = "25+"
+
+
+class GameDifficulty(Enum):
+    EASY = -1
+    NORMAL = 0
+    HARD = 1
+    VERY_HARD = 2
