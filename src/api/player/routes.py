@@ -20,7 +20,7 @@ from src.utils.auth import get_current_player
 router = APIRouter(tags=["players"])
 
 
-@router.get("/api/player_stats", response_model=PlayerStatsResponse)
+@router.get("/api/players/stats", response_model=PlayerStatsResponse)
 async def player_stats(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
@@ -77,7 +77,7 @@ async def player_stats(
     return PlayerStatsResponse(players=players)
 
 
-@router.post("/api/player/move", response_model=PlayerMoveResponse)
+@router.post("/api/players/move", response_model=PlayerMoveResponse)
 async def make_player_move(
     db: Annotated[AsyncSession, Depends(get_db)],
     request: PlayerMoveRequest,

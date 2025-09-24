@@ -61,7 +61,7 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         case(and_(pm.type == "completed", pm.item_length == "long"), else_=0)
     ).label("long_games")
 
-    dr = cast(pm.dice_roll, Float)
+    dr = cast(pm.dice_roll_sum, Float)
     average_move = func.avg(
         case((pm.type != "reroll", func.abs(dr)), else_=None)
     ).label("average_move")

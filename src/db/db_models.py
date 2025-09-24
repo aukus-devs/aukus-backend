@@ -56,31 +56,15 @@ class PlayerMove(DbBase):
     vod_links: Mapped[str | None] = mapped_column(String(255), nullable=True)
     game_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     difficulty_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    dice_roll_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    dice_roll: Mapped[str | None] = mapped_column(String(255), nullable=True)
     cell_from: Mapped[int] = mapped_column(Integer, nullable=False)
     cell_to: Mapped[int] = mapped_column(Integer, nullable=False)
     ladder_from: Mapped[int | None] = mapped_column(Integer, nullable=True)
     ladder_to: Mapped[int | None] = mapped_column(Integer, nullable=True)
     snake_from: Mapped[int | None] = mapped_column(Integer, nullable=True)
     snake_to: Mapped[int | None] = mapped_column(Integer, nullable=True)
-
-
-class DiceRoll(DbBase):
-    __tablename__: str = "dice_rolls"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
-    player_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    used: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    is_random_org_result: Mapped[int] = mapped_column(
-        Integer, default=0, nullable=False
-    )
-    random_org_fail_reason: Mapped[str] = mapped_column(Text, nullable=True)
-    json_short_data: Mapped[str] = mapped_column(Text, nullable=False)
-    random_org_result: Mapped[str] = mapped_column(Text, nullable=True)
-    dice_values: Mapped[str] = mapped_column(String(255), nullable=False)
-    random_org_check_url: Mapped[str] = mapped_column(Text, nullable=True)
+    dice_roll_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    dice_roll_sum: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    dice_roll: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
 
 class EventSettings(DbBase):
