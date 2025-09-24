@@ -90,6 +90,7 @@ async def make_player_move(
     # TODO: get actual dice roll by id
     dice_roll_sum = 5
     next_position = current_map_position + dice_roll_sum
+    position_before_snake_or_ladder = next_position
 
     ladder_from = None
     ladder_to = None
@@ -127,4 +128,9 @@ async def make_player_move(
 
     db.add(move)
     await db.flush()
-    return {"move_id": move.id}
+    return PlayerMoveResponse(
+        move_id=move.id,
+        move_to=position_before_snake_or_ladder,
+        ladder_to=move.ladder_to,
+        snake_to=move.snake_to,
+    )

@@ -40,3 +40,6 @@ class PlayerMoveRequest(ApiModel):
 
 class PlayerMoveResponse(ApiModel):
     move_id: int
+    move_to: int
+    snake_to: int | None
+    ladder_to: int | None
