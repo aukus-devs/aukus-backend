@@ -1,5 +1,4 @@
 from src.api.utils import ApiModel
-from src.api.utils import ApiModel
 from src.enums import GameDifficulty, GameLength, PlayerMoveType
 
 

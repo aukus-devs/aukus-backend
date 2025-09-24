@@ -1,4 +1,7 @@
-from src.db.queries.player_moves import get_players_stats as get_players_stats, get_all_players as q_get_all_players
+from src.db.queries.player_moves import (
+    get_players_stats as get_players_stats,
+    get_all_players as q_get_all_players,
+)
 from src.api.player.models import PlayerStatsItem, PlayerStatsResponse
 from typing import Annotated
 from fastapi import APIRouter, Depends
@@ -19,43 +22,38 @@ router = APIRouter(tags=["players"])
 
 @router.get("/api/player_stats", response_model=PlayerStatsResponse)
 async def player_stats(
-        # current_player: Annotated[Player, Depends(get_current_player)],
-        db: Annotated[AsyncSession, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     stats = await get_players_stats(db)
 
-    players: list[PlayerStatsItem] = [
-        PlayerStatsItem(
-            player_slug=s["player_slug"],
-            map_position=int(s["map_position"]),
-            total_moves=int(s["total_moves"]),
-            games_completed=int(s["games_completed"]),
-            games_dropped=int(s["games_dropped"]),
-            sheikh_moments=int(s["sheikh_moments"]),
-            rerolls=int(s["rerolls"]),
-            movies=int(s["movies"]),
-            ladders=int(s["ladders"]),
-            snakes=int(s["snakes"]),
-            tiny_games=int(s["tiny_games"]),
-            short_games=int(s["short_games"]),
-            medium_games=int(s["medium_games"]),
-            long_games=int(s["long_games"]),
-            average_dice_roll=round(float(s["average_dice_roll"]), 2) if s["average_dice_roll"] is not None else 0.0,
-            average_move=round(float(s["average_move"]), 2) if s["average_move"] is not None else 0.0,
-            ladders_moves_sum=int(s["ladders_moves_sum"]),
-            snakes_moves_sum=int(s["snakes_moves_sum"]),
+    players: list[PlayerStatsItem] = []
+
+    for s in stats:
+        average_dice_roll = 0.0
+        if s.get("average_dice_roll"):
+            average_dice_roll = round(float(s["average_dice_roll"]), 2)
+
+        average_move = 0.0
+        if s.get("average_move"):
+            average_move = round(float(s["average_move"]), 2)
+
+        players.append(
+            PlayerStatsItem.model_validate(
+                {
+                    **s,
+                    "average_dice_roll": average_dice_roll,
+                    "average_move": average_move,
+                }
+            )
         )
-        for s in stats
-    ]
 
     present = {s.player_slug for s in players}
     all_players = await q_get_all_players(db)
     for p in all_players:
-        slug = p["player_slug"]
-        if slug not in present:
+        if p.slug not in present:
             players.append(
                 PlayerStatsItem(
-                    player_slug=slug,
+                    player_slug=p.slug,
                     map_position=0,
                     total_moves=0,
                     games_completed=0,
@@ -81,9 +79,9 @@ async def player_stats(
 
 @router.post("/api/player/move", response_model=PlayerMoveResponse)
 async def make_player_move(
-        db: Annotated[AsyncSession, Depends(get_db)],
-        request: PlayerMoveRequest,
-        current_user: Annotated[Player, Depends(get_current_player)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    request: PlayerMoveRequest,
+    current_user: Annotated[Player, Depends(get_current_player)],
 ):
     last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
     last_move = last_moves.get(current_user.slug)
