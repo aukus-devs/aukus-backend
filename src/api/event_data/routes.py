@@ -20,6 +20,7 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
+from src.utils.auth import get_current_player_or_none
 
 router = APIRouter(tags=["event_data"])
 
@@ -27,6 +28,7 @@ router = APIRouter(tags=["event_data"])
 @router.get("/api/event_data", response_model=EventDataResponse)
 async def get_event_data(
     db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Player | None, Depends(get_current_player_or_none)],
 ):
     event_settings: dict[str, int | str | None] = {}
     event_settings_query = await db.execute(select(EventSettings))
@@ -84,9 +86,14 @@ async def get_event_data(
         AchievementItem.model_validate(achievement) for achievement in achievements_raw
     ]
 
+    last_move = None
+    if current_user:
+        last_move = players_last_moves.get(current_user.slug)
+
     return EventDataResponse(
         players=players,
         skins=skins,
         achievements=achievements,
         event_settings=event_settings,
+        my_last_move=last_move,
     )

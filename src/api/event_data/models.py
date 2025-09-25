@@ -1,3 +1,4 @@
+from src.api.player.models import PlayerMoveItem
 from src.api.utils import ApiModel
 from src.enums import SkinSlot
 
@@ -31,3 +32,4 @@ class EventDataResponse(ApiModel):
     event_settings: dict[str, str | int | None]
     skins: list[SkinItem]
     achievements: list[AchievementItem]
+    my_last_move: PlayerMoveItem | None

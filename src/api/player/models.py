@@ -43,3 +43,28 @@ class PlayerMoveResponse(ApiModel):
     move_to: int
     snake_to: int | None
     ladder_to: int | None
+
+
+class PlayerMoveItem(ApiModel):
+    id: int
+    created_at: int
+    updated_at: int
+    player_slug: str
+    type: PlayerMoveType
+    item_title: str
+    item_duration: int
+    item_review: str
+    item_rating: float
+    item_length: GameLength
+    vod_links: str | None
+    game_id: int | None
+    difficulty_level: GameDifficulty
+    cell_from: int
+    cell_to: int
+    ladder_from: int | None
+    ladder_to: int | None
+    snake_from: int | None
+    snake_to: int | None
+    dice_roll_id: int | None
+    dice_roll_sum: int | None
+    dice_roll: str | None

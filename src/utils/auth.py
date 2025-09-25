@@ -119,3 +119,19 @@ async def get_current_player_direct(
     db: AsyncSession = Depends(get_db),
 ):
     return await get_current_player(request, credentials, db, allow_acting=False)
+
+
+async def get_current_player_or_none(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
+    allow_acting: bool = True,
+) -> Player | None:
+    try:
+        return await get_current_player(
+            request, credentials, db, allow_acting=allow_acting
+        )
+    except HTTPException as e:
+        if e.status_code == status.HTTP_401_UNAUTHORIZED:
+            return None
+        raise
