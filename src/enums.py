@@ -33,10 +33,10 @@ class SkinSlot(Enum):
 
 
 class GameLength(Enum):
-    T1 = "0-5"
-    T2 = "5-15"
-    T3 = "15-30"
-    T4 = "30+"
+    T_0_3 = "0-3"
+    T_3_15 = "3-15"
+    T_15_30 = "15-30"
+    T_30_plus = "30+"
 
 
 class GameDifficulty(Enum):
@@ -44,3 +44,10 @@ class GameDifficulty(Enum):
     NORMAL = 0
     HARD = 1
     VERY_HARD = 2
+
+
+class DiceOption(Enum):
+    D_1D4 = "1d4"
+    D_1D6 = "1d6"
+    D_2D6 = "2d6"
+    D_3D6 = "3d6"

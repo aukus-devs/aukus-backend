@@ -1,13 +1,21 @@
+import json
+from src.api.player.utils import get_dice_options, get_dice_roll_from_eventlab
 from src.db.queries.player_moves import (
     get_players_stats as get_players_stats,
     get_all_players as q_get_all_players,
 )
-from src.api.player.models import PlayerStatsItem, PlayerStatsResponse
+from src.api.player.models import (
+    CreatePlayerMoveRequest,
+    CreatePlayerMoveResponse,
+    FinishPlayerMoveRequest,
+    FinishPlayerMoveResponse,
+    PlayerStatsItem,
+    PlayerStatsResponse,
+)
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.player.models import PlayerMoveRequest, PlayerMoveResponse
 from src.consts import MAP_LADDERS, MAP_SNAKES
 from src.db.db_models import (
     Player,
@@ -77,18 +85,67 @@ async def player_stats(
     return PlayerStatsResponse(players=players)
 
 
-@router.post("/api/players/move", response_model=PlayerMoveResponse)
-async def make_player_move(
+@router.post("/api/players/move", response_model=CreatePlayerMoveResponse)
+async def create_player_move(
     db: Annotated[AsyncSession, Depends(get_db)],
-    request: PlayerMoveRequest,
+    request: CreatePlayerMoveRequest,
     current_user: Annotated[Player, Depends(get_current_player)],
 ):
     last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
     last_move = last_moves.get(current_user.slug)
     current_map_position = last_move.cell_to if last_move else 0
 
-    # TODO: get actual dice roll by id
-    dice_roll_sum = 5
+    move = PlayerMove(
+        player_slug=current_user.slug,
+        type=request.type.value,
+        item_title=request.item_title,
+        item_review=request.item_review,
+        item_rating=request.item_rating,
+        item_length=request.item_length.value if request.item_length else None,
+        item_duration=0,
+        game_id=request.game_id,
+        difficulty_level=request.difficulty.value if request.difficulty else None,
+        dice_roll_id=None,
+        dice_roll_sum=None,
+        dice_roll=None,
+        cell_from=current_map_position,
+        cell_to=current_map_position,
+        ladder_from=None,
+        ladder_to=None,
+        snake_from=None,
+        snake_to=None,
+    )
+
+    db.add(move)
+    await db.flush()
+
+    dice_options = get_dice_options(move)
+    return CreatePlayerMoveResponse(
+        move_id=move.id,
+        dice_options=dice_options,
+    )
+
+
+@router.post("/api/players/move/finish", response_model=FinishPlayerMoveResponse)
+async def finish_player_move(
+    db: AsyncSession,
+    current_user: Annotated[Player, Depends(get_current_player)],
+    request: FinishPlayerMoveRequest,
+):
+    last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
+    last_move = last_moves.get(current_user.slug)
+
+    if not last_move:
+        raise HTTPException(status_code=400, detail="No active move found")
+
+    current_map_position = last_move.cell_from
+
+    try:
+        dice_roll = await get_dice_roll_from_eventlab(request.dice_roll_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Failed to fetch dice roll")
+
+    dice_roll_sum = sum(dice_roll.result)
     next_position = current_map_position + dice_roll_sum
     position_before_snake_or_ladder = next_position
 
@@ -107,30 +164,16 @@ async def make_player_move(
         next_position = MAP_SNAKES[next_position]
         snake_to = next_position
 
-    move = PlayerMove(
-        player_slug=current_user.slug,
-        type=request.type.value,
-        item_title=request.item_title,
-        item_review=request.item_review,
-        item_rating=request.item_rating,
-        item_length=request.item_length.value if request.item_length else None,
-        item_duration=0,
-        game_id=request.game_id,
-        difficulty_level=request.difficulty.value if request.difficulty else None,
-        dice_roll_id=request.dice_roll_id,
-        cell_from=current_map_position,
-        cell_to=next_position,
-        ladder_from=ladder_from,
-        ladder_to=ladder_to,
-        snake_from=snake_from,
-        snake_to=snake_to,
-    )
+    last_move.cell_to = next_position
+    last_move.ladder_from = ladder_from
+    last_move.ladder_to = ladder_to
+    last_move.snake_from = snake_from
+    last_move.snake_to = snake_to
 
-    db.add(move)
-    await db.flush()
-    return PlayerMoveResponse(
-        move_id=move.id,
-        move_to=position_before_snake_or_ladder,
-        ladder_to=move.ladder_to,
-        snake_to=move.snake_to,
+    last_move.dice_roll_id = request.dice_roll_id
+    last_move.dice_roll_sum = dice_roll_sum
+    last_move.dice_roll = json.dumps(dice_roll.result)
+
+    return FinishPlayerMoveResponse(
+        move_to=position_before_snake_or_ladder, snake_to=snake_to, ladder_to=ladder_to
     )
