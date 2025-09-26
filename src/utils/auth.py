@@ -121,12 +121,17 @@ async def get_current_player_direct(
     return await get_current_player(request, credentials, db, allow_acting=False)
 
 
+optional_security = HTTPBearer(auto_error=False)
+
+
 async def get_current_player_or_none(
     request: Request,
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: HTTPAuthorizationCredentials | None = Depends(optional_security),
     db: AsyncSession = Depends(get_db),
     allow_acting: bool = True,
 ) -> Player | None:
+    if credentials is None:
+        return None
     try:
         return await get_current_player(
             request, credentials, db, allow_acting=allow_acting

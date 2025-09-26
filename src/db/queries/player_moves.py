@@ -10,22 +10,29 @@ from src.db.db_models import Player, PlayerMove
 async def get_players_latest_moves(
     db: AsyncSession, *, slugs: list[str] | None = None
 ) -> dict[str, PlayerMove]:
+    # Base query: optionally filter by slugs first
+    base_stmt = select(PlayerMove)
+    if slugs:
+        base_stmt = base_stmt.where(PlayerMove.player_slug.in_(slugs))
+
     # Subquery: rank moves per player by id
-    stmt = select(
-        PlayerMove,
-        func.row_number()
-        .over(partition_by=PlayerMove.player_slug, order_by=PlayerMove.id.desc())
-        .label("rnk"),
-    ).subquery()
+    stmt = (
+        select(
+            PlayerMove,
+            func.row_number()
+            .over(partition_by=PlayerMove.player_slug, order_by=PlayerMove.id.desc())
+            .label("rnk"),
+        )
+        .select_from(base_stmt.subquery())
+        .subquery()
+    )
 
     # Select only the latest (row_number = 1)
-    query = select(PlayerMove).from_statement(  # pyright: ignore[reportAny]
-        select(stmt.c.id, stmt.c.player_slug, stmt.c.rnk).where(stmt.c.rnk == 1)
+    query = (
+        select(PlayerMove).join(stmt, PlayerMove.id == stmt.c.id).where(stmt.c.rnk == 1)
     )
-    if slugs:
-        query = query.where(PlayerMove.player_slug.in_(slugs))  # pyright: ignore[reportAny]
 
-    result = await db.execute(query)  # pyright: ignore[reportAny]
+    result = await db.execute(query)
     moves: list[PlayerMove] = result.scalars().all()
     return {move.player_slug: move for move in moves}
 
