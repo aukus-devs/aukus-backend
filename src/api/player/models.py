@@ -34,6 +34,7 @@ class CreatePlayerMoveRequest(ApiModel):
     item_review: str
     item_rating: float | None
     game_id: int | None
+    cover_image_url: str | None
     difficulty: GameDifficulty | None
 
 

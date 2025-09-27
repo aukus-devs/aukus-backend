@@ -107,6 +107,7 @@ async def create_player_move(
         item_length=request.item_length.value if request.item_length else None,
         item_duration=0,
         game_id=request.game_id,
+        cover_image_url=request.cover_image_url,
         difficulty_level=request.difficulty.value if request.difficulty else None,
         dice_roll_id=None,
         dice_roll_sum=None,

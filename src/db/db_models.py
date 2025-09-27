@@ -55,6 +55,7 @@ class PlayerMove(DbBase):
     item_length: Mapped[str] = mapped_column(String(255), nullable=False)
     vod_links: Mapped[str | None] = mapped_column(String(255), nullable=True)
     game_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    cover_image_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     difficulty_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     cell_from: Mapped[int] = mapped_column(Integer, nullable=False)
     cell_to: Mapped[int] = mapped_column(Integer, nullable=False)
