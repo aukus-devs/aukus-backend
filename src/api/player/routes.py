@@ -128,7 +128,7 @@ async def create_player_move(
 
 @router.post("/api/players/move/finish", response_model=FinishPlayerMoveResponse)
 async def finish_player_move(
-    db: AsyncSession,
+    db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[Player, Depends(get_current_player)],
     request: FinishPlayerMoveRequest,
 ):
