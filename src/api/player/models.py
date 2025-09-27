@@ -65,6 +65,7 @@ class PlayerMoveItem(ApiModel):
     item_length: GameLength
     vod_links: str | None
     game_id: int | None
+    cover_image_url: str | None
     difficulty_level: GameDifficulty
     cell_from: int
     cell_to: int
