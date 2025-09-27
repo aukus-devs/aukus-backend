@@ -1,6 +1,6 @@
 from src.api.player.models import PlayerMoveItem
 from src.api.utils import ApiModel
-from src.enums import SkinSlot
+from src.enums import DiceOption, SkinSlot
 
 
 class UnlockedAchievementItem(ApiModel):
@@ -33,3 +33,4 @@ class EventDataResponse(ApiModel):
     skins: list[SkinItem]
     achievements: list[AchievementItem]
     my_last_move: PlayerMoveItem | None
+    dice_options: list[DiceOption]

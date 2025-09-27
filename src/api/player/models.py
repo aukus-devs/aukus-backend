@@ -1,5 +1,5 @@
 from src.api.utils import ApiModel
-from src.enums import DiceOption, GameDifficulty, GameLength, PlayerMoveType
+from src.enums import GameDifficulty, GameLength, PlayerMoveType
 
 
 class PlayerStatsItem(ApiModel):
@@ -39,7 +39,6 @@ class CreatePlayerMoveRequest(ApiModel):
 
 class CreatePlayerMoveResponse(ApiModel):
     move_id: int
-    dice_options: list[DiceOption]
 
 
 class FinishPlayerMoveRequest(ApiModel):

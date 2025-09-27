@@ -119,11 +119,7 @@ async def create_player_move(
     db.add(move)
     await db.flush()
 
-    dice_options = get_dice_options(move)
-    return CreatePlayerMoveResponse(
-        move_id=move.id,
-        dice_options=dice_options,
-    )
+    return CreatePlayerMoveResponse(move_id=move.id)
 
 
 @router.post("/api/players/move/finish", response_model=FinishPlayerMoveResponse)

@@ -10,6 +10,7 @@ from src.api.event_data.models import (
     SkinItem,
     UnlockedAchievementItem,
 )
+from src.api.player.utils import get_dice_options
 from src.db.db_models import (
     Achievement,
     EventSettings,
@@ -20,6 +21,7 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
+from src.enums import DiceOption
 from src.utils.auth import get_current_player_or_none
 
 router = APIRouter(tags=["event_data"])
@@ -87,8 +89,12 @@ async def get_event_data(
     ]
 
     last_move = None
+    dice_options: list[DiceOption] = []
+
     if current_user:
         last_move = players_last_moves.get(current_user.slug)
+        if last_move:
+            dice_options = get_dice_options(last_move)
 
     return EventDataResponse(
         players=players,
@@ -96,4 +102,5 @@ async def get_event_data(
         achievements=achievements,
         event_settings=event_settings,
         my_last_move=last_move,
+        dice_options=dice_options,
     )
