@@ -79,3 +79,7 @@ class PlayerMoveItem(ApiModel):
 class DiceRollResult(ApiModel):
     id: int
     result: list[int]
+
+
+class PlayerMovesResponse(ApiModel):
+    moves: list[PlayerMoveItem]

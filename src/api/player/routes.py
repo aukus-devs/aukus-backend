@@ -1,4 +1,6 @@
 import json
+
+from sqlalchemy import select
 from src.api.player.utils import get_dice_roll_from_eventlab
 from src.db.queries.player_moves import (
     get_players_stats as get_players_stats,
@@ -9,6 +11,7 @@ from src.api.player.models import (
     CreatePlayerMoveResponse,
     FinishPlayerMoveRequest,
     FinishPlayerMoveResponse,
+    PlayerMovesResponse,
     PlayerStatsItem,
     PlayerStatsResponse,
 )
@@ -173,3 +176,17 @@ async def finish_player_move(
     return FinishPlayerMoveResponse(
         move_to=position_before_snake_or_ladder, snake_to=snake_to, ladder_to=ladder_to
     )
+
+
+@router.get("/api/players/{player_slug}/moves", response_model=PlayerMovesResponse)
+async def get_player_moves(
+    player_slug: str,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    result = await db.execute(
+        select(PlayerMove)
+        .where(PlayerMove.player_slug == player_slug)
+        .order_by(PlayerMove.created_at.desc())
+    )
+    moves = result.scalars().all()
+    return PlayerMovesResponse(moves=moves)
