@@ -1,5 +1,5 @@
 import json
-from src.api.player.utils import get_dice_options, get_dice_roll_from_eventlab
+from src.api.player.utils import get_dice_roll_from_eventlab
 from src.db.queries.player_moves import (
     get_players_stats as get_players_stats,
     get_all_players as q_get_all_players,
