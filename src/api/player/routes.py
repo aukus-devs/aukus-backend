@@ -1,6 +1,6 @@
 import json
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from src.api.player.utils import get_dice_roll_from_eventlab
 from src.db.queries.player_moves import (
     get_players_stats as get_players_stats,
@@ -11,6 +11,7 @@ from src.api.player.models import (
     CreatePlayerMoveResponse,
     FinishPlayerMoveRequest,
     FinishPlayerMoveResponse,
+    PlayerChangeSkinRequest,
     PlayerMovesResponse,
     PlayerStatsItem,
     PlayerStatsResponse,
@@ -23,6 +24,7 @@ from src.consts import MAP_LADDERS, MAP_SNAKES
 from src.db.db_models import (
     Player,
     PlayerMove,
+    PlayerSkin,
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
@@ -191,3 +193,31 @@ async def get_player_moves(
     )
     moves = result.scalars().all()
     return PlayerMovesResponse(moves=moves)
+
+
+@router.post("/api/players/skins")
+async def set_player_skins(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Player, Depends(get_current_player)],
+    request: PlayerChangeSkinRequest,
+):
+    player_skins_query = select(PlayerSkin).where(
+        PlayerSkin.player_slug == current_user.slug,
+        or_(
+            PlayerSkin.skin_id.in_(request.skin_ids),
+            PlayerSkin.is_equipped == 1,
+        ),
+    )
+    result = await db.execute(player_skins_query)
+    player_skins: list[PlayerSkin] = result.scalars().all()
+    player_skins_by_id = {skin.skin_id: skin for skin in player_skins}
+
+    for skin in player_skins:
+        skin.is_equipped = 0
+
+    for skin_id in request.skin_ids:
+        player_skin = player_skins_by_id.get(skin_id)
+        if player_skin:
+            player_skin.is_equipped = 1
+
+    return HTTPException(status_code=200)
