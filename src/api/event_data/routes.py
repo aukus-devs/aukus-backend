@@ -57,7 +57,7 @@ async def get_event_data(
     players: list[PlayerItem] = []
     for player in players_raw:
         player_skins = [
-            skin.id for skin in equipped_skins if skin.player_slug == player.slug
+            skin.skin_id for skin in equipped_skins if skin.player_slug == player.slug
         ]
         player_achievements = [
             UnlockedAchievementItem(
