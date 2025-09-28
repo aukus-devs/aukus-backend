@@ -32,7 +32,7 @@ class Player(DbBase):
     __tablename__: str = "players"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    color: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    color: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     slug: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
     )

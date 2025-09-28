@@ -13,6 +13,7 @@ class PlayerItem(ApiModel):
     map_position: int
     equipped_skins: list[int]
     unlocked_achievements: list[UnlockedAchievementItem]
+    color: str
 
 
 class SkinItem(ApiModel):

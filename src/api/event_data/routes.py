@@ -75,6 +75,7 @@ async def get_event_data(
                 map_position=map_position,
                 equipped_skins=player_skins,
                 unlocked_achievements=player_achievements,
+                color=player.color,
             )
         )
 
