@@ -1,3 +1,6 @@
+import json
+from typing import Any
+from pydantic import field_validator
 from src.api.utils import ApiModel
 from src.enums import GameDifficulty, GameLength, PlayerMoveType
 
@@ -75,7 +78,17 @@ class PlayerMoveItem(ApiModel):
     snake_to: int | None
     dice_roll_id: int | None
     dice_roll_sum: int | None
-    dice_roll: str | None
+    dice_roll: list[int] | None
+
+    @field_validator("dice_roll", mode="before")
+    @classmethod
+    def parse_dice_roll(cls, v: Any) -> Any:  # pyright: ignore[reportAny, reportExplicitAny]
+        if isinstance(v, str):
+            try:
+                return json.loads(v)  # pyright: ignore[reportAny]
+            except json.JSONDecodeError:
+                raise ValueError(f"Invalid JSON format for dice_roll: {v}")
+        return v  # pyright: ignore[reportAny]
 
 
 class DiceRollResult(ApiModel):

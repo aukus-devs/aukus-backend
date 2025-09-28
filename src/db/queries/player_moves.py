@@ -5,6 +5,7 @@ from sqlalchemy import select, func, case, and_, cast, Float  # pyright: ignore[
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.db_models import Player, PlayerMove
+from src.enums import GameLength, PlayerMoveType
 
 
 async def get_players_latest_moves(
@@ -41,51 +42,106 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
     pm = PlayerMove
 
     total_moves = func.count().label("total_moves")
-    games_completed = func.sum(case((pm.type == "completed", 1), else_=0)).label(
-        "games_completed"
+    games_completed = func.sum(
+        case((pm.type == PlayerMoveType.COMPLETED.value, 1), else_=0)
+    ).label("games_completed")
+    games_dropped = func.sum(
+        case((pm.type == PlayerMoveType.DROP.value, 1), else_=0)
+    ).label("games_dropped")
+    sheikh_moments = func.sum(
+        case((pm.type == PlayerMoveType.SHEIKH_MOMENT.value, 1), else_=0)
+    ).label("sheikh_moments")
+    rerolls = func.sum(
+        case((pm.type == PlayerMoveType.REROLL.value, 1), else_=0)
+    ).label("rerolls")
+    movies = func.sum(case((pm.type == PlayerMoveType.MOVIE.value, 1), else_=0)).label(
+        "movies"
     )
-    games_dropped = func.sum(case((pm.type == "drop", 1), else_=0)).label(
-        "games_dropped"
-    )
-    sheikh_moments = func.sum(case((pm.type == "sheikh", 1), else_=0)).label(
-        "sheikh_moments"
-    )
-    rerolls = func.sum(case((pm.type == "reroll", 1), else_=0)).label("rerolls")
-    movies = func.sum(case((pm.type == "movie", 1), else_=0)).label("movies")
     ladders = func.sum(case((pm.ladder_from.is_not(None), 1), else_=0)).label("ladders")
     snakes = func.sum(case((pm.snake_from.is_not(None), 1), else_=0)).label("snakes")
 
     tiny_games = func.sum(
-        case(and_(pm.type == "completed", pm.item_length == "tiny"), else_=0)
+        case(
+            and_(
+                pm.type == PlayerMoveType.COMPLETED.value,
+                pm.item_length == GameLength.T_0_3.value,
+            ),
+            else_=0,
+        )
     ).label("tiny_games")
     short_games = func.sum(
-        case(and_(pm.type == "completed", pm.item_length == "short"), else_=0)
+        case(
+            and_(
+                pm.type == PlayerMoveType.COMPLETED.value,
+                pm.item_length == GameLength.T_3_15.value,
+            ),
+            else_=0,
+        )
     ).label("short_games")
     medium_games = func.sum(
-        case(and_(pm.type == "completed", pm.item_length == "medium"), else_=0)
+        case(
+            and_(
+                pm.type == PlayerMoveType.COMPLETED.value,
+                pm.item_length == GameLength.T_15_30.value,
+            ),
+            else_=0,
+        )
     ).label("medium_games")
     long_games = func.sum(
-        case(and_(pm.type == "completed", pm.item_length == "long"), else_=0)
+        case(
+            and_(
+                pm.type == PlayerMoveType.COMPLETED.value,
+                pm.item_length == GameLength.T_30_plus.value,
+            ),
+            else_=0,
+        )
     ).label("long_games")
 
     dr = cast(pm.dice_roll_sum, Float)
     average_move = func.avg(
-        case((pm.type != "reroll", func.abs(dr)), else_=None)
+        case((pm.type != PlayerMoveType.REROLL.value, func.abs(dr)), else_=None)
     ).label("average_move")
 
     average_dice_roll = func.avg(
         case(
             (pm.cell_to > 101, None),
-            (pm.item_length.in_(("tiny", "short")), func.abs(dr)),
-            (and_(pm.item_length == "medium", pm.cell_from < 81), func.abs(dr / 2.0)),
-            (and_(pm.item_length == "long", pm.cell_from < 81), func.abs(dr / 3.0)),
-            (and_(pm.cell_from < 81, pm.type.in_(("drop", "sheikh"))), func.abs(dr)),
             (
-                and_(pm.cell_from >= 81, pm.item_length.in_(("medium", "long"))),
+                pm.item_length.in_((GameLength.T_0_3.value, GameLength.T_3_15.value)),
                 func.abs(dr),
             ),
             (
-                and_(pm.cell_from >= 81, pm.type.in_(("drop", "sheikh"))),
+                and_(pm.item_length == GameLength.T_15_30.value, pm.cell_from < 81),
+                func.abs(dr / 2.0),
+            ),
+            (
+                and_(pm.item_length == GameLength.T_30_plus.value, pm.cell_from < 81),
+                func.abs(dr / 3.0),
+            ),
+            (
+                and_(
+                    pm.cell_from < 81,
+                    pm.type.in_(
+                        (PlayerMoveType.DROP.value, PlayerMoveType.SHEIKH_MOMENT.value)
+                    ),
+                ),
+                func.abs(dr),
+            ),
+            (
+                and_(
+                    pm.cell_from >= 81,
+                    pm.item_length.in_(
+                        (GameLength.T_15_30.value, GameLength.T_30_plus.value)
+                    ),
+                ),
+                func.abs(dr),
+            ),
+            (
+                and_(
+                    pm.cell_from >= 81,
+                    pm.type.in_(
+                        (PlayerMoveType.DROP.value, PlayerMoveType.SHEIKH_MOMENT.value)
+                    ),
+                ),
                 func.abs(dr / 2.0),
             ),
             else_=None,
