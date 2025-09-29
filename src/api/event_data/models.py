@@ -12,6 +12,7 @@ class PlayerItem(ApiModel):
     slug: str
     map_position: int
     equipped_skins: list[int]
+    available_skins: list[int]
     unlocked_achievements: list[UnlockedAchievementItem]
     color: str
 

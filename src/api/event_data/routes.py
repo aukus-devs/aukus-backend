@@ -41,10 +41,8 @@ async def get_event_data(
     players_query = await db.execute(select(Player))
     players_raw: list[Player] = players_query.scalars().all()
 
-    equipped_skins_query = await db.execute(
-        select(PlayerSkin).where(PlayerSkin.is_equipped == 1)
-    )
-    equipped_skins: list[PlayerSkin] = equipped_skins_query.scalars().all()
+    player_skins_query = await db.execute(select(PlayerSkin))
+    player_skins_all: list[PlayerSkin] = player_skins_query.scalars().all()
 
     unlocked_achievements_query = await db.execute(select(PlayerAchievement))
     unlocked_achievements: list[PlayerAchievement] = (
@@ -57,8 +55,11 @@ async def get_event_data(
     players: list[PlayerItem] = []
     for player in players_raw:
         player_skins = [
-            skin.skin_id for skin in equipped_skins if skin.player_slug == player.slug
+            skin for skin in player_skins_all if skin.player_slug == player.slug
         ]
+        equipped_ids = [skin.skin_id for skin in player_skins if skin.is_equipped]
+        player_skins_ids = [skin.skin_id for skin in player_skins]
+
         player_achievements = [
             UnlockedAchievementItem(
                 id=achievement.achievement_id, unlocked_at=achievement.created_at
@@ -73,7 +74,8 @@ async def get_event_data(
             PlayerItem(
                 slug=player.slug,
                 map_position=map_position,
-                equipped_skins=player_skins,
+                equipped_skins=equipped_ids,
+                available_skins=player_skins_ids,
                 unlocked_achievements=player_achievements,
                 color=player.color,
             )
