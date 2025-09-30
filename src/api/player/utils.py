@@ -1,5 +1,6 @@
 import httpx
 from src.api.player.models import DiceRollResult
+from src.config import EVENTLAB_API_URL
 from src.db.db_models import PlayerMove
 from src.enums import DiceOption, GameLength, PlayerMoveType
 
@@ -41,12 +42,12 @@ def get_dice_options(move: PlayerMove) -> list[DiceOption]:
 
 
 async def get_dice_roll_from_eventlab(dice_roll_id: int) -> DiceRollResult:
+    url = f"{EVENTLAB_API_URL}/api/dice-rolls/{dice_roll_id}"
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        response = await client.get(url)
+    _ = response.raise_for_status()
+    data = response.json()  # pyright: ignore[reportAny]
     return DiceRollResult(
-        id=dice_roll_id,
-        result=[3, 5],
+        id=data["id"],  # pyright: ignore[reportAny]
+        roll_values=data["roll_values"],  # pyright: ignore[reportAny]
     )
-    # url = f"https://api.eventlab.dev/api/dice_rolls/{dice_roll_id}"
-    # async with httpx.AsyncClient(timeout=5.0) as client:
-    #     response = await client.get(url)
-    # _ = response.raise_for_status()
-    # return DiceRollResult.model_validate(response.json())

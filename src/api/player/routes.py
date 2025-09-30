@@ -1,4 +1,5 @@
 import json
+import logging
 
 from sqlalchemy import or_, select
 from src.api.player.utils import get_dice_roll_from_eventlab
@@ -29,6 +30,7 @@ from src.db.db_models import (
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
 from src.utils.auth import get_current_player
+
 
 router = APIRouter(tags=["players"])
 
@@ -145,9 +147,10 @@ async def finish_player_move(
     try:
         dice_roll = await get_dice_roll_from_eventlab(request.dice_roll_id)
     except Exception:
+        logging.exception("Failed to fetch dice roll")
         raise HTTPException(status_code=400, detail="Failed to fetch dice roll")
 
-    dice_roll_sum = sum(dice_roll.result)
+    dice_roll_sum = sum(dice_roll.roll_values)
     next_position = current_map_position + dice_roll_sum
     position_before_snake_or_ladder = next_position
 
@@ -174,7 +177,7 @@ async def finish_player_move(
 
     last_move.dice_roll_id = request.dice_roll_id
     last_move.dice_roll_sum = dice_roll_sum
-    last_move.dice_roll = json.dumps(dice_roll.result)
+    last_move.dice_roll = json.dumps(dice_roll.roll_values)
 
     return FinishPlayerMoveResponse(
         move_to=position_before_snake_or_ladder, snake_to=snake_to, ladder_to=ladder_to
