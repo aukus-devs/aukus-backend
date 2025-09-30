@@ -29,6 +29,7 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
+from src.enums import GameDifficulty
 from src.utils.auth import get_current_player
 
 
@@ -112,7 +113,9 @@ async def create_player_move(
         item_duration=0,
         game_id=request.game_id,
         cover_image_url=request.cover_image_url,
-        difficulty_level=request.difficulty.value if request.difficulty else None,
+        difficulty_level=request.difficulty.value
+        if request.difficulty
+        else GameDifficulty.NORMAL.value,
         dice_roll_id=None,
         dice_roll_sum=None,
         dice_roll=None,

@@ -65,7 +65,7 @@ class PlayerMoveItem(ApiModel):
     item_duration: int
     item_review: str
     item_rating: float
-    item_length: GameLength
+    item_length: GameLength | None
     vod_links: str | None
     game_id: int | None
     cover_image_url: str | None

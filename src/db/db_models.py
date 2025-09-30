@@ -52,7 +52,7 @@ class PlayerMove(DbBase):
     item_duration: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     item_review: Mapped[str] = mapped_column(Text, nullable=False)
     item_rating: Mapped[float] = mapped_column(Float, nullable=False)
-    item_length: Mapped[str] = mapped_column(String(255), nullable=False)
+    item_length: Mapped[str] = mapped_column(String(255), nullable=True)
     vod_links: Mapped[str | None] = mapped_column(String(255), nullable=True)
     game_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     cover_image_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
