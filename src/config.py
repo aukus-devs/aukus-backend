@@ -10,7 +10,7 @@ DATABASE_URL = "mysql+asyncmy://root:pass@127.0.0.1:3306/aukus4" if IS_LOCAL els
 
 TOKEN_SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")
 
-EVENTLAB_API_URL = os.getenv("EVENTLAB_API_URL", "http://localhost:8300")
+EVENTLAB_API_URL = "http://localhost:8300" if IS_LOCAL else "https://api.eventlab.dev"
 
 
 def setup_logging():
