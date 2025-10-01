@@ -29,7 +29,7 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
-from src.enums import GameDifficulty
+from src.enums import GameDifficulty, PlayerMoveType
 from src.utils.auth import get_current_player
 
 
@@ -154,7 +154,17 @@ async def finish_player_move(
         raise HTTPException(status_code=400, detail="Failed to fetch dice roll")
 
     dice_roll_sum = sum(dice_roll.roll_values)
-    next_position = current_map_position + dice_roll_sum
+    direction = (
+        -1
+        if last_move.type
+        in [PlayerMoveType.DROP.value, PlayerMoveType.SHEIKH_MOMENT.value]
+        else 1
+    )
+
+    next_position = current_map_position + dice_roll_sum * direction
+    if next_position < 1:
+        next_position = 1
+
     position_before_snake_or_ladder = next_position
 
     ladder_from = None
