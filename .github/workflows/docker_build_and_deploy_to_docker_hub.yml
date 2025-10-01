@@ -48,9 +48,9 @@ jobs:
     needs: build
     uses: ./.github/workflows/deploy_to_server.yml
     secrets:
-      host: ${{ secrets.HOST_SERVER1 }}
-      username: ${{ secrets.USERNAME_SERVER1 }}
-      password: ${{ secrets.PASSWORD_SERVER1 }}
-      port: ${{ secrets.PORT_SERVER1 }}
+      host: ${{ secrets.HOST_AUKUS4 }}
+      username: ${{ secrets.USERNAME_AUKUS4 }}
+      password: ${{ secrets.PASSWORD_AUKUS4 }}
+      port: ${{ secrets.PORT_AUKUS4 }}
       server_name: "server1"
       tg_token: ${{ secrets.TG_TOKEN }}
