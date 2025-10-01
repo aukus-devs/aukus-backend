@@ -19,7 +19,7 @@ def get_dice_options(move: PlayerMove) -> list[DiceOption]:
                     return [DiceOption.D_1D6, DiceOption.D_2D6]
                 case GameLength.T_30_plus.value:
                     return [
-                        DiceOption.D_2D6,
+                        DiceOption.D_1D6,
                         DiceOption.D_2D6,
                         DiceOption.D_3D6,
                     ]
