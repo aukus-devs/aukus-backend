@@ -162,8 +162,8 @@ async def finish_player_move(
     )
 
     next_position = current_map_position + dice_roll_sum * direction
-    if next_position < 1:
-        next_position = 1
+    if next_position < 0:
+        next_position = 0
 
     position_before_snake_or_ladder = next_position
 
