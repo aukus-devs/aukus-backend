@@ -51,3 +51,8 @@ class DiceOption(Enum):
     D_1D6 = "1d6"
     D_2D6 = "2d6"
     D_3D6 = "3d6"
+
+
+class AchievementVisibility(Enum):
+    VISIBLE = "visible"
+    HIDDEN = "hidden"

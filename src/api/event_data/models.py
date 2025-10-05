@@ -1,6 +1,6 @@
 from src.api.player.models import PlayerMoveItem
 from src.api.utils import ApiModel
-from src.enums import DiceOption, SkinSlot
+from src.enums import AchievementVisibility, DiceOption, SkinSlot
 
 
 class UnlockedAchievementItem(ApiModel):
@@ -27,6 +27,7 @@ class AchievementItem(ApiModel):
     id: int
     description: str
     reward_skin_id: int
+    visibility: AchievementVisibility
 
 
 class EventDataResponse(ApiModel):

@@ -21,7 +21,8 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
-from src.enums import DiceOption
+from src.db.utils import model_to_dict
+from src.enums import AchievementVisibility, DiceOption
 from src.utils.auth import get_current_player_or_none
 
 router = APIRouter(tags=["event_data"])
@@ -85,11 +86,28 @@ async def get_event_data(
     skins_raw: list[Skin] = skins_query.scalars().all()
     skins = [SkinItem.model_validate(skin) for skin in skins_raw]
 
-    achievements_query = await db.execute(select(Achievement))
+    unlocked_achievements_by_id = {a.id: a for a in unlocked_achievements}
+
+    achievements_query = await db.execute(select(Achievement).order_by(Achievement.id))
     achievements_raw: list[Achievement] = achievements_query.scalars().all()
-    achievements = [
-        AchievementItem.model_validate(achievement) for achievement in achievements_raw
-    ]
+
+    achievements: list[AchievementItem] = []
+    for a in achievements_raw:
+        visibility = (
+            AchievementVisibility.VISIBLE
+            if unlocked_achievements_by_id.get(a.id)
+            else AchievementVisibility.HIDDEN
+        )
+        achievements.append(
+            AchievementItem(
+                id=a.id,
+                description="???"
+                if visibility == AchievementVisibility.HIDDEN
+                else a.description,
+                reward_skin_id=a.reward_skin_id,
+                visibility=visibility,
+            )
+        )
 
     last_move = None
     dice_options: list[DiceOption] = []
