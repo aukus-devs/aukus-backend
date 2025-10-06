@@ -3,6 +3,7 @@ import uvicorn
 from src.api.event_data import routes as event_data
 from src.api.canvas import routes as canvas
 from src.api.player import routes as player
+from src.api.rules import routes as rules
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.config import IS_LOCAL
@@ -11,6 +12,7 @@ app = FastAPI(title="Aukus Backend")
 app.include_router(canvas.router)
 app.include_router(event_data.router)
 app.include_router(player.router)
+app.include_router(rules.router)
 
 
 if IS_LOCAL:
