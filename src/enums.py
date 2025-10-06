@@ -17,6 +17,7 @@ class PlayerMoveType(Enum):
 
 class UserRole(Enum):
     ADMIN = "admin"
+    MODERATOR = "moderator"
     STREAMER = "streamer"
 
 

@@ -1,7 +1,6 @@
 # pyright: reportCallInDefaultInitializer=false
 
 from datetime import datetime, timezone
-from typing import Literal
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
@@ -20,7 +19,7 @@ security = HTTPBearer()
 class TokenPayload(BaseModel):
     slug: str
     exp: int
-    role: Literal["admin"] | Literal["streamer"]
+    role: UserRole
 
 
 def parse_token(token: str) -> TokenPayload:
@@ -140,3 +139,14 @@ async def get_current_player_or_none(
         if e.status_code == status.HTTP_401_UNAUTHORIZED:
             return None
         raise
+
+
+def get_current_player_role(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> UserRole | None:
+    token = credentials.credentials
+    try:
+        payload = parse_token(token)
+        return payload.role
+    except HTTPException:
+        return None
