@@ -15,6 +15,7 @@ class PlayerItem(ApiModel):
     available_skins: list[int]
     unlocked_achievements: list[UnlockedAchievementItem]
     color: str
+    last_move: PlayerMoveItem | None
 
 
 class SkinItem(ApiModel):
@@ -35,5 +36,4 @@ class EventDataResponse(ApiModel):
     event_settings: dict[str, str | int | None]
     skins: list[SkinItem]
     achievements: list[AchievementItem]
-    my_last_move: PlayerMoveItem | None
     dice_options: list[DiceOption]

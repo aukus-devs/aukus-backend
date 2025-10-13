@@ -103,6 +103,11 @@ async def create_player_move(
     last_move = last_moves.get(current_user.slug)
     current_map_position = last_move.cell_to if last_move else 0
 
+    cell_from = current_map_position
+    cell_to = current_map_position
+    if current_map_position == 101 and request.type != PlayerMoveType.COMPLETED:
+        cell_to = 102
+
     move = PlayerMove(
         player_slug=current_user.slug,
         type=request.type.value,
@@ -119,8 +124,8 @@ async def create_player_move(
         dice_roll_id=None,
         dice_roll_sum=None,
         dice_roll=None,
-        cell_from=current_map_position,
-        cell_to=current_map_position,
+        cell_from=cell_from,
+        cell_to=cell_to,
         ladder_from=None,
         ladder_to=None,
         snake_from=None,
@@ -165,10 +170,7 @@ async def finish_player_move(
     if next_position < 0:
         next_position = 0
     elif next_position > 101:
-        if current_map_position == 101:
-            next_position = 102
-        else:
-            next_position = 101
+        next_position = 101
 
     position_before_snake_or_ladder = next_position
 
