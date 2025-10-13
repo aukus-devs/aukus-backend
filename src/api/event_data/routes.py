@@ -79,6 +79,7 @@ async def get_event_data(
                 available_skins=player_skins_ids,
                 unlocked_achievements=player_achievements,
                 color=player.color,
+                last_move=last_move,
             )
         )
 
@@ -122,6 +123,5 @@ async def get_event_data(
         skins=skins,
         achievements=achievements,
         event_settings=event_settings,
-        my_last_move=last_move,
         dice_options=dice_options,
     )
