@@ -29,7 +29,7 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
-from src.enums import GameDifficulty, PlayerMoveType
+from src.enums import GameDifficulty, GameLength, PlayerMoveType
 from src.utils.auth import get_current_player
 
 
@@ -177,7 +177,9 @@ async def finish_player_move(
     snake_from = None
     snake_to = None
 
-    if next_position in MAP_LADDERS:
+    can_use_ladders = last_move.item_length != GameLength.T_0_3.value
+
+    if can_use_ladders and next_position in MAP_LADDERS:
         ladder_from = next_position
         next_position = MAP_LADDERS[next_position]
         ladder_to = next_position
