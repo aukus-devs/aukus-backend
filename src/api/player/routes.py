@@ -105,7 +105,7 @@ async def create_player_move(
 
     cell_from = current_map_position
     cell_to = current_map_position
-    if current_map_position == 101 and request.type != PlayerMoveType.COMPLETED:
+    if current_map_position == 101 and request.type == PlayerMoveType.COMPLETED:
         cell_to = 102
 
     move = PlayerMove(
