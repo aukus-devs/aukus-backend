@@ -10,6 +10,9 @@ MAP_LADDERS = {
     74: 92,
 }
 
+LONGEST_LADDER = max(MAP_LADDERS.items(), key=lambda item: abs(item[1] - item[0]))
+
+
 MAP_SNAKES = {
     21: 3,
     27: 5,
@@ -24,3 +27,5 @@ MAP_SNAKES = {
     97: 85,
     99: 41,
 }
+
+LONGEST_SNAKE = max(MAP_SNAKES.items(), key=lambda item: abs(item[0] - item[1]))

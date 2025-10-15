@@ -2,7 +2,10 @@ import json
 import logging
 
 from sqlalchemy import or_, select  # pyright: ignore[reportUnknownVariableType]
-from src.api.player.utils import get_dice_roll_from_eventlab
+from src.api.player.utils import (
+    check_achievements_completion,
+    get_dice_roll_from_eventlab,
+)
 from src.db.queries.player_moves import (
     get_players_stats as get_players_stats,
     get_all_players as q_get_all_players,
@@ -200,6 +203,9 @@ async def finish_player_move(
     last_move.dice_roll_id = request.dice_roll_id
     last_move.dice_roll_sum = dice_roll_sum
     last_move.dice_roll = json.dumps(dice_roll.roll_values)
+
+    await db.flush()
+    await check_achievements_completion(db, current_user)
 
     return FinishPlayerMoveResponse(
         move_to=position_before_snake_or_ladder, snake_to=snake_to, ladder_to=ladder_to

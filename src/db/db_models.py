@@ -130,6 +130,7 @@ class Achievement(DbBase):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     reward_skin_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    code: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
 
 
 class PlayerAchievement(DbBase):

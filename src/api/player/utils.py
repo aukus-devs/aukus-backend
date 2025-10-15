@@ -1,7 +1,18 @@
+import json
+from typing import cast
 import httpx
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from src.api.player.models import DiceRollResult
 from src.config import EVENTLAB_API_URL
-from src.db.db_models import PlayerMove
+from src.consts import LONGEST_LADDER, LONGEST_SNAKE
+from src.db.db_models import (
+    Achievement,
+    Player,
+    PlayerAchievement,
+    PlayerMove,
+    PlayerSkin,
+)
 from src.enums import DiceOption, GameLength, PlayerMoveType
 
 
@@ -51,3 +62,268 @@ async def get_dice_roll_from_eventlab(dice_roll_id: int) -> DiceRollResult:
         id=data["id"],  # pyright: ignore[reportAny]
         roll_values=data["roll_values"],  # pyright: ignore[reportAny]
     )
+
+
+def cell_row(cell: int) -> int:
+    if cell > 100:
+        return 11
+    if cell < 1:
+        return 0
+    return (cell - 1) // 10 + 1
+
+
+async def check_achievements_completion(db: AsyncSession, player: Player):
+    moves_query = await db.execute(
+        select(PlayerMove)
+        .where(PlayerMove.player_slug == player.slug)
+        .order_by(PlayerMove.created_at.desc())
+    )
+    moves: list[PlayerMove] = moves_query.scalars().all()
+
+    if not moves:
+        return
+
+    unlocked_achievements_query = await db.execute(
+        select(PlayerAchievement).where(PlayerMove.player_slug == player.slug)
+    )
+    unlocked_achievements: list[PlayerAchievement] = (
+        unlocked_achievements_query.scalars().all()
+    )
+    unlocked_achievements_ids = {
+        achievement.achievement_id for achievement in unlocked_achievements
+    }
+
+    locked_achievements_query = await db.execute(
+        select(Achievement).where(Achievement.id.not_in(unlocked_achievements_ids))
+    )
+    locked_achievements: list[Achievement] = locked_achievements_query.scalars().all()
+
+    new_achievements: list[PlayerAchievement] = []
+    for achievement in locked_achievements:
+        completed = check_achievement_completion(achievement, moves)
+        if completed:
+            new = PlayerAchievement(
+                player_slug=player.slug, achievement_id=achievement.id
+            )
+            db.add(new)
+            new_achievements.append(new)
+
+    if new_achievements:
+        new_achievements_ids = [ach.achievement_id for ach in new_achievements]
+        new_skins_ids = [
+            ach.reward_skin_id
+            for ach in locked_achievements
+            if ach.id in new_achievements_ids
+        ]
+        for skin_id in new_skins_ids:
+            db.add(
+                PlayerSkin(
+                    player_slug=player.slug,
+                    skin_id=skin_id,
+                    is_equipped=0,
+                )
+            )
+
+    return new_achievements
+
+
+def check_achievement_completion(achievement: Achievement, moves: list[PlayerMove]):
+    last_move = moves[0] if moves else None
+    if not last_move:
+        return False
+
+    last_move_dice_roll = cast(
+        list[int], json.loads(last_move.dice_roll) if last_move.dice_roll else []
+    )
+
+    long_games = [
+        move
+        for move in moves
+        if move.item_length == GameLength.T_30_plus.value
+        and move.type == PlayerMoveType.COMPLETED.value
+    ]
+
+    tiny_games = [
+        move
+        for move in moves
+        if move.item_length == GameLength.T_0_3.value
+        and move.type == PlayerMoveType.COMPLETED.value
+    ]
+
+    movies = [move for move in moves if move.type == PlayerMoveType.MOVIE.value]
+
+    match achievement.code:
+        case "visit-1":
+            return cell_row(last_move.cell_to) == 1
+        case "visit-2":
+            return cell_row(last_move.cell_to) == 2
+        case "visit-3":
+            return cell_row(last_move.cell_to) == 3
+        case "visit-4":
+            return cell_row(last_move.cell_to) == 4
+        case "visit-5":
+            return cell_row(last_move.cell_to) == 5
+        case "visit-6":
+            return cell_row(last_move.cell_to) == 6
+        case "visit-7":
+            return cell_row(last_move.cell_to) == 7
+        case "visit-8":
+            return cell_row(last_move.cell_to) == 8
+        case "visit-9":
+            return cell_row(last_move.cell_to) == 9
+        case "visit-10":
+            return cell_row(last_move.cell_to) == 10
+        case "visit-all":
+            visited_rows = set[int]()
+            for move in moves:
+                visited_rows.add(cell_row(move.cell_to))
+            return len(visited_rows) == 10
+        case "roll-all-6":
+            return (
+                all(roll == 6 for roll in last_move_dice_roll)
+                and len(last_move_dice_roll) >= 2
+            )
+        case "roll-all-1":
+            return (
+                all(roll == 1 for roll in last_move_dice_roll)
+                and len(last_move_dice_roll) >= 2
+            )
+        case "roll-all-same":
+            return len(last_move_dice_roll) >= 2 and all(
+                roll == last_move_dice_roll[0] for roll in last_move_dice_roll
+            )
+        case "long-games-1":
+            return len(long_games) >= 1
+        case "long-games-3":
+            return len(long_games) >= 3
+        case "tiny-games-2":
+            return len(tiny_games) >= 2
+        case "tiny-games-5":
+            return len(tiny_games) >= 5
+        case "movie-1":
+            return len(movies) >= 1
+        case "movie-2":
+            return len(movies) >= 2
+        case "complete-3":
+            counter = 0
+            for move in moves:
+                if move.type == PlayerMoveType.COMPLETED.value:
+                    counter += 1
+                    if counter >= 3:
+                        return True
+                elif move.type == PlayerMoveType.REROLL.value:
+                    continue
+                else:
+                    counter = 0
+            return False
+        case "complete-6":
+            counter = 0
+            for move in moves:
+                if move.type == PlayerMoveType.COMPLETED.value:
+                    counter += 1
+                    if counter >= 6:
+                        return True
+                elif move.type == PlayerMoveType.REROLL.value:
+                    continue
+                else:
+                    counter = 0
+            return False
+        case "drop-2":
+            counter = 0
+            for move in moves:
+                if move.type == PlayerMoveType.DROP.value:
+                    counter += 1
+                    if counter >= 2:
+                        return True
+                elif move.type == PlayerMoveType.REROLL.value:
+                    continue
+                else:
+                    counter = 0
+            return False
+        case "sheikh-1":
+            return last_move.type == PlayerMoveType.SHEIKH_MOMENT.value
+        case "sheikh-3":
+            sheikh_moves = [
+                move
+                for move in moves
+                if move.type == PlayerMoveType.SHEIKH_MOMENT.value
+            ]
+            return len(sheikh_moves) >= 3
+        case "rate-10":
+            return last_move.item_rating == 10
+        case "rate-0":
+            return last_move.item_rating == 0
+        case "complete-easy":
+            return (
+                last_move.type == PlayerMoveType.COMPLETED.value
+                and last_move.difficulty_level == -1
+            )
+        case "complete-very-hard":
+            return (
+                last_move.type == PlayerMoveType.COMPLETED.value
+                and last_move.difficulty_level == 2
+            )
+        case "drop-easy":
+            return (
+                last_move.type == PlayerMoveType.DROP.value
+                and last_move.difficulty_level == -1
+            )
+        case "drop-very-hard":
+            return (
+                last_move.type == PlayerMoveType.DROP.value
+                and last_move.difficulty_level == 2
+            )
+        case "ladder-1":
+            return last_move.ladder_to is not None
+        case "ladder-3":
+            ladders = [move for move in moves if move.ladder_to is not None]
+            return len(ladders) >= 3
+        case "ladder-long":
+            return (
+                last_move.ladder_from == LONGEST_LADDER[0]
+                and last_move.ladder_to == LONGEST_LADDER[1]
+            )
+        case "ladder-repeat":
+            ladders = set[int]()
+            for move in moves:
+                if move.ladder_from is not None:
+                    if move.ladder_from in ladders:
+                        return True
+                    ladders.add(move.ladder_from)
+            return False
+        case "snake-1":
+            return last_move.snake_to is not None
+        case "snake-3":
+            snakes = [move for move in moves if move.snake_to is not None]
+            return len(snakes) >= 3
+        case "snake-long":
+            return (
+                last_move.snake_from == LONGEST_SNAKE[0]
+                and last_move.snake_to == LONGEST_SNAKE[1]
+            )
+        case "snake-repeat":
+            snakes = set[int]()
+            for move in moves:
+                if move.snake_from is not None:
+                    if move.snake_from in snakes:
+                        return True
+                    snakes.add(move.snake_from)
+            return False
+        case "drop-into-ladder":
+            return (
+                last_move.type == PlayerMoveType.DROP.value
+                and last_move.ladder_to is not None
+            )
+        case "drop-into-snake":
+            return (
+                last_move.type == PlayerMoveType.DROP.value
+                and last_move.snake_to is not None
+            )
+        case "fall-5+":
+            max_pos = max(move.cell_to for move in moves)
+            return cell_row(last_move.cell_to) <= cell_row(max_pos) - 5
+        case "return-to-0":
+            max_pos = max(move.cell_to for move in moves)
+            return last_move.cell_to == 0 and max_pos > 0
+        case _:
+            return False
