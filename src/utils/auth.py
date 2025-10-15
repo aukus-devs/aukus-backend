@@ -65,9 +65,7 @@ async def get_current_player(
 
     # Check if an admin is acting as another user
     acting_user_id_str = request.headers.get("x-acting-user-id")
-    is_acting = (
-        allow_acting and payload.role == UserRole.ADMIN.value and acting_user_id_str
-    )
+    is_acting = allow_acting and payload.role == UserRole.ADMIN and acting_user_id_str
 
     if is_acting and acting_user_id_str:
         # If acting, fetch the target user, applying a lock if necessary

@@ -21,7 +21,6 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
-from src.db.utils import model_to_dict
 from src.enums import AchievementVisibility, DiceOption
 from src.utils.auth import get_current_player_or_none
 
