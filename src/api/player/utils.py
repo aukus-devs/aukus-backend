@@ -72,19 +72,21 @@ def cell_row(cell: int) -> int:
     return (cell - 1) // 10 + 1
 
 
-async def check_achievements_completion(db: AsyncSession, player: Player):
+async def check_achievements_completion(
+    db: AsyncSession, player: Player
+) -> list[PlayerAchievement]:
     moves_query = await db.execute(
         select(PlayerMove)
         .where(PlayerMove.player_slug == player.slug)
-        .order_by(PlayerMove.created_at.desc())
+        .order_by(PlayerMove.created_at.asc())
     )
     moves: list[PlayerMove] = moves_query.scalars().all()
 
     if not moves:
-        return
+        return []
 
     unlocked_achievements_query = await db.execute(
-        select(PlayerAchievement).where(PlayerMove.player_slug == player.slug)
+        select(PlayerAchievement).where(PlayerAchievement.player_slug == player.slug)
     )
     unlocked_achievements: list[PlayerAchievement] = (
         unlocked_achievements_query.scalars().all()
@@ -128,7 +130,7 @@ async def check_achievements_completion(db: AsyncSession, player: Player):
 
 
 def check_achievement_completion(achievement: Achievement, moves: list[PlayerMove]):
-    last_move = moves[0] if moves else None
+    last_move = moves[-1] if moves else None
     if not last_move:
         return False
 

@@ -204,11 +204,15 @@ async def finish_player_move(
     last_move.dice_roll_sum = dice_roll_sum
     last_move.dice_roll = json.dumps(dice_roll.roll_values)
 
-    await db.flush()
-    await check_achievements_completion(db, current_user)
+    await db.commit()
+    unlocked_achievements = await check_achievements_completion(db, current_user)
+    unlocked_ids = [a.achievement_id for a in unlocked_achievements]
 
     return FinishPlayerMoveResponse(
-        move_to=position_before_snake_or_ladder, snake_to=snake_to, ladder_to=ladder_to
+        move_to=position_before_snake_or_ladder,
+        snake_to=snake_to,
+        ladder_to=ladder_to,
+        unlocked_achievements=unlocked_ids,
     )
 
 
