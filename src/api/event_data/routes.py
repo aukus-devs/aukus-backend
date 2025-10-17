@@ -11,6 +11,7 @@ from src.api.event_data.models import (
     UnlockedAchievementItem,
 )
 from src.api.player.utils import get_dice_options
+from src.consts import HIDDEN_ACHIEVEMENT_IMAGE_URL
 from src.db.db_models import (
     Achievement,
     EventSettings,
@@ -21,7 +22,7 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
-from src.enums import AchievementVisibility, DiceOption
+from src.enums import AchievementVisibility, DiceOption, SkinSlot
 from src.utils.auth import get_current_player_or_none
 
 router = APIRouter(tags=["event_data"])
@@ -84,9 +85,23 @@ async def get_event_data(
 
     skins_query = await db.execute(select(Skin))
     skins_raw: list[Skin] = skins_query.scalars().all()
-    skins = [SkinItem.model_validate(skin) for skin in skins_raw]
 
-    unlocked_achievements_by_id = {a.id: a for a in unlocked_achievements}
+    unlocked_skins = {s.skin_id for s in player_skins_all}
+
+    skins: list[SkinItem] = []
+    for skin in skins_raw:
+        is_visible = skin.id in unlocked_skins
+        skins.append(
+            SkinItem(
+                id=skin.id,
+                slot=SkinSlot(skin.slot),
+                image_url=skin.image_url
+                if is_visible
+                else HIDDEN_ACHIEVEMENT_IMAGE_URL,
+            )
+        )
+
+    unlocked_achievements_ids = {a.id for a in unlocked_achievements}
 
     achievements_query = await db.execute(select(Achievement).order_by(Achievement.id))
     achievements_raw: list[Achievement] = achievements_query.scalars().all()
@@ -95,7 +110,7 @@ async def get_event_data(
     for a in achievements_raw:
         visibility = (
             AchievementVisibility.VISIBLE
-            if unlocked_achievements_by_id.get(a.id)
+            if a.id in unlocked_achievements_ids
             else AchievementVisibility.HIDDEN
         )
         achievements.append(

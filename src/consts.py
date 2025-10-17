@@ -29,3 +29,6 @@ MAP_SNAKES = {
 }
 
 LONGEST_SNAKE = max(MAP_SNAKES.items(), key=lambda item: abs(item[0] - item[1]))
+
+
+HIDDEN_ACHIEVEMENT_IMAGE_URL = "https://marketplace.canva.com/tDYIY/MAGyM9tDYIY/1/tl/canva-comic-style-question-mark-stickers-MAGyM9tDYIY.png"
