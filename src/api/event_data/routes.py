@@ -101,7 +101,7 @@ async def get_event_data(
             )
         )
 
-    unlocked_achievements_ids = {a.id for a in unlocked_achievements}
+    unlocked_achievements_ids = {a.achievement_id for a in unlocked_achievements}
 
     achievements_query = await db.execute(select(Achievement).order_by(Achievement.id))
     achievements_raw: list[Achievement] = achievements_query.scalars().all()
