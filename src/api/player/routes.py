@@ -7,8 +7,8 @@ from src.api.player.utils import (
     get_dice_roll_from_eventlab,
 )
 from src.db.queries.player_moves import (
-    get_players_stats as get_players_stats,
-    get_all_players as q_get_all_players,
+    get_players_stats,
+    get_all_players,
 )
 from src.api.player.models import (
     CreatePlayerMoveRequest,
@@ -67,7 +67,7 @@ async def player_stats(
         )
 
     present = {s.player_slug for s in players}
-    all_players = await q_get_all_players(db)
+    all_players = await get_all_players(db)
     for p in all_players:
         if p.slug not in present:
             players.append(
