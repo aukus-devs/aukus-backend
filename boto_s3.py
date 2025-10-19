@@ -5,12 +5,25 @@ from boto.s3.connection import S3Connection
 import urllib.parse
 from dotenv import load_dotenv
 
+from src.config import IS_LOCAL
+
+
 load_dotenv()
 os.environ["S3_USE_SIGV4"] = "True"
-conn = S3Connection(host="storage.yandexcloud.net")  # pyright: ignore[reportArgumentType]
-conn.auth_region_name = "ru-central1"
-bucket_name = os.getenv("S3_BUCKET_NAME")
-bucket = conn.get_bucket(bucket_name)
+
+
+def init_s3_connection():
+    if IS_LOCAL:
+        return None, None
+
+    conn = S3Connection(host="storage.yandexcloud.net")  # pyright: ignore[reportArgumentType]
+    conn.auth_region_name = "ru-central1"
+    bucket_name = os.getenv("S3_BUCKET_NAME")
+    bucket = conn.get_bucket(bucket_name)
+    return bucket, bucket_name
+
+
+bucket, bucket_name = init_s3_connection()
 
 
 def upload_file_s3(file, file_id) -> tuple[str | None, Exception | None]:
