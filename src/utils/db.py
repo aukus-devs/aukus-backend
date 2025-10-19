@@ -33,7 +33,6 @@ async def safe_commit(session: AsyncSession):
 
 async def reset_database(db: AsyncSession):
     from src.db.db_models import (
-        DiceRoll,
         PlayerMove,
     )
 
@@ -59,6 +58,3 @@ async def reset_database(db: AsyncSession):
 
     delete_moves = delete(PlayerMove)
     _ = await db.execute(delete_moves)
-
-    delete_dice_rolls = delete(DiceRoll)
-    _ = await db.execute(delete_dice_rolls)

@@ -16,6 +16,7 @@ class PlayerFile(DbBase):
         Integer, default=utc_now_ts, onupdate=utc_now_ts
     )
 
+    s3_file_id: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     rotation: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     player_slug: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     x: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
