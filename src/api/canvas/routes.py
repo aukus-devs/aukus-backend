@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from boto_s3 import upload_file_s3, delete_file_s3  # pyright: ignore[reportUnknownVariableType]
+from src.utils.boto_s3 import upload_file_s3, delete_file_s3  # pyright: ignore[reportUnknownVariableType]
 
 from typing import Annotated
 from fastapi import (
