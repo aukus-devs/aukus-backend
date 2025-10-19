@@ -85,6 +85,7 @@ async def upload_canvas_image(
         scale_y=1,
     )
     db.add(row)
+    await db.flush()
     return CanvasFile.model_validate(row)
 
 
