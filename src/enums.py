@@ -30,7 +30,7 @@ class RulesCategory(Enum):
 class SkinSlot(Enum):
     HEAD = "head"
     BODY = "body"
-    ITEM = "ITEM"
+    ITEM = "item"
 
 
 class GameLength(Enum):
