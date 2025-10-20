@@ -61,7 +61,7 @@ async def upload_canvas_image(
     s3_file_id = f"{player_slug}-{file.filename}-{short_id}"
 
     if IS_LOCAL:
-        # Локальная заглушка вместо S3 — можно заменить на реальную загрузку
+        # Локальная заглушка вместо S3
         uploaded_url = "https://thumbs.dreamstime.com/b/demo-red-rubber-stamp-over-white-background-88003515.jpg"
     else:
         (uploaded_url, error) = upload_file_s3(file, s3_file_id)
