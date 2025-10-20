@@ -106,11 +106,6 @@ async def update_canvas(
     existing_files_by_id = {file.id: file for file in existing_files}
 
     for item in payload.files:
-        if item.scale_x > 1 or item.scale_x < -1:
-            raise HTTPException(status_code=400, detail="Invalid scale value")
-        if item.scale_y > 1 or item.scale_y < -1:
-            raise HTTPException(status_code=400, detail="Invalid scale value")
-
         file = existing_files_by_id.get(item.id)
         if not file:
             raise HTTPException(status_code=404, detail=f"File {item.id} not found")

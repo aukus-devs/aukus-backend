@@ -14,8 +14,8 @@ class CanvasFile(ApiModel):
     width: float
     height: float
     z_index: int = Field(alias="zIndex")
-    scale_x: int = Field(alias="scaleX")
-    scale_y: int = Field(alias="scaleY")
+    scale_x: float = Field(alias="scaleX")
+    scale_y: float = Field(alias="scaleY")
 
     model_config: ClassVar[ConfigDict] = ConfigDict(
         populate_by_name=True, from_attributes=True

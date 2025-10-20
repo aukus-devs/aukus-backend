@@ -25,8 +25,8 @@ class PlayerFile(DbBase):
     width: Mapped[float] = mapped_column(Float, nullable=False)
     height: Mapped[float] = mapped_column(Float, nullable=False)
     z_index: Mapped[int] = mapped_column("zIndex", Integer, nullable=False, default=0)
-    scale_x: Mapped[int] = mapped_column("scaleX", Integer, nullable=False, default=1)
-    scale_y: Mapped[int] = mapped_column("scaleY", Integer, nullable=False, default=1)
+    scale_x: Mapped[float] = mapped_column("scaleX", Float, nullable=False, default=1.0)
+    scale_y: Mapped[float] = mapped_column("scaleY", Float, nullable=False, default=1.0)
 
 
 class Player(DbBase):
