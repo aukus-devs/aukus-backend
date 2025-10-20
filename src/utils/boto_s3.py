@@ -16,11 +16,15 @@ def init_s3_connection():
     if IS_LOCAL:
         return None, None
 
-    conn = S3Connection(host="storage.yandexcloud.net")  # pyright: ignore[reportArgumentType]
-    conn.auth_region_name = "ru-central1"
-    bucket_name = os.getenv("S3_BUCKET_NAME")
-    bucket = conn.get_bucket(bucket_name)
-    return bucket, bucket_name
+    try:
+        conn = S3Connection(host="storage.yandexcloud.net")  # pyright: ignore[reportArgumentType]
+        conn.auth_region_name = "ru-central1"
+        bucket_name = os.getenv("S3_BUCKET_NAME")
+        bucket = conn.get_bucket(bucket_name)
+        return bucket, bucket_name
+    except Exception as e:
+        logging.error(f"init_s3_connection error: {e}")
+        return None, None
 
 
 bucket, bucket_name = init_s3_connection()
