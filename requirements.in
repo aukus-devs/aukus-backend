@@ -9,5 +9,4 @@ lxml
 cloudscraper
 ua_generator
 httpx
-boto==2.49.0
-botocore==1.36.2
+boto3

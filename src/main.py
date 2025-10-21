@@ -6,7 +6,9 @@ from src.api.player import routes as player
 from src.api.rules import routes as rules
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.config import IS_LOCAL
+from src.config import IS_LOCAL, setup_logging
+
+setup_logging()
 
 app = FastAPI(title="Aukus Backend")
 app.include_router(canvas.router)
