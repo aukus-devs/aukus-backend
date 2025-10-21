@@ -24,9 +24,10 @@ class PlayerFile(DbBase):
     url: Mapped[str] = mapped_column(Text, nullable=False)
     width: Mapped[float] = mapped_column(Float, nullable=False)
     height: Mapped[float] = mapped_column(Float, nullable=False)
-    z_index: Mapped[int] = mapped_column("zIndex", Integer, nullable=False, default=0)
-    scale_x: Mapped[float] = mapped_column("scaleX", Float, nullable=False, default=1.0)
-    scale_y: Mapped[float] = mapped_column("scaleY", Float, nullable=False, default=1.0)
+    z_index: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    scale_x: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
+    scale_y: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
+    attach_move_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class Player(DbBase):

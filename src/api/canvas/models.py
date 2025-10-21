@@ -1,5 +1,4 @@
 from typing import ClassVar
-from pydantic import Field
 from pydantic.config import ConfigDict
 
 from src.api.utils import ApiModel
@@ -13,9 +12,10 @@ class CanvasFile(ApiModel):
     url: str
     width: float
     height: float
-    z_index: int = Field(alias="zIndex")
-    scale_x: float = Field(alias="scaleX")
-    scale_y: float = Field(alias="scaleY")
+    z_index: int
+    scale_x: float
+    scale_y: float
+    attach_move_id: int | None = None
 
     model_config: ClassVar[ConfigDict] = ConfigDict(
         populate_by_name=True, from_attributes=True

@@ -118,6 +118,7 @@ async def update_canvas(
         file.z_index = item.z_index
         file.scale_x = item.scale_x
         file.scale_y = item.scale_y
+        file.attach_move_id = item.attach_move_id
 
     if payload.delete_ids:
         for file_id in payload.delete_ids:
