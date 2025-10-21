@@ -64,7 +64,7 @@ async def upload_canvas_image(
         # Локальная заглушка вместо S3
         uploaded_url = "https://thumbs.dreamstime.com/b/demo-red-rubber-stamp-over-white-background-88003515.jpg"
     else:
-        (uploaded_url, error) = upload_file_s3(file, s3_file_id)
+        (uploaded_url, error) = await upload_file_s3(file, s3_file_id)
         if error:
             raise HTTPException(status_code=500, detail=f"File upload error: {error}")
 

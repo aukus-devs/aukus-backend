@@ -1,6 +1,7 @@
 import logging
 import boto3
 import urllib.parse
+import io
 from dotenv import load_dotenv
 
 from src.config import (
@@ -60,7 +61,7 @@ def get_s3_client():
     return _s3_client, _bucket_name
 
 
-def upload_file_s3(file, file_id) -> tuple[str | None, Exception | None]:
+async def upload_file_s3(file, file_id) -> tuple[str | None, Exception | None]:
     try:
         s3_client, bucket_name = get_s3_client()
         if not s3_client or not bucket_name:
@@ -68,7 +69,11 @@ def upload_file_s3(file, file_id) -> tuple[str | None, Exception | None]:
 
         s3_key = f"{S3_FOLDER}/{file_id}" if S3_FOLDER else file_id
 
-        s3_client.upload_fileobj(file, bucket_name, s3_key)
+        file_content = await file.read()
+
+        file_obj = io.BytesIO(file_content)
+
+        s3_client.upload_fileobj(file_obj, bucket_name, s3_key)
         return (
             f"""{S3_ENDPOINT_URL}/{bucket_name}/{urllib.parse.quote(s3_key, safe="~()*!.'")}""",
             None,
