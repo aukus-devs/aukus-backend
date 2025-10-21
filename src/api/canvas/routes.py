@@ -58,7 +58,7 @@ async def upload_canvas_image(
     top_z = await get_top_z_for_player(db, player_slug)
 
     short_id = gen_id(file.filename)
-    s3_file_id = f"{player_slug}-{file.filename}-{short_id}"
+    s3_file_id = f"{player_slug}-{short_id}-{file.filename}"
 
     if IS_LOCAL:
         # Локальная заглушка вместо S3
