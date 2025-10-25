@@ -17,8 +17,8 @@ class PlayerMoveType(Enum):
 
 class UserRole(Enum):
     ADMIN = "admin"
-    MODERATOR = "moderator"
     STREAMER = "streamer"
+    RULES_EDIT = "rules.edit"
 
 
 class RulesCategory(Enum):

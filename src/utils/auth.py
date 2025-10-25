@@ -19,7 +19,7 @@ security = HTTPBearer()
 class TokenPayload(BaseModel):
     slug: str
     exp: int
-    role: UserRole
+    roles: list[UserRole]
 
 
 def parse_token(token: str) -> TokenPayload:
@@ -65,7 +65,7 @@ async def get_current_player(
 
     # Check if an admin is acting as another user
     acting_user_id_str = request.headers.get("x-acting-user-id")
-    is_acting = allow_acting and payload.role == UserRole.ADMIN and acting_user_id_str
+    is_acting = allow_acting and UserRole.ADMIN in payload.roles and acting_user_id_str
 
     if is_acting and acting_user_id_str:
         # If acting, fetch the target user, applying a lock if necessary
@@ -139,12 +139,12 @@ async def get_current_player_or_none(
         raise
 
 
-def get_current_player_role(
+def get_current_player_roles(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> UserRole | None:
+) -> list[UserRole]:
     token = credentials.credentials
     try:
         payload = parse_token(token)
-        return payload.role
+        return payload.roles
     except HTTPException:
-        return None
+        return []

@@ -7,7 +7,7 @@ from src.api.rules.models import NewRulesVersionRequest, RulesResponse
 from src.db.db_models import Rules
 from src.db.db_session import get_db
 from src.enums import UserRole
-from src.utils.auth import get_current_player_role
+from src.utils.auth import get_current_player_roles
 
 
 router = APIRouter(tags=["rules"])
@@ -45,12 +45,11 @@ async def get_all_rules_versions(
 @router.post("/api/rules")
 async def create_new_rules_version(
     request: NewRulesVersionRequest,
-    role: Annotated[UserRole | None, Depends(get_current_player_role)],
+    roles: Annotated[list[UserRole], Depends(get_current_player_roles)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    if role != UserRole.ADMIN:
-        return Response(status_code=status.HTTP_403_FORBIDDEN)
-
-    new_rule = Rules(content=request.content, category=request.category.value)
-    db.add(new_rule)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    if UserRole.ADMIN in roles or UserRole.RULES_EDIT in roles:
+        new_rule = Rules(content=request.content, category=request.category.value)
+        db.add(new_rule)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_403_FORBIDDEN)
