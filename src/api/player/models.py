@@ -99,6 +99,7 @@ class DiceRollResult(ApiModel):
 
 class PlayerMovesResponse(ApiModel):
     moves: list[PlayerMoveItem]
+    other_players: list[PlayerMoveItem]
 
 
 class PlayerChangeSkinRequest(ApiModel):

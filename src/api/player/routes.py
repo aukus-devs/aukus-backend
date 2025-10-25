@@ -1,7 +1,7 @@
 import json
 import logging
 
-from sqlalchemy import or_, select  # pyright: ignore[reportUnknownVariableType]
+from sqlalchemy import and_, func, or_, select  # pyright: ignore[reportUnknownVariableType]
 from src.api.player.utils import (
     check_achievements_completion,
     get_dice_roll_from_eventlab,
@@ -226,8 +226,25 @@ async def get_player_moves(
         .where(PlayerMove.player_slug == player_slug)
         .order_by(PlayerMove.created_at.desc())
     )
-    moves = result.scalars().all()
-    return PlayerMovesResponse(moves=moves)
+    moves: list[PlayerMove] = result.scalars().all()
+
+    games_ids = [move.game_id for move in moves if move.game_id is not None]
+    game_titles = [move.item_title.lower() for move in moves]
+
+    # check game id or title matching
+    other_players_query = await db.execute(
+        select(PlayerMove).where(
+            and_(
+                PlayerMove.player_slug != player_slug,
+                or_(
+                    PlayerMove.game_id.in_(games_ids),
+                    func.lower(PlayerMove.item_title).in_(game_titles),
+                ),
+            )
+        )
+    )
+    other_players_moves: list[PlayerMove] = other_players_query.scalars().all()
+    return PlayerMovesResponse(moves=moves, other_players=other_players_moves)
 
 
 @router.post("/api/players/skins")
