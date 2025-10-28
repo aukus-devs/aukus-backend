@@ -98,8 +98,8 @@ class DiceRollResult(ApiModel):
 
 
 class PlayerMovesQuery(ApiModel):
-    player_slug: str | None
-    start_ts: int | None
+    player_slug: str | None = None
+    start_ts: int | None = None
 
 
 class PlayerMovesResponse(ApiModel):

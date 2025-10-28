@@ -223,9 +223,9 @@ async def get_player_moves(
     params: Annotated[PlayerMovesQuery, Query()],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    query = select(Player)
+    query = select(PlayerMove)
     if params.player_slug:
-        query = query.where(Player.slug == params.player_slug)
+        query = query.where(PlayerMove.player_slug == params.player_slug)
 
     if params.start_ts:
         query = query.where(PlayerMove.created_at <= params.start_ts)
