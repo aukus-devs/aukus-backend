@@ -100,6 +100,7 @@ class DiceRollResult(ApiModel):
 class PlayerMovesQuery(ApiModel):
     player_slug: str | None = None
     start_ts: int | None = None
+    search: str | None = None
 
 
 class PlayerMovesResponse(ApiModel):

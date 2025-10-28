@@ -230,6 +230,10 @@ async def get_player_moves(
     if params.start_ts:
         query = query.where(PlayerMove.created_at <= params.start_ts)
 
+    if params.search and len(params.search) >= 3:
+        search_pattern = f"%{params.search.lower()}%"
+        query = query.where(func.lower(PlayerMove.item_title).like(search_pattern))
+
     limit = 100
 
     query = query.order_by(PlayerMove.created_at.desc())
