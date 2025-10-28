@@ -1,7 +1,7 @@
 import json
 import logging
 
-from sqlalchemy import and_, func, or_, select  # pyright: ignore[reportUnknownVariableType]
+from sqlalchemy import func, or_, select  # pyright: ignore[reportUnknownVariableType]
 from src.api.player.utils import (
     check_achievements_completion,
     get_dice_roll_from_eventlab,
@@ -16,12 +16,14 @@ from src.api.player.models import (
     FinishPlayerMoveRequest,
     FinishPlayerMoveResponse,
     PlayerChangeSkinRequest,
+    PlayerMoveItem,
+    PlayerMovesQuery,
     PlayerMovesResponse,
     PlayerStatsItem,
     PlayerStatsResponse,
 )
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.consts import MAP_LADDERS, MAP_SNAKES
@@ -216,17 +218,29 @@ async def finish_player_move(
     )
 
 
-@router.get("/api/players/{player_slug}/moves", response_model=PlayerMovesResponse)
+@router.get("/api/players/moves", response_model=PlayerMovesResponse)
 async def get_player_moves(
-    player_slug: str,
+    params: Annotated[PlayerMovesQuery, Query()],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    result = await db.execute(
-        select(PlayerMove)
-        .where(PlayerMove.player_slug == player_slug)
-        .order_by(PlayerMove.created_at.desc())
-    )
+    query = select(Player)
+    if params.player_slug:
+        query = query.where(Player.slug == params.player_slug)
+
+    if params.start_ts:
+        query = query.where(PlayerMove.created_at <= params.start_ts)
+
+    limit = 100
+
+    query = query.order_by(PlayerMove.created_at.desc())
+    query = query.limit(limit + 1)
+
+    result = await db.execute(query)
     moves: list[PlayerMove] = result.scalars().all()
+
+    next_item = None
+    if len(moves) > limit:
+        next_item = moves.pop()
 
     games_ids = [move.game_id for move in moves if move.game_id is not None]
     game_titles = [move.item_title.lower() for move in moves]
@@ -234,17 +248,18 @@ async def get_player_moves(
     # check game id or title matching
     other_players_query = await db.execute(
         select(PlayerMove).where(
-            and_(
-                PlayerMove.player_slug != player_slug,
-                or_(
-                    PlayerMove.game_id.in_(games_ids),
-                    func.lower(PlayerMove.item_title).in_(game_titles),
-                ),
-            )
+            or_(
+                PlayerMove.game_id.in_(games_ids),
+                func.lower(PlayerMove.item_title).in_(game_titles),
+            ),
         )
     )
     other_players_moves: list[PlayerMove] = other_players_query.scalars().all()
-    return PlayerMovesResponse(moves=moves, other_players=other_players_moves)
+    return PlayerMovesResponse(
+        moves=[PlayerMoveItem.model_validate(m) for m in moves],
+        other_players=[PlayerMoveItem.model_validate(m) for m in other_players_moves],
+        next_ts=next_item.created_at if next_item else None,
+    )
 
 
 @router.post("/api/players/skins")

@@ -97,9 +97,15 @@ class DiceRollResult(ApiModel):
     roll_values: list[int]
 
 
+class PlayerMovesQuery(ApiModel):
+    player_slug: str | None
+    start_ts: int | None
+
+
 class PlayerMovesResponse(ApiModel):
     moves: list[PlayerMoveItem]
     other_players: list[PlayerMoveItem]
+    next_ts: int | None
 
 
 class PlayerChangeSkinRequest(ApiModel):
