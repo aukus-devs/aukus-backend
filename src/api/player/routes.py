@@ -1,7 +1,7 @@
 import json
 import logging
 
-from sqlalchemy import func, or_, select  # pyright: ignore[reportUnknownVariableType]
+from sqlalchemy import and_, func, or_, select  # pyright: ignore[reportUnknownVariableType]
 from src.api.player.utils import (
     check_achievements_completion,
     get_dice_roll_from_eventlab,
@@ -252,9 +252,12 @@ async def get_player_moves(
     # check game id or title matching
     other_players_query = await db.execute(
         select(PlayerMove).where(
-            or_(
-                PlayerMove.game_id.in_(games_ids),
-                func.lower(PlayerMove.item_title).in_(game_titles),
+            and_(
+                PlayerMove.player_slug != params.player_slug,
+                or_(
+                    PlayerMove.game_id.in_(games_ids),
+                    func.lower(PlayerMove.item_title).in_(game_titles),
+                ),
             ),
         )
     )
