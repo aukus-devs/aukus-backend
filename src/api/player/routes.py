@@ -247,7 +247,7 @@ async def get_player_moves(
         next_item = moves.pop()
 
     games_ids = [move.game_id for move in moves if move.game_id is not None]
-    game_titles = [move.item_title.lower() for move in moves]
+    game_titles = [move.item_title for move in moves]
 
     # check game id or title matching
     other_players_query = await db.execute(
@@ -256,7 +256,7 @@ async def get_player_moves(
                 PlayerMove.player_slug != params.player_slug,
                 or_(
                     PlayerMove.game_id.in_(games_ids),
-                    func.lower(PlayerMove.item_title).in_(game_titles),
+                    PlayerMove.item_title.in_(game_titles),
                 ),
             ),
         )
