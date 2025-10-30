@@ -224,15 +224,16 @@ async def get_player_moves(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     query = select(PlayerMove)
-    if params.player_slug:
-        query = query.where(PlayerMove.player_slug == params.player_slug)
-
+    if params.players:
+        query = query.where(PlayerMove.player_slug.in_(params.players))
     if params.start_ts:
         query = query.where(PlayerMove.created_at <= params.start_ts)
-
-    if params.search and len(params.search) >= 3:
-        search_pattern = f"%{params.search.lower()}%"
-        query = query.where(func.lower(PlayerMove.item_title).like(search_pattern))
+    if params.search_title and len(params.search_title) >= 3:
+        query = query.where(PlayerMove.item_title.ilike(f"%{params.search_title}%"))
+    if params.titles:
+        query = query.where(PlayerMove.item_title.in_(params.titles))
+    if params.exclude_ids:
+        query = query.where(~PlayerMove.id.in_(params.exclude_ids))
 
     limit = 100
 
@@ -246,25 +247,8 @@ async def get_player_moves(
     if len(moves) > limit:
         next_item = moves.pop()
 
-    games_ids = [move.game_id for move in moves if move.game_id is not None]
-    game_titles = [move.item_title for move in moves]
-
-    # check game id or title matching
-    other_players_query = await db.execute(
-        select(PlayerMove).where(
-            and_(
-                PlayerMove.player_slug != params.player_slug,
-                or_(
-                    PlayerMove.game_id.in_(games_ids),
-                    PlayerMove.item_title.in_(game_titles),
-                ),
-            ),
-        )
-    )
-    other_players_moves: list[PlayerMove] = other_players_query.scalars().all()
     return PlayerMovesResponse(
         moves=[PlayerMoveItem.model_validate(m) for m in moves],
-        other_players=[PlayerMoveItem.model_validate(m) for m in other_players_moves],
         next_ts=next_item.created_at if next_item else None,
     )
 

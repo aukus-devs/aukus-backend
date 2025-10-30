@@ -98,14 +98,15 @@ class DiceRollResult(ApiModel):
 
 
 class PlayerMovesQuery(ApiModel):
-    player_slug: str | None = None
+    players: list[str] = []
     start_ts: int | None = None
-    search: str | None = None
+    search_title: str | None = None
+    titles: list[str] = []
+    exclude_ids: list[int] = []
 
 
 class PlayerMovesResponse(ApiModel):
     moves: list[PlayerMoveItem]
-    other_players: list[PlayerMoveItem]
     next_ts: int | None
 
 
