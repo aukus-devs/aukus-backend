@@ -26,7 +26,7 @@ from src.db.db_models import (
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
-from src.enums import AchievementVisibility, DiceOption, SkinSlot
+from src.enums import AchievementVisibility, DiceOption, DonationType, SkinSlot
 from src.utils.auth import get_current_player_or_none
 
 router = APIRouter(tags=["event_data"])
@@ -149,14 +149,16 @@ async def get_event_data(
 async def get_donations(db: Annotated[AsyncSession, Depends(get_db)]):
     query = await db.execute(select(Donation).order_by(Donation.amount.desc()))
     donations: list[Donation] = query.scalars().all()
-    items = [
-        DonationItem(
+    items: list[DonationItem] = []
+    for d in donations:
+        type = get_donation_type(d)
+        item = DonationItem(
             id=d.id,
             name=d.name,
-            type=get_donation_type(d),
-            message=d.message,
+            type=type,
+            message=d.message if type == DonationType.BIG else None,
             created_at=d.created_at,
         )
-        for d in donations
-    ]
+        items.append(item)
+
     return DonationsResponse(donations=items)
