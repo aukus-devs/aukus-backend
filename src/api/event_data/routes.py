@@ -5,15 +5,19 @@ from sqlalchemy.sql import select
 
 from src.api.event_data.models import (
     AchievementItem,
+    DonationItem,
+    DonationsResponse,
     EventDataResponse,
     PlayerItem,
     SkinItem,
     UnlockedAchievementItem,
 )
+from src.api.event_data.utils import get_donation_type
 from src.api.player.utils import get_dice_options
 from src.consts import HIDDEN_ACHIEVEMENT_IMAGE_URL
 from src.db.db_models import (
     Achievement,
+    Donation,
     EventSettings,
     Player,
     PlayerAchievement,
@@ -139,3 +143,20 @@ async def get_event_data(
         event_settings=event_settings,
         dice_options=dice_options,
     )
+
+
+@router.get("/api/donations", response_model=DonationsResponse)
+async def get_donations(db: Annotated[AsyncSession, Depends(get_db)]):
+    query = await db.execute(select(Donation).order_by(Donation.amount.desc()))
+    donations: list[Donation] = query.scalars().all()
+    items = [
+        DonationItem(
+            id=d.id,
+            name=d.name,
+            type=get_donation_type(d),
+            message=d.message,
+            created_at=d.created_at,
+        )
+        for d in donations
+    ]
+    return DonationsResponse(donations=items)

@@ -57,3 +57,8 @@ class DiceOption(Enum):
 class AchievementVisibility(Enum):
     VISIBLE = "visible"
     HIDDEN = "hidden"
+
+
+class DonationType(Enum):
+    SMALL = "small"
+    BIG = "big"

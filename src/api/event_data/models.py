@@ -1,6 +1,6 @@
 from src.api.player.models import PlayerMoveItem
 from src.api.utils import ApiModel
-from src.enums import AchievementVisibility, DiceOption, SkinSlot
+from src.enums import AchievementVisibility, DiceOption, DonationType, SkinSlot
 
 
 class UnlockedAchievementItem(ApiModel):
@@ -37,3 +37,15 @@ class EventDataResponse(ApiModel):
     skins: list[SkinItem]
     achievements: list[AchievementItem]
     dice_options: list[DiceOption]
+
+
+class DonationItem(ApiModel):
+    id: int
+    name: str
+    type: DonationType
+    message: str | None
+    created_at: int
+
+
+class DonationsResponse(ApiModel):
+    donations: list[DonationItem]

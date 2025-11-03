@@ -152,3 +152,13 @@ class ChatMessage(DbBase):
     message: Mapped[str] = mapped_column(Text, nullable=False)
     username: Mapped[str] = mapped_column(String(255), nullable=False)
     chat_name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+
+class Donation(DbBase):
+    __tablename__: str = "donations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    message: Mapped[str | None] = mapped_column(Text, nullable=True)
