@@ -1,7 +1,7 @@
 import json
 import logging
 
-from sqlalchemy import and_, func, or_, select  # pyright: ignore[reportUnknownVariableType]
+from sqlalchemy import or_, select  # pyright: ignore[reportUnknownVariableType]
 from src.api.player.utils import (
     check_achievements_completion,
     get_dice_roll_from_eventlab,
@@ -24,6 +24,7 @@ from src.api.player.models import (
 )
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.consts import MAP_LADDERS, MAP_SNAKES
@@ -35,7 +36,7 @@ from src.db.db_models import (
 from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
 from src.enums import GameDifficulty, GameLength, PlayerMoveType
-from src.utils.auth import get_current_player
+from src.utils.auth import get_current_player, security
 
 
 router = APIRouter(tags=["players"])
@@ -103,6 +104,7 @@ async def create_player_move(
     db: Annotated[AsyncSession, Depends(get_db)],
     request: CreatePlayerMoveRequest,
     current_user: Annotated[Player, Depends(get_current_player)],
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
     last_move = last_moves.get(current_user.slug)
@@ -113,6 +115,42 @@ async def create_player_move(
     if current_map_position == 101 and request.type == PlayerMoveType.COMPLETED:
         cell_to = 102
 
+    item_duration = 0
+    try:
+        import httpx
+        from src.config import EVENTLAB_API_URL
+
+        auth_headers = {"Authorization": f"Bearer {credentials.credentials}"}
+
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get(
+                f"{EVENTLAB_API_URL}/api/streams/game-duration",
+                params={"slug": current_user.slug, "game_name": request.item_title},
+                headers=auth_headers,
+            )
+            if response.status_code == 200:
+                data = response.json()
+                item_duration = data.get("duration", 0)
+                logging.info(
+                    f"Got stream duration for {current_user.slug} - {request.item_title}: "
+                    f"{item_duration}s ({data.get('sessions_count', 0)} sessions)"
+                )
+
+            if item_duration > 0:
+                close_response = await client.post(
+                    f"{EVENTLAB_API_URL}/api/streams/close-game-categories",
+                    json={"slug": current_user.slug, "game_name": request.item_title},
+                    headers=auth_headers,
+                )
+                if close_response.status_code == 200:
+                    close_data = close_response.json()
+                    logging.info(
+                        f"Closed {close_data.get('closed', 0)} categories for "
+                        f"{current_user.slug} - {request.item_title}"
+                    )
+    except Exception as e:
+        logging.warning(f"Failed to get/close stream duration: {e}")
+
     move = PlayerMove(
         player_slug=current_user.slug,
         type=request.type.value,
@@ -120,7 +158,7 @@ async def create_player_move(
         item_review=request.item_review,
         item_rating=request.item_rating,
         item_length=request.item_length.value if request.item_length else None,
-        item_duration=0,
+        item_duration=item_duration,
         game_id=request.game_id,
         cover_image_url=request.cover_image_url,
         difficulty_level=request.difficulty.value
@@ -148,6 +186,7 @@ async def finish_player_move(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[Player, Depends(get_current_player)],
     request: FinishPlayerMoveRequest,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
     last_move = last_moves.get(current_user.slug)
@@ -158,7 +197,9 @@ async def finish_player_move(
     current_map_position = last_move.cell_from
 
     try:
-        dice_roll = await get_dice_roll_from_eventlab(request.dice_roll_id)
+        dice_roll = await get_dice_roll_from_eventlab(
+            request.dice_roll_id, credentials.credentials
+        )
     except Exception:
         logging.exception("Failed to fetch dice roll")
         raise HTTPException(status_code=400, detail="Failed to fetch dice roll")

@@ -52,10 +52,13 @@ def get_dice_options(move: PlayerMove) -> list[DiceOption]:
             raise ValueError("Invalid move type")
 
 
-async def get_dice_roll_from_eventlab(dice_roll_id: int) -> DiceRollResult:
+async def get_dice_roll_from_eventlab(
+    dice_roll_id: int, auth_token: str
+) -> DiceRollResult:
     url = f"{EVENTLAB_API_URL}/api/dice-rolls/{dice_roll_id}"
+    headers = {"Authorization": f"Bearer {auth_token}"}
     async with httpx.AsyncClient(timeout=5.0) as client:
-        response = await client.get(url)
+        response = await client.get(url, headers=headers)
     _ = response.raise_for_status()
     data = response.json()  # pyright: ignore[reportAny]
     return DiceRollResult(
