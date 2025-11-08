@@ -31,6 +31,7 @@ class SkinSlot(Enum):
     HEAD = "head"
     BODY = "body"
     ITEM = "item"
+    DICE = "dice"
 
 
 class GameLength(Enum):
