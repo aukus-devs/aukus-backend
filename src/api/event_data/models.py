@@ -31,12 +31,19 @@ class AchievementItem(ApiModel):
     visibility: AchievementVisibility
 
 
+class ChatMessageItem(ApiModel):
+    id: int
+    text: str
+    created_at: int
+
+
 class EventDataResponse(ApiModel):
     players: list[PlayerItem]
     event_settings: dict[str, str | int | None]
     skins: list[SkinItem]
     achievements: list[AchievementItem]
     dice_options: list[DiceOption]
+    chat_messages: list[ChatMessageItem]
 
 
 class DonationItem(ApiModel):

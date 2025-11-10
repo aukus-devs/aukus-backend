@@ -1,15 +1,12 @@
 import json
 import logging
+from typing import Annotated
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import or_, select  # pyright: ignore[reportUnknownVariableType]
-from src.api.player.utils import (
-    check_achievements_completion,
-    get_dice_roll_from_eventlab,
-)
-from src.db.queries.player_moves import (
-    get_players_stats,
-    get_all_players,
-)
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.api.player.models import (
     CreatePlayerMoveRequest,
     CreatePlayerMoveResponse,
@@ -22,11 +19,11 @@ from src.api.player.models import (
     PlayerStatsItem,
     PlayerStatsResponse,
 )
-from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.security import HTTPAuthorizationCredentials
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from src.api.player.utils import (
+    check_achievements_completion,
+    fetch_stream_category_duration,
+    get_dice_roll_from_eventlab,
+)
 from src.consts import MAP_LADDERS, MAP_SNAKES
 from src.db.db_models import (
     Player,
@@ -34,10 +31,13 @@ from src.db.db_models import (
     PlayerSkin,
 )
 from src.db.db_session import get_db
-from src.db.queries.player_moves import get_players_latest_moves
+from src.db.queries.player_moves import (
+    get_all_players,
+    get_players_latest_moves,
+    get_players_stats,
+)
 from src.enums import GameDifficulty, GameLength, PlayerMoveType
 from src.utils.auth import get_current_player, security
-
 
 router = APIRouter(tags=["players"])
 
@@ -117,37 +117,9 @@ async def create_player_move(
 
     item_duration = 0
     try:
-        import httpx
-        from src.config import EVENTLAB_API_URL
-
-        auth_headers = {"Authorization": f"Bearer {credentials.credentials}"}
-
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            response = await client.get(
-                f"{EVENTLAB_API_URL}/api/streams/game-duration",
-                params={"slug": current_user.slug, "game_name": request.item_title},
-                headers=auth_headers,
-            )
-            if response.status_code == 200:
-                data = response.json()
-                item_duration = data.get("duration", 0)
-                logging.info(
-                    f"Got stream duration for {current_user.slug} - {request.item_title}: "
-                    f"{item_duration}s ({data.get('sessions_count', 0)} sessions)"
-                )
-
-            if item_duration > 0:
-                close_response = await client.post(
-                    f"{EVENTLAB_API_URL}/api/streams/close-game-categories",
-                    json={"slug": current_user.slug, "game_name": request.item_title},
-                    headers=auth_headers,
-                )
-                if close_response.status_code == 200:
-                    close_data = close_response.json()
-                    logging.info(
-                        f"Closed {close_data.get('closed', 0)} categories for "
-                        f"{current_user.slug} - {request.item_title}"
-                    )
+        item_duration = fetch_stream_category_duration(
+            credentials.credentials, current_user, request.item_title
+        )
     except Exception as e:
         logging.warning(f"Failed to get/close stream duration: {e}")
 

@@ -1,10 +1,12 @@
 from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import select
 
 from src.api.event_data.models import (
     AchievementItem,
+    ChatMessageItem,
     DonationItem,
     DonationsResponse,
     EventDataResponse,
@@ -17,6 +19,7 @@ from src.api.player.utils import get_dice_options
 from src.consts import HIDDEN_ACHIEVEMENT_IMAGE_URL
 from src.db.db_models import (
     Achievement,
+    ChatMessage,
     Donation,
     EventSettings,
     Player,
@@ -136,12 +139,28 @@ async def get_event_data(
         if last_move:
             dice_options = get_dice_options(last_move)
 
+    chat_query = await db.execute(
+        select(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(2)
+    )
+    messages: list[ChatMessage] = chat_query.scalars().all()
+    message_items: list[ChatMessageItem] = []
+    for m in messages:
+        item = ChatMessageItem(
+            id=m.id,
+            text=m.message,
+            created_at=m.created_at,
+        )
+        message_items.append(item)
+
+    message_items.reverse()  # To return messages in chronological order
+
     return EventDataResponse(
         players=players,
         skins=skins,
         achievements=achievements,
         event_settings=event_settings,
         dice_options=dice_options,
+        chat_messages=message_items,
     )
 
 

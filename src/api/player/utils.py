@@ -1,8 +1,12 @@
 import json
+import logging
 from typing import cast
+
 import httpx
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.api.player.models import DiceRollResult
 from src.config import EVENTLAB_API_URL
 from src.consts import LONGEST_LADDER, LONGEST_SNAKE
@@ -332,3 +336,50 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             return last_move.cell_to == 0 and max_pos > 0
         case _:
             return False
+
+
+class StreamDurationResponse(BaseModel):
+    duration: int
+    sessions_count: int
+
+
+class CloseCategoriesResponse(BaseModel):
+    closed: int
+
+
+async def fetch_stream_category_duration(
+    token: str, current_user: Player, category: str
+):
+    duration = 0
+    auth_headers = {"Authorization": f"Bearer {token}"}
+
+    async with httpx.AsyncClient(timeout=5.0) as client:
+        response = await client.get(
+            f"{EVENTLAB_API_URL}/api/streams/game-duration",
+            params={"slug": current_user.slug, "game_name": category},
+            headers=auth_headers,
+        )
+        if response.status_code == 200:
+            data = StreamDurationResponse.model_validate(response.json())
+            duration = data.duration
+            logging.info(
+                f"Got stream duration for {current_user.slug} - {category}: "
+                + f"{duration}s ({data.sessions_count} sessions)"
+            )
+
+        if duration > 0:
+            close_response = await client.post(
+                f"{EVENTLAB_API_URL}/api/streams/close-game-categories",
+                json={"slug": current_user.slug, "game_name": category},
+                headers=auth_headers,
+            )
+            if close_response.status_code == 200:
+                close_data = CloseCategoriesResponse.model_validate(
+                    close_response.json()
+                )
+                logging.info(
+                    f"Closed {close_data.closed} categories for "
+                    + f"{current_user.slug} - {category}"
+                )
+
+    return duration
