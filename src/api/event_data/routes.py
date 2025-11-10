@@ -140,7 +140,7 @@ async def get_event_data(
             dice_options = get_dice_options(last_move)
 
     chat_query = await db.execute(
-        select(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(2)
+        select(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(10)
     )
     messages: list[ChatMessage] = chat_query.scalars().all()
     message_items: list[ChatMessageItem] = []

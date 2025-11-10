@@ -1,7 +1,12 @@
 # pyright: reportUnknownVariableType=false, reportUntypedBaseClass=false
 
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column  # pyright: ignore[reportAttributeAccessIssue]
 from sqlalchemy import Float, Integer, String, Text
+from sqlalchemy.orm import (
+    Mapped,
+    declarative_base,
+    mapped_column,  # pyright: ignore[reportAttributeAccessIssue]
+)
+
 from .utils import utc_now_ts
 
 DbBase = declarative_base()
@@ -148,7 +153,7 @@ class ChatMessage(DbBase):
     __tablename__: str = "chat_messages"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts, index=True)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     username: Mapped[str] = mapped_column(String(255), nullable=False)
     chat_name: Mapped[str] = mapped_column(String(255), nullable=False)
