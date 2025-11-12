@@ -13,6 +13,7 @@ class PlayerMoveType(Enum):
     DROP = "drop"
     MOVIE = "movie"
     SHEIKH_MOMENT = "sheikh_moment"
+    SHIT_KICK = 'shit_kick'
 
 
 class UserRole(Enum):
@@ -63,3 +64,10 @@ class AchievementVisibility(Enum):
 class DonationType(Enum):
     SMALL = "small"
     BIG = "big"
+
+class PlayerKickResult(Enum):
+    SHIELD_REMOVED = "shield_removed"
+    LOSE = "lose"
+    LOSE_WITH_SHIELD = "lose_with_shield"
+    WIN = "win"
+    OUT_OF_SHIT = "out_of_shit"

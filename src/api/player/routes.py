@@ -17,12 +17,12 @@ from src.api.player.models import (
     PlayerMovesQuery,
     PlayerMovesResponse,
     PlayerStatsItem,
-    PlayerStatsResponse,
+    PlayerStatsResponse, KickResponse, KickRequest, AddShitRequest,
 )
 from src.api.player.utils import (
     check_achievements_completion,
     fetch_stream_category_duration,
-    get_dice_roll_from_eventlab,
+    get_dice_roll_from_eventlab, make_kick_dice_roll_from_eventlab,
 )
 from src.consts import MAP_LADDERS, MAP_SNAKES
 from src.db.db_models import (
@@ -34,7 +34,7 @@ from src.db.db_session import get_db
 from src.db.queries.player_moves import (
     get_all_players,
     get_players_latest_moves,
-    get_players_stats,
+    get_players_stats, process_kick_logic, get_players_by_slugs, inc_shit, inc_shield,
 )
 from src.enums import GameDifficulty, GameLength, PlayerMoveType
 from src.utils.auth import get_current_player, security
@@ -44,7 +44,7 @@ router = APIRouter(tags=["players"])
 
 @router.get("/api/players/stats", response_model=PlayerStatsResponse)
 async def player_stats(
-    db: Annotated[AsyncSession, Depends(get_db)],
+        db: Annotated[AsyncSession, Depends(get_db)],
 ):
     stats = await get_players_stats(db)
 
@@ -101,10 +101,10 @@ async def player_stats(
 
 @router.post("/api/players/move", response_model=CreatePlayerMoveResponse)
 async def create_player_move(
-    db: Annotated[AsyncSession, Depends(get_db)],
-    request: CreatePlayerMoveRequest,
-    current_user: Annotated[Player, Depends(get_current_player)],
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+        db: Annotated[AsyncSession, Depends(get_db)],
+        request: CreatePlayerMoveRequest,
+        current_user: Annotated[Player, Depends(get_current_player)],
+        credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
     last_move = last_moves.get(current_user.slug)
@@ -155,10 +155,10 @@ async def create_player_move(
 
 @router.post("/api/players/move/finish", response_model=FinishPlayerMoveResponse)
 async def finish_player_move(
-    db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[Player, Depends(get_current_player)],
-    request: FinishPlayerMoveRequest,
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+        db: Annotated[AsyncSession, Depends(get_db)],
+        current_user: Annotated[Player, Depends(get_current_player)],
+        request: FinishPlayerMoveRequest,
+        credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
     last_move = last_moves.get(current_user.slug)
@@ -180,7 +180,7 @@ async def finish_player_move(
     direction = (
         -1
         if last_move.type
-        in [PlayerMoveType.DROP.value, PlayerMoveType.SHEIKH_MOMENT.value]
+           in [PlayerMoveType.DROP.value, PlayerMoveType.SHEIKH_MOMENT.value]
         else 1
     )
 
@@ -233,8 +233,8 @@ async def finish_player_move(
 
 @router.get("/api/players/moves", response_model=PlayerMovesResponse)
 async def get_player_moves(
-    params: Annotated[PlayerMovesQuery, Query()],
-    db: Annotated[AsyncSession, Depends(get_db)],
+        params: Annotated[PlayerMovesQuery, Query()],
+        db: Annotated[AsyncSession, Depends(get_db)],
 ):
     query = select(PlayerMove)
     if params.players:
@@ -268,9 +268,9 @@ async def get_player_moves(
 
 @router.post("/api/players/skins")
 async def set_player_skins(
-    db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[Player, Depends(get_current_player)],
-    request: PlayerChangeSkinRequest,
+        db: Annotated[AsyncSession, Depends(get_db)],
+        current_user: Annotated[Player, Depends(get_current_player)],
+        request: PlayerChangeSkinRequest,
 ):
     player_skins_query = select(PlayerSkin).where(
         PlayerSkin.player_slug == current_user.slug,
@@ -291,4 +291,79 @@ async def set_player_skins(
         if player_skin:
             player_skin.is_equipped = 1
 
+    return HTTPException(status_code=200)
+
+
+@router.post("/api/players/kick", response_model=KickResponse)
+async def kick_player(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        current_user: Annotated[Player, Depends(get_current_player)],
+        request: KickRequest,
+        credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+):
+    slug_map = await get_players_by_slugs(db, current_user.slug, request.target_player_slug)
+    if current_user.slug not in slug_map or request.target_player_slug not in slug_map:
+        raise HTTPException(status_code=404, detail="Player not found")
+
+    target = slug_map[request.target_player_slug]
+
+    # current_user = await db.scalar(select(Player).where(Player.slug == "Aboba"))
+    # if not current_user:
+    #     raise HTTPException(status_code=404, detail="Player 'Aboba' not found")
+    #
+    # target = await db.scalar(select(Player).where(Player.slug == request.target_player_slug))
+    # if not target:
+    #     raise HTTPException(status_code=404, detail="Target player not found")
+
+    try:
+        dice_result = await make_kick_dice_roll_from_eventlab(credentials.credentials)
+    except Exception:
+        logging.exception("Failed to fetch dice roll")
+        raise HTTPException(status_code=400, detail="Failed to fetch dice roll")
+
+    try:
+        dice, result_type = await process_kick_logic(
+            db,
+            kicker=current_user,
+            target=target,
+            success=request.success,
+            dice=dice_result.roll_values[0]
+        )
+        await db.flush()
+        await db.commit()
+        return KickResponse(dice_result=dice, result_type=result_type)
+
+    except Exception:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail="Kick failed")
+
+
+@router.post("/api/players/add-shit", status_code=200)
+async def add_shit(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        current_user: Annotated[Player, Depends(get_current_player)],
+        request: AddShitRequest,
+):
+    amount = request.amount
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Invalid amount")
+
+    inc_shit(current_user, amount)
+    await db.flush()
+    await db.commit()
+    return HTTPException(status_code=200)
+
+
+@router.post("/api/players/make-shield", status_code=200)
+async def make_shield(
+        db: Annotated[AsyncSession, Depends(get_db)],
+        current_user: Annotated[Player, Depends(get_current_player)],
+):
+    if (current_user.shit_stacks or 0) < 30:
+        raise HTTPException(status_code=400, detail="Not enough shit stacks (need 30)")
+
+    inc_shit(current_user, -30)
+    inc_shield(current_user, 10)
+    await db.flush()
+    await db.commit()
     return HTTPException(status_code=200)

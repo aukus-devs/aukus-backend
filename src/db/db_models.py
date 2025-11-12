@@ -43,6 +43,8 @@ class Player(DbBase):
     slug: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
     )
+    shit_stacks: Mapped[int]= mapped_column(Integer, nullable=False, default=0)
+    shield_stacks: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
 class PlayerMove(DbBase):
@@ -73,6 +75,7 @@ class PlayerMove(DbBase):
     dice_roll_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     dice_roll_sum: Mapped[int | None] = mapped_column(Integer, nullable=True)
     dice_roll: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    from_player_slug : Mapped[str | None] = mapped_column(String(255), nullable=True)
 
 
 class EventSettings(DbBase):

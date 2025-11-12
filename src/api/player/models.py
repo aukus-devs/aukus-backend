@@ -2,7 +2,7 @@ import json
 from typing import Any
 from pydantic import field_validator
 from src.api.utils import ApiModel
-from src.enums import GameDifficulty, GameLength, PlayerMoveType
+from src.enums import GameDifficulty, GameLength, PlayerMoveType, PlayerKickResult
 
 
 class PlayerStatsItem(ApiModel):
@@ -112,3 +112,14 @@ class PlayerMovesResponse(ApiModel):
 
 class PlayerChangeSkinRequest(ApiModel):
     skin_ids: list[int]
+
+class KickResponse(ApiModel):
+    dice_result: int
+    result_type: PlayerKickResult
+
+class KickRequest(ApiModel):
+    target_player_slug: str
+    success: bool
+
+class AddShitRequest(ApiModel):
+    amount: int
