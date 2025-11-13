@@ -286,6 +286,8 @@ async def process_kick_logic(
     if not player_has_shit(kicker):
         return 0, PlayerKickResult.OUT_OF_SHIT
 
+    inc_shit(kicker, -1)
+
     if success:
         if player_has_shields(target):
             dec_shield(target)
