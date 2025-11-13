@@ -232,11 +232,14 @@ def player_has_shit(p: Player) -> bool:
 def dec_shield(p: Player) -> None:
     p.shield_stacks = max(0, (p.shield_stacks or 0) - 1)
 
+
 def inc_shield(p: Player, count: int) -> None:
     p.shield_stacks = max(0, (p.shield_stacks or 0) + count)
 
+
 def inc_shit(p: Player, count: int) -> None:
     p.shit_stacks = max(0, (p.shit_stacks or 0) + count)
+
 
 async def create_shit_kick_move(
         db: AsyncSession,
@@ -298,5 +301,6 @@ async def process_kick_logic(
             db, victim_slug=kicker.slug, from_player_slug=kicker.slug, dice=dice
         )
         return dice, PlayerKickResult.LOSE
-
-    return dice, PlayerKickResult.LOSE_WITH_SHIELD
+    else:
+        dec_shield(kicker)
+        return dice, PlayerKickResult.LOSE_WITH_SHIELD
