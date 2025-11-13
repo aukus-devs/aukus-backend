@@ -16,6 +16,8 @@ class PlayerItem(ApiModel):
     unlocked_achievements: list[UnlockedAchievementItem]
     color: str
     last_move: PlayerMoveItem | None
+    shield_stacks: int | None
+    shit_stacks: int | None
 
 
 class SkinItem(ApiModel):

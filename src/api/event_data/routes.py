@@ -87,6 +87,8 @@ async def get_event_data(
                 unlocked_achievements=player_achievements,
                 color=player.color,
                 last_move=last_move,
+                shield_stacks=player.shield_stacks,
+                shit_stacks=player.shit_stacks,
             )
         )
 
