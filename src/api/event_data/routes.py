@@ -31,6 +31,7 @@ from src.db.db_session import get_db
 from src.db.queries.player_moves import get_players_latest_moves
 from src.enums import AchievementVisibility, DiceOption, DonationType, SkinSlot
 from src.utils.auth import get_current_player_or_none
+from src.utils.emotes_parser import EmotesParser
 
 router = APIRouter(tags=["event_data"])
 
@@ -145,11 +146,14 @@ async def get_event_data(
         select(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(16)
     )
     messages: list[ChatMessage] = chat_query.scalars().all()
+
     message_items: list[ChatMessageItem] = []
     for m in messages:
+        parsed_text = EmotesParser.parse_message(m.message)
+
         item = ChatMessageItem(
             id=m.id,
-            text=m.message,
+            text=parsed_text,
             created_at=m.created_at,
         )
         message_items.append(item)

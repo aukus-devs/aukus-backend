@@ -19,6 +19,8 @@ S3_FOLDER = os.getenv("S3_FOLDER", "aukus4-uploads")
 S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", "https://storage.yandexcloud.net")
 S3_REGION_NAME = os.getenv("S3_REGION_NAME", "ru-central1")
 
+EMOTES_CDN_PROXY = os.getenv("EMOTES_CDN_PROXY", "https://cdn.rhhhhhhh.live/")
+
 
 def setup_logging():
     logging.basicConfig(
