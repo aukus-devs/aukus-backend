@@ -247,6 +247,7 @@ async def create_shit_kick_move(
         victim_slug: str,
         from_player_slug: str,
         dice: int,
+        dice_roll_id: int
 ) -> None:
     last = await get_players_latest_moves(db, slugs=[victim_slug])
     last_move = last.get(victim_slug)
@@ -267,7 +268,7 @@ async def create_shit_kick_move(
         difficulty_level=0,
         cell_from=cell_from,
         cell_to=cell_to,
-        dice_roll_id=None,
+        dice_roll_id=dice_roll_id,
         dice_roll_sum=dice,
         dice_roll=str([dice]),
         from_player_slug=from_player_slug,
@@ -282,6 +283,7 @@ async def process_kick_logic(
         target: Player,
         success: bool,
         dice: int,
+        dice_roll_id: int
 ) -> tuple[int, PlayerKickResult]:
     if not player_has_shit(kicker):
         return 0, PlayerKickResult.OUT_OF_SHIT
@@ -294,13 +296,13 @@ async def process_kick_logic(
             return dice, PlayerKickResult.SHIELD_REMOVED
 
         await create_shit_kick_move(
-            db, victim_slug=target.slug, from_player_slug=kicker.slug, dice=dice
+            db, victim_slug=target.slug, from_player_slug=kicker.slug, dice=dice, dice_roll_id=dice_roll_id
         )
         return dice, PlayerKickResult.WIN
 
     if not player_has_shields(kicker):
         await create_shit_kick_move(
-            db, victim_slug=kicker.slug, from_player_slug=kicker.slug, dice=dice
+            db, victim_slug=kicker.slug, from_player_slug=kicker.slug, dice=dice, dice_roll_id=dice_roll_id
         )
         return dice, PlayerKickResult.LOSE
     else:

@@ -327,7 +327,8 @@ async def kick_player(
             kicker=current_user,
             target=target,
             success=request.success,
-            dice=dice_result.roll_values[0]
+            dice=dice_result.roll_values[0],
+            dice_roll_id=dice_result.id
         )
         await db.flush()
         await db.commit()
