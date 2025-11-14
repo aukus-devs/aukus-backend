@@ -42,6 +42,8 @@ def get_dice_options(move: PlayerMove) -> list[DiceOption]:
                     raise ValueError("Invalid item length")
         case PlayerMoveType.REROLL.value:
             return []
+        case PlayerMoveType.SHIT_KICK.value:
+            return [DiceOption.D_1D6]
         case PlayerMoveType.DROP.value:
             if move.cell_from >= 81:
                 return [DiceOption.D_2D6]
