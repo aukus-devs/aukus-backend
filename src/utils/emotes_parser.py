@@ -18,13 +18,19 @@ class EmotesParser:
         if not text:
             return text
 
-        # Pattern 1: [emote|URL|NAME] - for BTTV, FFZ, 7TV, Twitch/ VKPlay
-        emote_pattern_url = r"\[emote\|([^\|]+)\|([^\]]+)\]"
+        # Pattern 1: [emote|URL|NAME] or [emote|URL|NAME|zw] - for BTTV, FFZ, 7TV, Twitch/ VKPlay
+        emote_pattern_url = r"\[emote\|([^\|]+)\|([^\|\]]+)(?:\|zw)?\]"
 
         def replace_emote_url(match):
             emote_url = match.group(1)
             emote_name = match.group(2)
+            is_zero_wide = match.group(0).endswith("|zw]")
             proxied_url = EmotesParser._apply_cdn_proxy(emote_url)
+
+            if is_zero_wide:
+                return (
+                    f"[emote_name={emote_name},emote_url={proxied_url},emote_zw=True]"
+                )
             return f"[emote_name={emote_name},emote_url={proxied_url}]"
 
         # Pattern 2: [emote:ID:NAME] - for Kick emotes
