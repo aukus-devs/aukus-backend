@@ -1,8 +1,10 @@
 import json
 from typing import Any
+
 from pydantic import field_validator
+
 from src.api.utils import ApiModel
-from src.enums import GameDifficulty, GameLength, PlayerMoveType, PlayerKickResult
+from src.enums import GameDifficulty, GameLength, PlayerKickResult, PlayerMoveType
 
 
 class PlayerStatsItem(ApiModel):
@@ -16,10 +18,11 @@ class PlayerStatsItem(ApiModel):
     movies: int
     ladders: int
     snakes: int
-    tiny_games: int
-    short_games: int
-    medium_games: int
-    long_games: int
+    games_0_4: int
+    games_5_10: int
+    games_11_16: int
+    games_17_24: int
+    games_25_plus: int
     average_dice_roll: float
     average_move: float
     ladders_moves_sum: int
@@ -113,13 +116,16 @@ class PlayerMovesResponse(ApiModel):
 class PlayerChangeSkinRequest(ApiModel):
     skin_ids: list[int]
 
+
 class KickResponse(ApiModel):
     dice_result: int
     result_type: PlayerKickResult
 
+
 class KickRequest(ApiModel):
     target_player_slug: str
     success: bool
+
 
 class AddShitRequest(ApiModel):
     amount: int

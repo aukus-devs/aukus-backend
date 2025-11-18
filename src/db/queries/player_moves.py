@@ -1,14 +1,24 @@
 from __future__ import annotations
 
-from sqlalchemy import select, func, case, and_, cast, Float  # pyright: ignore[reportUnknownVariableType]
+import logging
+
+from sqlalchemy import (  # pyright: ignore[reportUnknownVariableType]
+    Float,
+    and_,
+    case,
+    cast,
+    func,
+    select,
+    text,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.db_models import Player, PlayerMove
-from src.enums import GameLength, PlayerMoveType, PlayerKickResult
+from src.enums import GameLength, PlayerKickResult, PlayerMoveType
 
 
 async def get_players_latest_moves(
-        db: AsyncSession, *, slugs: list[str] | None = None
+    db: AsyncSession, *, slugs: list[str] | None = None
 ) -> dict[str, PlayerMove]:
     # Base query: optionally filter by slugs first
     base_stmt = select(PlayerMove)
@@ -59,93 +69,68 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
     ladders = func.sum(case((pm.ladder_from.is_not(None), 1), else_=0)).label("ladders")
     snakes = func.sum(case((pm.snake_from.is_not(None), 1), else_=0)).label("snakes")
 
-    tiny_games = func.sum(
+    games_0_4 = func.sum(
         case(
             and_(
                 pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_0_3.value,
+                pm.item_length == GameLength.T_0_4.value,
             ),
             else_=0,
         )
-    ).label("tiny_games")
-    short_games = func.sum(
+    ).label("games_0_4")
+    # short_games = func.sum(
+    #     case(
+    #         and_(
+    #             pm.type == PlayerMoveType.COMPLETED.value,
+    #             pm.item_length == GameLength.T_5_15.value,
+    #         ),
+    #         else_=0,
+    #     )
+    # ).label("short_games")
+    games_5_10 = func.sum(
         case(
             and_(
                 pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_3_15.value,
+                pm.item_length == GameLength.T_5_10.value,
             ),
             else_=0,
         )
-    ).label("short_games")
-    medium_games = func.sum(
+    ).label("games_5_10")
+
+    games_11_16 = func.sum(
         case(
             and_(
                 pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_15_30.value,
+                pm.item_length == GameLength.T_11_16.value,
             ),
             else_=0,
         )
-    ).label("medium_games")
-    long_games = func.sum(
+    ).label("games_11_16")
+
+    games_17_24 = func.sum(
         case(
             and_(
                 pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_30_plus.value,
+                pm.item_length == GameLength.T_17_24.value,
             ),
             else_=0,
         )
-    ).label("long_games")
+    ).label("games_17_24")
+
+    games_25_plus = func.sum(
+        case(
+            and_(
+                pm.type == PlayerMoveType.COMPLETED.value,
+                pm.item_length == GameLength.T_25_plus.value,
+            ),
+            else_=0,
+        )
+    ).label("games_25_plus")
 
     dr = cast(pm.dice_roll_sum, Float)
     average_move = func.avg(
         case((pm.type != PlayerMoveType.REROLL.value, func.abs(dr)), else_=None)
     ).label("average_move")
-
-    average_dice_roll = func.avg(
-        case(
-            (pm.cell_to > 101, None),
-            (
-                pm.item_length.in_((GameLength.T_0_3.value, GameLength.T_3_15.value)),
-                func.abs(dr),
-            ),
-            (
-                and_(pm.item_length == GameLength.T_15_30.value, pm.cell_from < 81),
-                func.abs(dr / 2.0),
-            ),
-            (
-                and_(pm.item_length == GameLength.T_30_plus.value, pm.cell_from < 81),
-                func.abs(dr / 3.0),
-            ),
-            (
-                and_(
-                    pm.cell_from < 81,
-                    pm.type.in_(
-                        (PlayerMoveType.DROP.value, PlayerMoveType.SHEIKH_MOMENT.value)
-                    ),
-                ),
-                func.abs(dr),
-            ),
-            (
-                and_(
-                    pm.cell_from >= 81,
-                    pm.item_length.in_(
-                        (GameLength.T_15_30.value, GameLength.T_30_plus.value)
-                    ),
-                ),
-                func.abs(dr),
-            ),
-            (
-                and_(
-                    pm.cell_from >= 81,
-                    pm.type.in_(
-                        (PlayerMoveType.DROP.value, PlayerMoveType.SHEIKH_MOMENT.value)
-                    ),
-                ),
-                func.abs(dr / 2.0),
-            ),
-            else_=None,
-        )
-    ).label("average_dice_roll")
 
     ladders_moves_sum = func.sum(
         case(
@@ -181,12 +166,14 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
             movies,
             ladders,
             snakes,
-            tiny_games,
-            short_games,
-            medium_games,
-            long_games,
+            games_0_4,
+            games_5_10,
+            games_11_16,
+            games_17_24,
+            games_25_plus,
             average_move,
-            average_dice_roll,
+            # average_dice_roll,
+            # func.avg(per_row_avg.c.avg_roll_per_row).label("average_dice_roll"),
             ladders_moves_sum,
             snakes_moves_sum,
         )
@@ -197,10 +184,29 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
     res = await db.execute(q)
     rows = res.mappings().all()
 
+    avg_query = (
+        select(text("pm.player_slug"), text("AVG(jt.roll_value) AS average_dice_roll"))
+        .select_from(
+            text(
+                "player_moves pm "
+                + "JOIN JSON_TABLE(pm.dice_roll, '$[*]' "
+                + "COLUMNS (roll_value DOUBLE PATH '$')) AS jt ON TRUE"
+            )
+        )
+        .group_by(text("pm.player_slug"))
+    )
+
+    res = await db.execute(avg_query)
+    avg_results = res.mappings().all()
+    avg_roll_by_player = {
+        r["player_slug"]: round(r["average_dice_roll"], 2) for r in avg_results
+    }
+
     return [
         {
             **dict(r),
             "map_position": int(map_pos_by_slug.get(r["player_slug"], 0)),  # pyright: ignore[reportAny]
+            "average_dice_roll": avg_roll_by_player.get(r["player_slug"], 0.0),
         }
         for r in rows
     ]
@@ -212,7 +218,7 @@ async def get_all_players(db: AsyncSession) -> list[Player]:
 
 
 async def get_players_by_slugs(
-        db: AsyncSession, kicker_slug: str, target_slug: str
+    db: AsyncSession, kicker_slug: str, target_slug: str
 ) -> dict[str, Player]:
     result = await db.execute(
         select(Player).where(Player.slug.in_([kicker_slug, target_slug]))
@@ -242,12 +248,12 @@ def inc_shit(p: Player, count: int) -> None:
 
 
 async def create_shit_kick_move(
-        db: AsyncSession,
-        *,
-        victim_slug: str,
-        from_player_slug: str,
-        dice: int,
-        dice_roll_id: int
+    db: AsyncSession,
+    *,
+    victim_slug: str,
+    from_player_slug: str,
+    dice: int,
+    dice_roll_id: int,
 ) -> None:
     last = await get_players_latest_moves(db, slugs=[victim_slug])
     last_move = last.get(victim_slug)
@@ -277,13 +283,13 @@ async def create_shit_kick_move(
 
 
 async def process_kick_logic(
-        db: AsyncSession,
-        *,
-        kicker: Player,
-        target: Player,
-        success: bool,
-        dice: int,
-        dice_roll_id: int
+    db: AsyncSession,
+    *,
+    kicker: Player,
+    target: Player,
+    success: bool,
+    dice: int,
+    dice_roll_id: int,
 ) -> tuple[int, PlayerKickResult]:
     if not player_has_shit(kicker):
         return 0, PlayerKickResult.OUT_OF_SHIT
@@ -296,13 +302,21 @@ async def process_kick_logic(
             return dice, PlayerKickResult.SHIELD_REMOVED
 
         await create_shit_kick_move(
-            db, victim_slug=target.slug, from_player_slug=kicker.slug, dice=dice, dice_roll_id=dice_roll_id
+            db,
+            victim_slug=target.slug,
+            from_player_slug=kicker.slug,
+            dice=dice,
+            dice_roll_id=dice_roll_id,
         )
         return dice, PlayerKickResult.WIN
 
     if not player_has_shields(kicker):
         await create_shit_kick_move(
-            db, victim_slug=kicker.slug, from_player_slug=kicker.slug, dice=dice, dice_roll_id=dice_roll_id
+            db,
+            victim_slug=kicker.slug,
+            from_player_slug=kicker.slug,
+            dice=dice,
+            dice_roll_id=dice_roll_id,
         )
         return dice, PlayerKickResult.LOSE
     else:

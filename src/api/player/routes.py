@@ -205,7 +205,8 @@ async def finish_player_move(
     snake_from = None
     snake_to = None
 
-    can_use_ladders = last_move.item_length != GameLength.T_0_3.value
+    can_use_ladders = True
+    # can_use_ladders = last_move.item_length != GameLength.T_0_3.value
 
     if can_use_ladders and next_position in MAP_LADDERS:
         ladder_from = next_position
@@ -338,7 +339,7 @@ async def kick_player(
             target=target,
             success=request.success,
             dice=dice_result.roll_values[0],
-            dice_roll_id=dice_result.id
+            dice_roll_id=dice_result.id,
         )
         await db.flush()
         await db.commit()

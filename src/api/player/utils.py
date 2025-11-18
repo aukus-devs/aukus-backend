@@ -26,18 +26,16 @@ def get_dice_options(move: PlayerMove) -> list[DiceOption]:
             if move.cell_from >= 81:
                 return [DiceOption.D_1D6]
             match move.item_length:
-                case GameLength.T_0_3.value:
-                    return [DiceOption.D_1D6]
-                case GameLength.T_3_15.value:
-                    return [DiceOption.D_1D6]
-                case GameLength.T_15_30.value:
-                    return [DiceOption.D_1D6, DiceOption.D_2D6]
-                case GameLength.T_30_plus.value:
-                    return [
-                        DiceOption.D_1D6,
-                        DiceOption.D_2D6,
-                        DiceOption.D_3D6,
-                    ]
+                case GameLength.T_0_4.value:
+                    return [DiceOption.D_1D2]
+                case GameLength.T_5_10.value:
+                    return [DiceOption.D_1D4]
+                case GameLength.T_11_16.value:
+                    return [DiceOption.D_2D4]
+                case GameLength.T_17_24.value:
+                    return [DiceOption.D_2D6]
+                case GameLength.T_25_plus.value:
+                    return [DiceOption.D_3D6]
                 case _:
                     raise ValueError("Invalid item length")
         case PlayerMoveType.REROLL.value:
@@ -59,7 +57,7 @@ def get_dice_options(move: PlayerMove) -> list[DiceOption]:
 
 
 async def get_dice_roll_from_eventlab(
-        dice_roll_id: int, auth_token: str
+    dice_roll_id: int, auth_token: str
 ) -> DiceRollResult:
     url = f"{EVENTLAB_API_URL}/api/dice-rolls/{dice_roll_id}"
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -77,11 +75,7 @@ async def make_kick_dice_roll_from_eventlab(auth_token: str) -> DiceRollResult:
     url = f"{EVENTLAB_API_URL}/api/dice-rolls"
     headers = {"Authorization": f"Bearer {auth_token}"}
     async with httpx.AsyncClient(timeout=5.0) as client:
-        request_data = {
-            "dice": "1d6",
-            "used": False,
-            "test_values": []
-        }
+        request_data = {"dice": "1d6", "used": False, "test_values": []}
         response = await client.post(url, headers=headers, json=request_data)
     _ = response.raise_for_status()
     data = response.json()  # pyright: ignore[reportAny]
@@ -100,7 +94,7 @@ def cell_row(cell: int) -> int:
 
 
 async def check_achievements_completion(
-        db: AsyncSession, player: Player
+    db: AsyncSession, player: Player
 ) -> list[PlayerAchievement]:
     moves_query = await db.execute(
         select(PlayerMove)
@@ -168,15 +162,15 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
     long_games = [
         move
         for move in moves
-        if move.item_length == GameLength.T_30_plus.value
-           and move.type == PlayerMoveType.COMPLETED.value
+        if move.item_length == GameLength.T_25_plus.value
+        and move.type == PlayerMoveType.COMPLETED.value
     ]
 
     tiny_games = [
         move
         for move in moves
-        if move.item_length == GameLength.T_0_3.value
-           and move.type == PlayerMoveType.COMPLETED.value
+        if move.item_length == GameLength.T_0_4.value
+        and move.type == PlayerMoveType.COMPLETED.value
     ]
 
     movies = [move for move in moves if move.type == PlayerMoveType.MOVIE.value]
@@ -209,13 +203,13 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             return len(visited_rows) == 10
         case "roll-all-6":
             return (
-                    all(roll == 6 for roll in last_move_dice_roll)
-                    and len(last_move_dice_roll) >= 2
+                all(roll == 6 for roll in last_move_dice_roll)
+                and len(last_move_dice_roll) >= 2
             )
         case "roll-all-1":
             return (
-                    all(roll == 1 for roll in last_move_dice_roll)
-                    and len(last_move_dice_roll) >= 2
+                all(roll == 1 for roll in last_move_dice_roll)
+                and len(last_move_dice_roll) >= 2
             )
         case "roll-all-same":
             return len(last_move_dice_roll) >= 2 and all(
@@ -284,23 +278,23 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             return last_move.item_rating == 0
         case "complete-easy":
             return (
-                    last_move.type == PlayerMoveType.COMPLETED.value
-                    and last_move.difficulty_level == -1
+                last_move.type == PlayerMoveType.COMPLETED.value
+                and last_move.difficulty_level == -1
             )
         case "complete-very-hard":
             return (
-                    last_move.type == PlayerMoveType.COMPLETED.value
-                    and last_move.difficulty_level == 2
+                last_move.type == PlayerMoveType.COMPLETED.value
+                and last_move.difficulty_level == 2
             )
         case "drop-easy":
             return (
-                    last_move.type == PlayerMoveType.DROP.value
-                    and last_move.difficulty_level == -1
+                last_move.type == PlayerMoveType.DROP.value
+                and last_move.difficulty_level == -1
             )
         case "drop-very-hard":
             return (
-                    last_move.type == PlayerMoveType.DROP.value
-                    and last_move.difficulty_level == 2
+                last_move.type == PlayerMoveType.DROP.value
+                and last_move.difficulty_level == 2
             )
         case "ladder-1":
             return last_move.ladder_to is not None
@@ -309,8 +303,8 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             return len(ladders) >= 3
         case "ladder-long":
             return (
-                    last_move.ladder_from == LONGEST_LADDER[0]
-                    and last_move.ladder_to == LONGEST_LADDER[1]
+                last_move.ladder_from == LONGEST_LADDER[0]
+                and last_move.ladder_to == LONGEST_LADDER[1]
             )
         case "ladder-repeat":
             ladders = set[int]()
@@ -327,8 +321,8 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             return len(snakes) >= 3
         case "snake-long":
             return (
-                    last_move.snake_from == LONGEST_SNAKE[0]
-                    and last_move.snake_to == LONGEST_SNAKE[1]
+                last_move.snake_from == LONGEST_SNAKE[0]
+                and last_move.snake_to == LONGEST_SNAKE[1]
             )
         case "snake-repeat":
             snakes = set[int]()
@@ -340,13 +334,13 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             return False
         case "drop-into-ladder":
             return (
-                    last_move.type == PlayerMoveType.DROP.value
-                    and last_move.ladder_to is not None
+                last_move.type == PlayerMoveType.DROP.value
+                and last_move.ladder_to is not None
             )
         case "drop-into-snake":
             return (
-                    last_move.type == PlayerMoveType.DROP.value
-                    and last_move.snake_to is not None
+                last_move.type == PlayerMoveType.DROP.value
+                and last_move.snake_to is not None
             )
         case "fall-5+":
             max_pos = max(move.cell_to for move in moves)
@@ -368,7 +362,7 @@ class CloseCategoriesResponse(BaseModel):
 
 
 async def fetch_stream_category_duration(
-        token: str, current_user: Player, category: str
+    token: str, current_user: Player, category: str
 ):
     duration = 0
     auth_headers = {"Authorization": f"Bearer {token}"}
