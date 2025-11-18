@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import logging
-
-from sqlalchemy import (  # pyright: ignore[reportUnknownVariableType]
+from sqlalchemy import (
     Float,
-    and_,
+    and_,  # pyright: ignore[reportUnknownVariableType]
     case,
     cast,
     func,
