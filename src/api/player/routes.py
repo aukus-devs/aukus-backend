@@ -44,7 +44,7 @@ from src.db.queries.player_moves import (
     inc_shit,
     process_kick_logic,
 )
-from src.enums import GameDifficulty, GameLength, PlayerMoveType
+from src.enums import GameDifficulty, PlayerMoveType
 from src.utils.auth import get_current_player, security
 
 router = APIRouter(tags=["players"])
