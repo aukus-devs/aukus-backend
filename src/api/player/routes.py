@@ -26,6 +26,7 @@ from src.api.player.utils import (
     check_achievements_completion,
     fetch_stream_category_duration,
     get_dice_roll_from_eventlab,
+    give_random_rewards,
     make_kick_dice_roll_from_eventlab,
 )
 from src.consts import MAP_LADDERS, MAP_SNAKES
@@ -233,11 +234,17 @@ async def finish_player_move(
     unlocked_achievements = await check_achievements_completion(db, current_user)
     unlocked_ids = [a.achievement_id for a in unlocked_achievements]
 
+    random_rewards_ids = []
+    if last_move.type == PlayerMoveType.COMPLETED.value:
+        random_rewards = await give_random_rewards(db, current_user)
+        random_rewards_ids = [r.skin_id for r in random_rewards]
+
     return FinishPlayerMoveResponse(
         move_to=position_before_snake_or_ladder,
         snake_to=snake_to,
         ladder_to=ladder_to,
         unlocked_achievements=unlocked_ids,
+        random_rewards=random_rewards_ids,
     )
 
 
