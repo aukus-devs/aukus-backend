@@ -125,17 +125,17 @@ async def update_canvas(
         files_to_delete_query = await db.execute(
             select(PlayerFile).where(
                 PlayerFile.player_slug == player_slug,
-                PlayerFile.id.in_(payload.delete_ids)
+                PlayerFile.id.in_(payload.delete_ids),
             )
         )
         files_to_delete: list[PlayerFile] = files_to_delete_query.scalars().all()
-        
+
         for file in files_to_delete:
             logging.info(f"Deleting file from S3: {file.s3_file_id}")
             delete_success = delete_file_s3(file.s3_file_id)
             if not delete_success:
                 logging.error(f"Failed to delete file from S3: {file.s3_file_id}")
-        
+
         _ = await delete_player_files(
             db, player_slug=player_slug, ids=payload.delete_ids
         )
