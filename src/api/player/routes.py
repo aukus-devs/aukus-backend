@@ -179,9 +179,7 @@ async def finish_player_move(
     current_map_position = last_move.cell_from
 
     try:
-        dice_roll = await get_dice_roll_from_eventlab(
-            request.dice_roll_id, credentials.credentials
-        )
+        dice_roll = await get_dice_roll_from_eventlab(request.dice_roll_id)
     except Exception:
         logging.exception("Failed to fetch dice roll")
         raise HTTPException(status_code=400, detail="Failed to fetch dice roll")
