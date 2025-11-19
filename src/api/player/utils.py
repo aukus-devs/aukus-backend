@@ -25,7 +25,13 @@ def get_dice_options(move: PlayerMove) -> list[DiceOption]:
     match move.type:
         case PlayerMoveType.COMPLETED.value:
             if move.cell_from >= 81:
-                return [DiceOption.D_1D6]
+                match move.item_length:
+                    case GameLength.T_0_4.value:
+                        return [DiceOption.D_1D2]
+                    case GameLength.T_5_10.value:
+                        return [DiceOption.D_1D4]
+                    case _:
+                        return [DiceOption.D_1D6]
             match move.item_length:
                 case GameLength.T_0_4.value:
                     return [DiceOption.D_1D2]
