@@ -168,7 +168,6 @@ async def finish_player_move(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[Player, Depends(get_current_player)],
     request: FinishPlayerMoveRequest,
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
     last_move = last_moves.get(current_user.slug)
@@ -197,6 +196,14 @@ async def finish_player_move(
         next_position = 0
     elif next_position > 101:
         next_position = 101
+    elif (
+        current_map_position < 81
+        and next_position > 81
+        and last_move.type == PlayerMoveType.COMPLETED.value
+    ):
+        normal_steps = 81 - current_map_position
+        extra_steps = int((dice_roll_sum - normal_steps) / 2)
+        next_position = current_map_position + normal_steps + extra_steps
 
     position_before_snake_or_ladder = next_position
 
