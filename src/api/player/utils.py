@@ -401,9 +401,7 @@ async def give_random_rewards(db: AsyncSession, player: Player) -> list[PlayerSk
     unlocked_skins_query = await db.execute(
         select(PlayerSkin.skin_id).where(PlayerSkin.player_slug == player.slug)
     )
-    unlocked_skins: list[PlayerSkin] = unlocked_skins_query.scalars().all()
-
-    unlocked_skins_ids = [skin.skin_id for skin in unlocked_skins]
+    unlocked_skins_ids: list[int] = unlocked_skins_query.scalars().all()
 
     reward_skin_query = await db.execute(
         select(Skin)
