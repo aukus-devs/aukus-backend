@@ -1,3 +1,4 @@
+import re
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -34,6 +35,13 @@ from src.utils.auth import get_current_player_or_none
 from src.utils.emotes_parser import EmotesParser
 
 router = APIRouter(tags=["event_data"])
+
+
+def _has_non_emote_urls(text: str) -> bool:
+    text_without_emotes = re.sub(r"\[emote\|[^\]]+\]", "", text)
+    text_without_emotes = re.sub(r"\[emote:[^\]]+\]", "", text_without_emotes)
+    url_pattern = r"https?://[^\s]+"
+    return bool(re.search(url_pattern, text_without_emotes))
 
 
 @router.get("/api/event_data", response_model=EventDataResponse)
@@ -143,12 +151,15 @@ async def get_event_data(
             dice_options = get_dice_options(last_move)
 
     chat_query = await db.execute(
-        select(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(16)
+        select(ChatMessage).order_by(ChatMessage.created_at.desc()).limit(50)
     )
     messages: list[ChatMessage] = chat_query.scalars().all()
 
     message_items: list[ChatMessageItem] = []
     for m in messages:
+        if _has_non_emote_urls(m.message):
+            continue
+
         parsed_text = EmotesParser.parse_message(m.message)
 
         item = ChatMessageItem(
@@ -157,6 +168,9 @@ async def get_event_data(
             created_at=m.created_at,
         )
         message_items.append(item)
+
+        if len(message_items) >= 16:
+            break
 
     message_items.reverse()  # To return messages in chronological order
 
