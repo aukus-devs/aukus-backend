@@ -160,7 +160,7 @@ async def get_event_data(
         if _has_non_emote_urls(m.message):
             continue
 
-        parsed_text = EmotesParser.parse_message(m.message)
+        parsed_text = EmotesParser.parse_message(m.message).strip()
 
         item = ChatMessageItem(
             id=m.id,
