@@ -26,7 +26,6 @@ from src.api.player.utils import (
     check_achievements_completion,
     fetch_stream_category_duration,
     get_dice_roll_from_eventlab,
-    give_random_rewards,
     make_kick_dice_roll_from_eventlab,
     send_player_move_notification,
 )
