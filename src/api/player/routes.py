@@ -288,7 +288,7 @@ async def get_player_moves(
     if params.titles:
         query = query.where(PlayerMove.item_title.in_(params.titles))
     if params.exclude_ids:
-        query = query.where(~PlayerMove.id.in_(params.exclude_ids))
+        query = query.where(PlayerMove.id.not_in(params.exclude_ids))
 
     limit = 100
 
