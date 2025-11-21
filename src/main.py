@@ -17,14 +17,13 @@ app.include_router(player.router)
 app.include_router(rules.router)
 
 
-if IS_LOCAL:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["http://localhost:8381"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 if __name__ == "__main__":
