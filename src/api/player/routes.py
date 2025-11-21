@@ -238,17 +238,17 @@ async def finish_player_move(
     last_move.dice_roll_sum = dice_roll_sum
     last_move.dice_roll = json.dumps(dice_roll.roll_values)
 
+    if last_move.type == PlayerMoveType.COMPLETED:
+        current_user.skin_rolls += 1
+
+    # commit so that achievements checker gets latest info
     await db.commit()
+
     unlocked_achievements = await check_achievements_completion(db, current_user)
     unlocked_ids = [a.achievement_id for a in unlocked_achievements]
 
-    random_rewards_ids = []
-    if last_move.type == PlayerMoveType.COMPLETED.value:
-        random_rewards = await give_random_rewards(db, current_user)
-        random_rewards_ids = [r.skin_id for r in random_rewards]
-
     try:
-        await send_player_move_notification(
+        _ = await send_player_move_notification(
             token=credentials.credentials,
             username=current_user.slug,
             slug=current_user.slug,
@@ -270,7 +270,6 @@ async def finish_player_move(
         snake_to=snake_to,
         ladder_to=ladder_to,
         unlocked_achievements=unlocked_ids,
-        random_rewards=random_rewards_ids,
     )
 
 

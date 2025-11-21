@@ -58,7 +58,6 @@ class FinishPlayerMoveResponse(ApiModel):
     snake_to: int | None
     ladder_to: int | None
     unlocked_achievements: list[int]
-    random_rewards: list[int]
 
 
 class PlayerMoveItem(ApiModel):
