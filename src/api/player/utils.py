@@ -435,22 +435,30 @@ async def send_player_move_notification(
     slug: str,
     move_type: str,
     item_title: str,
+    item_review: str,
+    item_rating: float,
     cell_from: int,
     cell_to: int,
     dice_roll_sum: int | None = None,
+    game_id: int | None = None,
+    cover_image_url: str | None = None,
 ) -> bool:
     auth_headers = {"Authorization": f"Bearer {token}"}
-    
+
     payload = {
         "username": username,
         "slug": slug,
         "move_type": move_type,
         "item_title": item_title,
+        "item_review": item_review,
+        "item_rating": item_rating,
         "cell_from": cell_from,
         "cell_to": cell_to,
         "dice_roll_sum": dice_roll_sum,
+        "game_id": game_id,
+        "cover_image_url": cover_image_url,
     }
-    
+
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.post(

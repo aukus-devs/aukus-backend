@@ -253,9 +253,13 @@ async def finish_player_move(
             slug=current_user.slug,
             move_type=last_move.type,
             item_title=last_move.item_title,
+            item_review=last_move.item_review,
+            item_rating=last_move.item_rating,
             cell_from=last_move.cell_from,
             cell_to=last_move.cell_to,
             dice_roll_sum=dice_roll_sum,
+            game_id=last_move.game_id,
+            cover_image_url=last_move.cover_image_url,
         )
     except Exception as e:
         logging.warning(f"Failed to send move notification: {e}")
