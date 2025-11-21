@@ -28,6 +28,7 @@ from src.api.player.utils import (
     get_dice_roll_from_eventlab,
     give_random_rewards,
     make_kick_dice_roll_from_eventlab,
+    send_player_move_notification,
 )
 from src.consts import MAP_LADDERS, MAP_SNAKES
 from src.db.db_models import (
@@ -168,6 +169,7 @@ async def finish_player_move(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[Player, Depends(get_current_player)],
     request: FinishPlayerMoveRequest,
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     last_moves = await get_players_latest_moves(db, slugs=[current_user.slug])
     last_move = last_moves.get(current_user.slug)
@@ -243,6 +245,20 @@ async def finish_player_move(
     if last_move.type == PlayerMoveType.COMPLETED.value:
         random_rewards = await give_random_rewards(db, current_user)
         random_rewards_ids = [r.skin_id for r in random_rewards]
+
+    try:
+        await send_player_move_notification(
+            token=credentials.credentials,
+            username=current_user.slug,
+            slug=current_user.slug,
+            move_type=last_move.type,
+            item_title=last_move.item_title,
+            cell_from=last_move.cell_from,
+            cell_to=last_move.cell_to,
+            dice_roll_sum=dice_roll_sum,
+        )
+    except Exception as e:
+        logging.warning(f"Failed to send move notification: {e}")
 
     return FinishPlayerMoveResponse(
         move_to=position_before_snake_or_ladder,

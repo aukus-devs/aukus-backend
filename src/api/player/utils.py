@@ -427,3 +427,45 @@ async def give_random_rewards(db: AsyncSession, player: Player) -> list[PlayerSk
         return [new_player_skin]
 
     return []
+
+
+async def send_player_move_notification(
+    token: str,
+    username: str,
+    slug: str,
+    move_type: str,
+    item_title: str,
+    cell_from: int,
+    cell_to: int,
+    dice_roll_sum: int | None = None,
+) -> bool:
+    auth_headers = {"Authorization": f"Bearer {token}"}
+    
+    payload = {
+        "username": username,
+        "slug": slug,
+        "move_type": move_type,
+        "item_title": item_title,
+        "cell_from": cell_from,
+        "cell_to": cell_to,
+        "dice_roll_sum": dice_roll_sum,
+    }
+    
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.post(
+                f"{EVENTLAB_API_URL}/api/notifications/player-move",
+                json=payload,
+                headers=auth_headers,
+            )
+            if response.status_code == 200:
+                logging.info(f"Sent move notification for {username}")
+                return True
+            else:
+                logging.warning(
+                    f"Failed to send move notification for {username}: {response.status_code}"
+                )
+                return False
+    except Exception as e:
+        logging.error(f"Error sending move notification for {username}: {e}")
+        return False
