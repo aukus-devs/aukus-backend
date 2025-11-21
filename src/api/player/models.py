@@ -3,6 +3,7 @@ from typing import Any
 
 from pydantic import field_validator
 
+from src.api.event_data.models import SkinItem
 from src.api.utils import ApiModel
 from src.enums import GameDifficulty, GameLength, PlayerKickResult, PlayerMoveType
 
@@ -130,3 +131,11 @@ class KickRequest(ApiModel):
 
 class AddShitRequest(ApiModel):
     amount: int
+
+
+class UnlockableSkinsResponse(ApiModel):
+    skins: list[SkinItem]
+
+
+class UnlockSkinRequest(ApiModel):
+    skin_id: int

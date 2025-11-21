@@ -4,7 +4,7 @@ from typing import cast
 
 import httpx
 from pydantic import BaseModel
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.player.models import DiceRollResult
@@ -16,7 +16,6 @@ from src.db.db_models import (
     PlayerAchievement,
     PlayerMove,
     PlayerSkin,
-    Skin,
 )
 from src.enums import DiceOption, GameLength, PlayerMoveType
 
@@ -420,36 +419,6 @@ async def fetch_stream_category_duration(
                 )
 
     return duration
-
-
-async def give_random_rewards(db: AsyncSession, player: Player) -> list[PlayerSkin]:
-    unlocked_skins_query = await db.execute(
-        select(PlayerSkin.skin_id).where(PlayerSkin.player_slug == player.slug)
-    )
-    unlocked_skins_ids: list[int] = unlocked_skins_query.scalars().all()
-
-    achievements_skins_query = await db.execute(select(Achievement.reward_skin_id))
-    achievements_skins_ids: list[int] = achievements_skins_query.scalars().all()
-
-    reward_skin_query = await db.execute(
-        select(Skin)
-        .where(Skin.id.not_in(unlocked_skins_ids))
-        .where(Skin.id.not_in(achievements_skins_ids))
-        .order_by(func.random())
-        .limit(1)
-    )
-    reward_skin: Skin | None = reward_skin_query.scalars().first()
-    if reward_skin:
-        new_player_skin = PlayerSkin(
-            player_slug=player.slug,
-            skin_id=reward_skin.id,
-            is_equipped=0,
-        )
-        db.add(new_player_skin)
-        await db.flush()
-        return [new_player_skin]
-
-    return []
 
 
 async def send_player_move_notification(

@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials
-from sqlalchemy import or_, select  # pyright: ignore[reportUnknownVariableType]
+from sqlalchemy import func, or_, select  # pyright: ignore[reportUnknownVariableType]
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.player.models import (
@@ -21,6 +21,8 @@ from src.api.player.models import (
     PlayerMovesResponse,
     PlayerStatsItem,
     PlayerStatsResponse,
+    UnlockableSkinsResponse,
+    UnlockSkinRequest,
 )
 from src.api.player.utils import (
     check_achievements_completion,
@@ -31,9 +33,11 @@ from src.api.player.utils import (
 )
 from src.consts import MAP_LADDERS, MAP_SNAKES
 from src.db.db_models import (
+    Achievement,
     Player,
     PlayerMove,
     PlayerSkin,
+    Skin,
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import (
@@ -411,3 +415,61 @@ async def make_shield(
     await db.flush()
     await db.commit()
     return HTTPException(status_code=200)
+
+
+@router.get("/api/players/unlockable-skins", response_model=UnlockableSkinsResponse)
+async def get_unlockable_skins(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Player, Depends(get_current_player)],
+):
+    unlocked_skins_query = await db.execute(
+        select(PlayerSkin.skin_id).where(PlayerSkin.player_slug == current_user.slug)
+    )
+    unlocked_skins_ids: list[int] = unlocked_skins_query.scalars().all()
+
+    achievements_skins_query = await db.execute(select(Achievement.reward_skin_id))
+    achievements_skins_ids: list[int] = achievements_skins_query.scalars().all()
+
+    query = await db.execute(
+        select(Skin)
+        .where(Skin.id.not_in(unlocked_skins_ids))
+        .where(Skin.id.not_in(achievements_skins_ids))
+        .order_by(func.random())
+        .limit(1)
+    )
+    skins: list[Skin] = query.scalars().all()
+    return {"skins": skins}
+
+
+@router.post("/api/players/unlock-skin", status_code=201)
+async def unlock_skin(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Player, Depends(get_current_player)],
+    request: UnlockSkinRequest,
+):
+    if current_user.skin_rolls <= 0:
+        raise HTTPException(status_code=400, detail="Not enough skin rolls")
+
+    skin_query = await db.execute(select(Skin).where(Skin.id == request.skin_id))
+    skin: Skin | None = skin_query.scalars().first()
+    if not skin:
+        raise HTTPException(status_code=400, detail="Skin not found")
+
+    player_skin_query = await db.execute(
+        select(PlayerSkin)
+        .where(PlayerSkin.player_slug == current_user.slug)
+        .where(PlayerSkin.skin_id == skin.id)
+    )
+
+    player_skin: PlayerSkin | None = player_skin_query.scalars().first()
+    if player_skin:
+        raise HTTPException(status_code=400, detail="skin already unlocked")
+
+    current_user.skin_rolls -= 1
+    new_skin = PlayerSkin(
+        player_slug=current_user.slug,
+        skin_id=skin.id,
+        is_equipped=0,
+    )
+    db.add(new_skin)
+    return 201
