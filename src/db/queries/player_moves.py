@@ -76,15 +76,7 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
             else_=0,
         )
     ).label("games_0_4")
-    # short_games = func.sum(
-    #     case(
-    #         and_(
-    #             pm.type == PlayerMoveType.COMPLETED.value,
-    #             pm.item_length == GameLength.T_5_15.value,
-    #         ),
-    #         else_=0,
-    #     )
-    # ).label("short_games")
+
     games_5_10 = func.sum(
         case(
             and_(
@@ -115,15 +107,25 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         )
     ).label("games_17_24")
 
-    games_25_plus = func.sum(
+    games_25_40 = func.sum(
         case(
             and_(
                 pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_25_plus.value,
+                pm.item_length == GameLength.T_25_40.value,
             ),
             else_=0,
         )
-    ).label("games_25_plus")
+    ).label("games_25_40")
+
+    games_40_plus = func.sum(
+        case(
+            and_(
+                pm.type == PlayerMoveType.COMPLETED.value,
+                pm.item_length == GameLength.T_40_PLUS.value,
+            ),
+            else_=0,
+        )
+    ).label("games_40_plus")
 
     dr = cast(pm.dice_roll_sum, Float)
     average_move = func.avg(
@@ -168,7 +170,8 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
             games_5_10,
             games_11_16,
             games_17_24,
-            games_25_plus,
+            games_25_40,
+            games_40_plus,
             average_move,
             # average_dice_roll,
             # func.avg(per_row_avg.c.avg_roll_per_row).label("average_dice_roll"),
@@ -197,7 +200,8 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
     res = await db.execute(avg_query)
     avg_results = res.mappings().all()
     avg_roll_by_player = {
-        r["player_slug"]: round(r["average_dice_roll"], 2) for r in avg_results
+        r["player_slug"]: round(r["average_dice_roll"], 2)  # pyright: ignore[reportAny]
+        for r in avg_results
     }
 
     return [
@@ -221,7 +225,7 @@ async def get_players_by_slugs(
     result = await db.execute(
         select(Player).where(Player.slug.in_([kicker_slug, target_slug]))
     )
-    players = result.scalars().all()
+    players: list[Player] = result.scalars().all()
     return {p.slug: p for p in players}
 
 

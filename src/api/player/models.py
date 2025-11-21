@@ -22,7 +22,8 @@ class PlayerStatsItem(ApiModel):
     games_5_10: int
     games_11_16: int
     games_17_24: int
-    games_25_plus: int
+    games_25_40: int
+    games_40_plus: int
     average_dice_roll: float
     average_move: float
     ladders_moves_sum: int

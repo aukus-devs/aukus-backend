@@ -41,8 +41,10 @@ def get_dice_options(move: PlayerMove) -> list[DiceOption]:
                     return [DiceOption.D_2D4]
                 case GameLength.T_17_24.value:
                     return [DiceOption.D_2D6]
-                case GameLength.T_25_plus.value:
+                case GameLength.T_25_40.value:
                     return [DiceOption.D_3D6]
+                case GameLength.T_40_PLUS.value:
+                    return [DiceOption.D_4D6]
                 case _:
                     raise ValueError("Invalid item length")
         case PlayerMoveType.REROLL.value:
@@ -166,7 +168,14 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
     long_games = [
         move
         for move in moves
-        if move.item_length == GameLength.T_25_plus.value
+        if move.item_length == GameLength.T_25_40.value
+        and move.type == PlayerMoveType.COMPLETED.value
+    ]
+
+    longest_games = [
+        move
+        for move in moves
+        if move.item_length == GameLength.T_40_PLUS.value
         and move.type == PlayerMoveType.COMPLETED.value
     ]
 
@@ -221,8 +230,18 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             )
         case "long-games-1":
             return len(long_games) >= 1
+        # TODO: new achievement
+        case "long-games-2":
+            return len(long_games) >= 2
         case "long-games-3":
             return len(long_games) >= 3
+        # TODO: new achievements longest-games
+        case "longest-games-1":
+            return len(longest_games) >= 1
+        case "longest-games-2":
+            return len(longest_games) >= 2
+        case "longest-games-3":
+            return len(longest_games) >= 3
         case "tiny-games-2":
             return len(tiny_games) >= 2
         case "tiny-games-5":
