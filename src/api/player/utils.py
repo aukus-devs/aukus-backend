@@ -428,9 +428,13 @@ async def give_random_rewards(db: AsyncSession, player: Player) -> list[PlayerSk
     )
     unlocked_skins_ids: list[int] = unlocked_skins_query.scalars().all()
 
+    achievements_skins_query = await db.execute(select(Achievement.reward_skin_id))
+    achievements_skins_ids: list[int] = achievements_skins_query.scalars().all()
+
     reward_skin_query = await db.execute(
         select(Skin)
         .where(Skin.id.not_in(unlocked_skins_ids))
+        .where(Skin.id.not_in(achievements_skins_ids))
         .order_by(func.random())
         .limit(1)
     )

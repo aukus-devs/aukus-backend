@@ -98,6 +98,7 @@ async def get_event_data(
                 last_move=last_move,
                 shield_stacks=player.shield_stacks,
                 shit_stacks=player.shit_stacks,
+                skin_rolls=player.skin_rolls,
             )
         )
 
