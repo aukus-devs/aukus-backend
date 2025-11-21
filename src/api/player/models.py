@@ -1,9 +1,4 @@
-import json
-from typing import Any
-
-from pydantic import field_validator
-
-from src.api.event_data.models import SkinItem
+from src.api.event_data.models import PlayerMoveItem, SkinItem
 from src.api.utils import ApiModel
 from src.enums import GameDifficulty, GameLength, PlayerKickResult, PlayerMoveType
 
@@ -59,42 +54,6 @@ class FinishPlayerMoveResponse(ApiModel):
     snake_to: int | None
     ladder_to: int | None
     unlocked_achievements: list[int]
-
-
-class PlayerMoveItem(ApiModel):
-    id: int
-    created_at: int
-    updated_at: int
-    player_slug: str
-    type: PlayerMoveType
-    item_title: str
-    item_duration: int
-    item_review: str
-    item_rating: float
-    item_length: GameLength | None
-    vod_links: str | None
-    game_id: int | None
-    cover_image_url: str | None
-    difficulty_level: GameDifficulty
-    cell_from: int
-    cell_to: int
-    ladder_from: int | None
-    ladder_to: int | None
-    snake_from: int | None
-    snake_to: int | None
-    dice_roll_id: int | None
-    dice_roll_sum: int | None
-    dice_roll: list[int] | None
-
-    @field_validator("dice_roll", mode="before")
-    @classmethod
-    def parse_dice_roll(cls, v: Any) -> Any:  # pyright: ignore[reportAny, reportExplicitAny]
-        if isinstance(v, str):
-            try:
-                return json.loads(v)  # pyright: ignore[reportAny]
-            except json.JSONDecodeError:
-                raise ValueError(f"Invalid JSON format for dice_roll: {v}")
-        return v  # pyright: ignore[reportAny]
 
 
 class DiceRollResult(ApiModel):

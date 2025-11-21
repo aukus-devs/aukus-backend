@@ -435,7 +435,6 @@ async def get_unlockable_skins(
         .where(Skin.id.not_in(unlocked_skins_ids))
         .where(Skin.id.not_in(achievements_skins_ids))
         .order_by(func.random())
-        .limit(1)
     )
     skins: list[Skin] = query.scalars().all()
     return {"skins": skins}
