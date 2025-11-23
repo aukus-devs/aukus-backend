@@ -241,7 +241,7 @@ async def finish_player_move(
     last_move.dice_roll_sum = dice_roll_sum
     last_move.dice_roll = json.dumps(dice_roll.roll_values)
 
-    if last_move.type == PlayerMoveType.COMPLETED:
+    if last_move.type == PlayerMoveType.COMPLETED.value:
         current_user.skin_rolls += 1
 
     # commit so that achievements checker gets latest info
