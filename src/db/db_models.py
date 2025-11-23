@@ -151,6 +151,9 @@ class PlayerAchievement(DbBase):
     created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
     player_slug: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     achievement_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_first: Mapped[int] = mapped_column(
+        Integer, default=0, nullable=False, index=True
+    )
 
 
 class ChatMessage(DbBase):

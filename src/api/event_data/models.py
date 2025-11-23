@@ -54,6 +54,7 @@ class PlayerMoveItem(ApiModel):
 class UnlockedAchievementItem(ApiModel):
     id: int
     unlocked_at: int
+    is_first: bool
 
 
 class PlayerItem(ApiModel):

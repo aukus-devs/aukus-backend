@@ -248,7 +248,7 @@ async def finish_player_move(
     await db.commit()
 
     unlocked_achievements = await check_achievements_completion(db, current_user)
-    unlocked_ids = [a.achievement_id for a in unlocked_achievements]
+    # unlocked_ids = [a.achievement_id for a in unlocked_achievements]
 
     try:
         _ = await send_player_move_notification(
@@ -272,7 +272,7 @@ async def finish_player_move(
         move_to=position_before_snake_or_ladder,
         snake_to=snake_to,
         ladder_to=ladder_to,
-        unlocked_achievements=unlocked_ids,
+        unlocked_achievements=unlocked_achievements,
     )
 
 

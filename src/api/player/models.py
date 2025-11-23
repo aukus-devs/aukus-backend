@@ -1,4 +1,8 @@
-from src.api.event_data.models import PlayerMoveItem, SkinItem
+from src.api.event_data.models import (
+    PlayerMoveItem,
+    SkinItem,
+    UnlockedAchievementItem,
+)
 from src.api.utils import ApiModel
 from src.enums import GameDifficulty, GameLength, PlayerKickResult, PlayerMoveType
 
@@ -53,7 +57,7 @@ class FinishPlayerMoveResponse(ApiModel):
     move_to: int
     snake_to: int | None
     ladder_to: int | None
-    unlocked_achievements: list[int]
+    unlocked_achievements: list[UnlockedAchievementItem]
 
 
 class DiceRollResult(ApiModel):

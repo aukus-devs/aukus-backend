@@ -126,12 +126,22 @@ async def check_achievements_completion(
     )
     locked_achievements: list[Achievement] = locked_achievements_query.scalars().all()
 
+    unlocked_by_others = await db.execute(
+        select(PlayerAchievement.achievement_id)
+        .where(PlayerAchievement.player_slug != player.slug)
+        .distinct()
+    )
+    unlocked_by_others_ids: list[int] = unlocked_by_others.scalars().all()
+    unlocked_by_others_set = set(unlocked_by_others_ids)
+
     new_achievements: list[PlayerAchievement] = []
     for achievement in locked_achievements:
         completed = check_achievement_completion(achievement, moves)
         if completed:
             new = PlayerAchievement(
-                player_slug=player.slug, achievement_id=achievement.id
+                player_slug=player.slug,
+                achievement_id=achievement.id,
+                is_first=achievement.id not in unlocked_by_others_set,
             )
             db.add(new)
             new_achievements.append(new)
