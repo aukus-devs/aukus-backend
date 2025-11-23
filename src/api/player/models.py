@@ -79,13 +79,11 @@ class PlayerChangeSkinRequest(ApiModel):
 
 
 class KickResponse(ApiModel):
-    dice_result: int
     result_type: PlayerKickResult
 
 
 class KickRequest(ApiModel):
     target_player_slug: str
-    success: bool
 
 
 class AddShitRequest(ApiModel):

@@ -16,7 +16,7 @@ from src.enums import GameLength, PlayerKickResult, PlayerMoveType
 
 
 async def get_players_latest_moves(
-    db: AsyncSession, *, slugs: list[str] | None = None
+        db: AsyncSession, *, slugs: list[str] | None = None
 ) -> dict[str, PlayerMove]:
     # Base query: optionally filter by slugs first
     base_stmt = select(PlayerMove)
@@ -220,7 +220,7 @@ async def get_all_players(db: AsyncSession) -> list[Player]:
 
 
 async def get_players_by_slugs(
-    db: AsyncSession, kicker_slug: str, target_slug: str
+        db: AsyncSession, kicker_slug: str, target_slug: str
 ) -> dict[str, Player]:
     result = await db.execute(
         select(Player).where(Player.slug.in_([kicker_slug, target_slug]))
@@ -250,12 +250,12 @@ def inc_shit(p: Player, count: int) -> None:
 
 
 async def create_shit_kick_move(
-    db: AsyncSession,
-    *,
-    victim_slug: str,
-    from_player_slug: str,
-    dice: int,
-    dice_roll_id: int,
+        db: AsyncSession,
+        *,
+        victim_slug: str,
+        from_player_slug: str,
+        dice: int,
+        dice_roll_id: int,
 ) -> None:
     last = await get_players_latest_moves(db, slugs=[victim_slug])
     last_move = last.get(victim_slug)
@@ -285,42 +285,17 @@ async def create_shit_kick_move(
 
 
 async def process_kick_logic(
-    db: AsyncSession,
-    *,
-    kicker: Player,
-    target: Player,
-    success: bool,
-    dice: int,
-    dice_roll_id: int,
-) -> tuple[int, PlayerKickResult]:
+        *,
+        kicker: Player,
+        target: Player,
+) -> PlayerKickResult:
     if not player_has_shit(kicker):
-        return 0, PlayerKickResult.OUT_OF_SHIT
+        return PlayerKickResult.OUT_OF_SHIT
 
     inc_shit(kicker, -1)
 
-    if success:
-        if player_has_shields(target):
-            dec_shield(target)
-            return dice, PlayerKickResult.SHIELD_REMOVED
+    if player_has_shields(target):
+        dec_shield(target)
+        return PlayerKickResult.SHIELD_REMOVED
 
-        await create_shit_kick_move(
-            db,
-            victim_slug=target.slug,
-            from_player_slug=kicker.slug,
-            dice=dice,
-            dice_roll_id=dice_roll_id,
-        )
-        return dice, PlayerKickResult.WIN
-
-    if not player_has_shields(kicker):
-        await create_shit_kick_move(
-            db,
-            victim_slug=kicker.slug,
-            from_player_slug=kicker.slug,
-            dice=dice,
-            dice_roll_id=dice_roll_id,
-        )
-        return dice, PlayerKickResult.LOSE
-    else:
-        dec_shield(kicker)
-        return dice, PlayerKickResult.LOSE_WITH_SHIELD
+    return PlayerKickResult.WIN

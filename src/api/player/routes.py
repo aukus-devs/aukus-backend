@@ -344,7 +344,6 @@ async def kick_player(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[Player, Depends(get_current_player)],
     request: KickRequest,
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     slug_map = await get_players_by_slugs(
         db, current_user.slug, request.target_player_slug
@@ -363,23 +362,13 @@ async def kick_player(
     #     raise HTTPException(status_code=404, detail="Target player not found")
 
     try:
-        dice_result = await make_kick_dice_roll_from_eventlab(credentials.credentials)
-    except Exception:
-        logging.exception("Failed to fetch dice roll")
-        raise HTTPException(status_code=400, detail="Failed to fetch dice roll")
-
-    try:
-        dice, result_type = await process_kick_logic(
-            db,
+        result_type = await process_kick_logic(
             kicker=current_user,
             target=target,
-            success=request.success,
-            dice=dice_result.roll_values[0],
-            dice_roll_id=dice_result.id,
         )
         await db.flush()
         await db.commit()
-        return KickResponse(dice_result=dice, result_type=result_type)
+        return KickResponse(result_type=result_type)
 
     except Exception:
         await db.rollback()
@@ -407,11 +396,11 @@ async def make_shield(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[Player, Depends(get_current_player)],
 ):
-    if (current_user.shit_stacks or 0) < 30:
-        raise HTTPException(status_code=400, detail="Not enough shit stacks (need 30)")
+    if (current_user.shit_stacks or 0) < 10:
+        raise HTTPException(status_code=400, detail="Not enough shit stacks (need 10)")
 
-    inc_shit(current_user, -30)
-    inc_shield(current_user, 10)
+    inc_shit(current_user, -10)
+    inc_shield(current_user, 3)
     await db.flush()
     await db.commit()
     return HTTPException(status_code=200)
