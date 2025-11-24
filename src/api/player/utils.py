@@ -462,7 +462,7 @@ async def send_player_move_notification(
     }
 
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 f"{EVENTLAB_API_URL}/api/notifications/player-move",
                 json=payload,
@@ -476,6 +476,11 @@ async def send_player_move_notification(
                     f"Failed to send move notification for {username}: {response.status_code}"
                 )
                 return False
+    except httpx.TimeoutException:
+        logging.warning(
+            f"Timeout sending move notification for {username}, but it may have been delivered"
+        )
+        return False
     except Exception as e:
         logging.error(f"Error sending move notification for {username}: {e}")
         return False
