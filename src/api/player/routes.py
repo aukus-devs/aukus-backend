@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import func, or_, select  # pyright: ignore[reportUnknownVariableType]
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.api.event_data.models import UnlockedAchievementItem
 from src.api.player.models import (
     AddShitRequest,
     CreatePlayerMoveRequest,
@@ -248,7 +249,12 @@ async def finish_player_move(
     await db.commit()
 
     unlocked_achievements = await check_achievements_completion(db, current_user)
-    # unlocked_ids = [a.achievement_id for a in unlocked_achievements]
+    unlocked_items = [
+        UnlockedAchievementItem(
+            id=a.achievement_id, unlocked_at=a.created_at, is_first=bool(a.is_first)
+        )
+        for a in unlocked_achievements
+    ]
 
     try:
         _ = await send_player_move_notification(
@@ -272,7 +278,7 @@ async def finish_player_move(
         move_to=position_before_snake_or_ladder,
         snake_to=snake_to,
         ladder_to=ladder_to,
-        unlocked_achievements=unlocked_achievements,
+        unlocked_achievements=unlocked_items,
     )
 
 

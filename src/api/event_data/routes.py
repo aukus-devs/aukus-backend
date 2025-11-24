@@ -79,7 +79,9 @@ async def get_event_data(
 
         player_achievements = [
             UnlockedAchievementItem(
-                id=achievement.achievement_id, unlocked_at=achievement.created_at, is_first=achievement.is_first
+                id=achievement.achievement_id,
+                unlocked_at=achievement.created_at,
+                is_first=bool(achievement.is_first),
             )
             for achievement in unlocked_achievements
             if achievement.player_slug == player.slug
