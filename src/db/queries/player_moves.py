@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TypedDict
+
 from sqlalchemy import (
     Float,
     and_,  # pyright: ignore[reportUnknownVariableType]
@@ -16,7 +18,7 @@ from src.enums import GameLength, PlayerKickResult, PlayerMoveType
 
 
 async def get_players_latest_moves(
-        db: AsyncSession, *, slugs: list[str] | None = None
+    db: AsyncSession, *, slugs: list[str] | None = None
 ) -> dict[str, PlayerMove]:
     # Base query: optionally filter by slugs first
     base_stmt = select(PlayerMove)
@@ -43,6 +45,11 @@ async def get_players_latest_moves(
     result = await db.execute(query)
     moves: list[PlayerMove] = result.scalars().all()
     return {move.player_slug: move for move in moves}
+
+
+class AchievementCounts(TypedDict):
+    first: int
+    regular: int
 
 
 async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | float]]:
@@ -204,11 +211,38 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         for r in avg_results
     }
 
+    unlocked_achievements_query = (
+        select(text("player_slug"), text("is_first"), func.count("*").label("count"))
+        .select_from(text("player_achievements"))
+        .group_by(text("player_slug"), text("is_first"))
+    )
+
+    unlocked_achievements = await db.execute(unlocked_achievements_query)
+    achievement_counts = unlocked_achievements.mappings().all()
+
+    achievements_by_player: dict[str, AchievementCounts] = {}
+    for record in achievement_counts:
+        slug = record["player_slug"]
+        is_first = record["is_first"]
+        count = record["count"]
+        if slug not in achievements_by_player:
+            achievements_by_player[slug] = {"first": 0, "regular": 0}
+        if is_first:
+            achievements_by_player[slug]["first"] = count
+        else:
+            achievements_by_player[slug]["regular"] = count
+
     return [
         {
             **dict(r),
             "map_position": int(map_pos_by_slug.get(r["player_slug"], 0)),  # pyright: ignore[reportAny]
             "average_dice_roll": avg_roll_by_player.get(r["player_slug"], 0.0),
+            "first_achievements": achievements_by_player.get(r["player_slug"], {}).get(
+                "first", 0
+            ),
+            "regular_achievements": achievements_by_player.get(
+                r["player_slug"], {}
+            ).get("regular", 0),
         }
         for r in rows
     ]
@@ -220,7 +254,7 @@ async def get_all_players(db: AsyncSession) -> list[Player]:
 
 
 async def get_players_by_slugs(
-        db: AsyncSession, kicker_slug: str, target_slug: str
+    db: AsyncSession, kicker_slug: str, target_slug: str
 ) -> dict[str, Player]:
     result = await db.execute(
         select(Player).where(Player.slug.in_([kicker_slug, target_slug]))
@@ -250,12 +284,12 @@ def inc_shit(p: Player, count: int) -> None:
 
 
 async def create_shit_kick_move(
-        db: AsyncSession,
-        *,
-        victim_slug: str,
-        from_player_slug: str,
-        dice: int,
-        dice_roll_id: int,
+    db: AsyncSession,
+    *,
+    victim_slug: str,
+    from_player_slug: str,
+    dice: int,
+    dice_roll_id: int,
 ) -> None:
     last = await get_players_latest_moves(db, slugs=[victim_slug])
     last_move = last.get(victim_slug)
@@ -285,9 +319,9 @@ async def create_shit_kick_move(
 
 
 async def process_kick_logic(
-        *,
-        kicker: Player,
-        target: Player,
+    *,
+    kicker: Player,
+    target: Player,
 ) -> PlayerKickResult:
     if not player_has_shit(kicker):
         return PlayerKickResult.OUT_OF_SHIT

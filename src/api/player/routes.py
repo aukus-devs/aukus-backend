@@ -109,6 +109,8 @@ async def player_stats(
                     average_move=0.0,
                     ladders_moves_sum=0,
                     snakes_moves_sum=0,
+                    first_achievements=0,
+                    regular_achievements=0,
                 )
             )
 

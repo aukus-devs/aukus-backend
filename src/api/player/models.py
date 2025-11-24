@@ -28,6 +28,8 @@ class PlayerStatsItem(ApiModel):
     average_move: float
     ladders_moves_sum: int
     snakes_moves_sum: int
+    first_achievements: int
+    regular_achievements: int
 
 
 class PlayerStatsResponse(ApiModel):
