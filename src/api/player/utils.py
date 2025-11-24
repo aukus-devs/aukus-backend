@@ -239,12 +239,10 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             )
         case "long-games-1":
             return len(long_games) >= 1
-        # TODO: new achievement
         case "long-games-2":
             return len(long_games) >= 2
         case "long-games-3":
             return len(long_games) >= 3
-        # TODO: new achievements longest-games
         case "longest-games-1":
             return len(longest_games) >= 1
         case "longest-games-2":
@@ -297,7 +295,7 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             return False
         case "sheikh-1":
             return last_move.type == PlayerMoveType.SHEIKH_MOMENT.value
-        case "sheikh-3":
+        case "sheikh-2":
             sheikh_moves = [
                 move
                 for move in moves
@@ -374,6 +372,9 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
                 last_move.type == PlayerMoveType.DROP.value
                 and last_move.snake_to is not None
             )
+        case "fall-3+":
+            max_pos = max(move.cell_to for move in moves)
+            return cell_row(last_move.cell_to) <= cell_row(max_pos) - 3
         case "fall-5+":
             max_pos = max(move.cell_to for move in moves)
             return cell_row(last_move.cell_to) <= cell_row(max_pos) - 5
