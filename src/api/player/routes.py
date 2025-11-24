@@ -51,7 +51,7 @@ from src.db.queries.player_moves import (
     inc_shit,
     process_kick_logic,
 )
-from src.enums import GameDifficulty, PlayerMoveType
+from src.enums import GameDifficulty, GameLength, PlayerMoveType
 from src.utils.auth import get_current_player, security
 
 router = APIRouter(tags=["players"])
@@ -246,7 +246,21 @@ async def finish_player_move(
     last_move.dice_roll = json.dumps(dice_roll.roll_values)
 
     if last_move.type == PlayerMoveType.COMPLETED.value:
-        current_user.skin_rolls += 1
+        match last_move.item_length:
+            case GameLength.T_0_4.value:
+                current_user.skin_rolls += 1
+            case GameLength.T_5_10.value:
+                current_user.skin_rolls += 1
+            case GameLength.T_11_16.value:
+                current_user.skin_rolls += 2
+            case GameLength.T_17_24.value:
+                current_user.skin_rolls += 2
+            case GameLength.T_25_40.value:
+                current_user.skin_rolls += 3
+            case GameLength.T_40_PLUS.value:
+                current_user.skin_rolls += 3
+            case _:
+                pass
 
     # commit so that achievements checker gets latest info
     await db.commit()
