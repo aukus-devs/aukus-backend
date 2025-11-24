@@ -249,6 +249,8 @@ async def finish_player_move(
     await db.commit()
 
     unlocked_achievements = await check_achievements_completion(db, current_user)
+    await db.flush()
+
     unlocked_items = [
         UnlockedAchievementItem(
             id=a.achievement_id, unlocked_at=a.created_at, is_first=bool(a.is_first)
