@@ -422,13 +422,24 @@ async def add_shit(
 @router.post("/api/players/make-shield", status_code=200)
 async def make_shield(
     db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[Player, Depends(get_current_player)],
+    # current_user: Annotated[Player, Depends(get_current_player)],
 ):
+    current_user = await db.scalar(select(Player).where(Player.slug == "Aboba"))
+    if not current_user:
+        raise HTTPException(status_code=404, detail="Player 'Aboba' not found")
+
+
     if (current_user.shit_stacks or 0) < 10:
         raise HTTPException(status_code=400, detail="Not enough shit stacks (need 10)")
+    if (current_user.shield_stacks or 0) >= 9:
+        raise HTTPException(status_code=400, detail="Can not make more than 9 shields")
+    if (current_user.shield_stacks or 0) > 6:
+        inc_shit(current_user, -10)
+        inc_shield(current_user, (9 - current_user.shield_stacks))
+    else:
+        inc_shit(current_user, -10)
+        inc_shield(current_user, 3)
 
-    inc_shit(current_user, -10)
-    inc_shield(current_user, 3)
     await db.flush()
     await db.commit()
     return HTTPException(status_code=200)
