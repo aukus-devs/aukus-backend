@@ -15,10 +15,13 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from fastapi.security import HTTPAuthorizationCredentials
+
 from src.config import IS_LOCAL
 from src.db.db_session import get_db
 from src.db.db_models import Player, PlayerFile
-from src.utils.auth import get_current_player
+from src.utils.auth import get_current_player, get_token_payload, security
+from src.utils.permissions import require_edit_player_permission
 from src.api.canvas.models import CanvasFile, CanvasFilesResponse, CanvasUpdateRequest
 
 from src.db.queries.player_files import (
@@ -47,12 +50,18 @@ async def get_canvas_files(
 )
 async def upload_canvas_image(
     player_slug: str,
-    current_user: Annotated[Player, Depends(get_current_player)],  # pyright: ignore[reportUnusedParameter]
+    current_user: Annotated[Player, Depends(get_current_player)],
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     db: Annotated[AsyncSession, Depends(get_db)],
     file: UploadFile = File(...),  # pyright: ignore[reportCallInDefaultInitializer]
     width: float = Form(...),  # pyright: ignore[reportCallInDefaultInitializer]
     height: float = Form(...),  # pyright: ignore[reportCallInDefaultInitializer]
 ):
+    token_payload = get_token_payload(credentials)
+    if not token_payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    require_edit_player_permission(current_user, player_slug, token_payload)
+
     if not file.filename:
         raise HTTPException(status_code=400, detail="No file found")
 
@@ -94,9 +103,15 @@ async def upload_canvas_image(
 async def update_canvas(
     player_slug: str,
     payload: CanvasUpdateRequest,
-    current_user: Annotated[Player, Depends(get_current_player)],  # pyright: ignore[reportUnusedParameter]
+    current_user: Annotated[Player, Depends(get_current_player)],
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
+    token_payload = get_token_payload(credentials)
+    if not token_payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    require_edit_player_permission(current_user, player_slug, token_payload)
+
     files_ids = [item.id for item in payload.files]
     existing_files_query = await db.execute(
         select(PlayerFile).where(

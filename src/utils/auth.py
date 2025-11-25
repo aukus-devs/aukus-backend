@@ -20,6 +20,7 @@ class TokenPayload(BaseModel):
     slug: str
     exp: int
     roles: list[UserRole]
+    moder_for: list[str] = []
 
 
 def parse_token(token: str) -> TokenPayload:
@@ -148,3 +149,13 @@ def get_current_player_roles(
         return payload.roles
     except HTTPException:
         return []
+
+
+def get_token_payload(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> TokenPayload | None:
+    token = credentials.credentials
+    try:
+        return parse_token(token)
+    except HTTPException:
+        return None

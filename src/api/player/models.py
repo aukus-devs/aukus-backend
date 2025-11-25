@@ -102,3 +102,9 @@ class UnlockableSkinsResponse(ApiModel):
 
 class UnlockSkinRequest(ApiModel):
     skin_id: int
+
+
+class UpdatePlayerMoveRequest(ApiModel):
+    item_review: str | None = None
+    item_rating: float | None = None
+    vod_links: str | None = None

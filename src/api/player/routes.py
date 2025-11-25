@@ -25,12 +25,12 @@ from src.api.player.models import (
     PlayerStatsResponse,
     UnlockableSkinsResponse,
     UnlockSkinRequest,
+    UpdatePlayerMoveRequest,
 )
 from src.api.player.utils import (
     check_achievements_completion,
     fetch_stream_category_duration,
     get_dice_roll_from_eventlab,
-    make_kick_dice_roll_from_eventlab,
     send_player_move_notification,
 )
 from src.consts import MAP_LADDERS, MAP_SNAKES
@@ -52,7 +52,8 @@ from src.db.queries.player_moves import (
     process_kick_logic,
 )
 from src.enums import GameDifficulty, GameLength, PlayerMoveType
-from src.utils.auth import get_current_player, security
+from src.utils.auth import get_current_player, get_token_payload, security
+from src.utils.permissions import require_edit_move_permission
 
 router = APIRouter(tags=["players"])
 
@@ -489,3 +490,36 @@ async def unlock_skin(
     )
     db.add(new_skin)
     return 201
+
+
+@router.patch("/api/players/moves/{move_id}", status_code=200)
+async def update_player_move(
+    move_id: int,
+    request: UpdatePlayerMoveRequest,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    current_user: Annotated[Player, Depends(get_current_player)],
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+):
+    token_payload = get_token_payload(credentials)
+    if not token_payload:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    move_query = await db.execute(select(PlayerMove).where(PlayerMove.id == move_id))
+    move: PlayerMove | None = move_query.scalars().first()
+
+    if not move:
+        raise HTTPException(status_code=404, detail="Move not found")
+
+    require_edit_move_permission(current_user, move, token_payload)
+
+    if request.item_review is not None:
+        move.item_review = request.item_review
+    if request.item_rating is not None:
+        move.item_rating = request.item_rating
+    if request.vod_links is not None:
+        move.vod_links = request.vod_links
+
+    await db.flush()
+    await db.commit()
+
+    return {"success": True}
