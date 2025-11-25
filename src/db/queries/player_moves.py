@@ -211,11 +211,25 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         for r in avg_results
     }
 
+    # achievements for previous events, don't count in scores
+    excluded_achievements = [162, 165, 138, 135, 132, 129]
+
     unlocked_achievements_query = (
         select(text("player_slug"), text("is_first"), func.count("*").label("count"))
         .select_from(text("player_achievements"))
+        .where(
+            text(
+                f"achievement_id NOT IN ({', '.join(map(str, excluded_achievements))})"
+            )
+        )
         .group_by(text("player_slug"), text("is_first"))
     )
+
+    # unlocked_achievements_query = (
+    #     select(text("player_slug"), text("is_first"), func.count("*").label("count"))
+    #     .select_from(text("player_achievements"))
+    #     .group_by(text("player_slug"), text("is_first"))
+    # )
 
     unlocked_achievements = await db.execute(unlocked_achievements_query)
     achievement_counts = unlocked_achievements.mappings().all()
@@ -232,9 +246,9 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         else:
             achievements_by_player[slug]["regular"] = count
 
-    print("DEBUG")
-    print(achievement_counts)
-    print(achievements_by_player)
+    # print("DEBUG")
+    # print(achievement_counts)
+    # print(achievements_by_player)
 
     return [
         {
