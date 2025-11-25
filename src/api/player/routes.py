@@ -51,9 +51,8 @@ from src.db.queries.player_moves import (
     inc_shit,
     process_kick_logic,
 )
-from src.enums import GameDifficulty, GameLength, PlayerMoveType
+from src.enums import GameDifficulty, GameLength, PlayerMoveType, UserRole
 from src.utils.auth import get_current_player, get_token_payload, security
-from src.utils.permissions import require_edit_move_permission
 
 router = APIRouter(tags=["players"])
 
@@ -497,7 +496,6 @@ async def update_player_move(
     move_id: int,
     request: UpdatePlayerMoveRequest,
     db: Annotated[AsyncSession, Depends(get_db)],
-    current_user: Annotated[Player, Depends(get_current_player)],
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
 ):
     token_payload = get_token_payload(credentials)
@@ -510,7 +508,15 @@ async def update_player_move(
     if not move:
         raise HTTPException(status_code=404, detail="Move not found")
 
-    require_edit_move_permission(current_user, move, token_payload)
+    if not (
+        UserRole.ADMIN in token_payload.roles
+        or token_payload.slug == move.player_slug
+        or move.player_slug in token_payload.moder_for
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to edit this move",
+        )
 
     if request.item_review is not None:
         move.item_review = request.item_review
