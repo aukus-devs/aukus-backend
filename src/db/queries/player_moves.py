@@ -232,6 +232,10 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         else:
             achievements_by_player[slug]["regular"] = count
 
+    print("DEBUG")
+    print(achievement_counts)
+    print(achievements_by_player)
+
     return [
         {
             **dict(r),
@@ -283,39 +287,39 @@ def inc_shit(p: Player, count: int) -> None:
     p.shit_stacks = max(0, (p.shit_stacks or 0) + count)
 
 
-async def create_shit_kick_move(
-    db: AsyncSession,
-    *,
-    victim_slug: str,
-    from_player_slug: str,
-    dice: int,
-    dice_roll_id: int,
-) -> None:
-    last = await get_players_latest_moves(db, slugs=[victim_slug])
-    last_move = last.get(victim_slug)
-    cell_from = int(last_move.cell_to) if last_move else 0
-    cell_to = max(0, cell_from - dice)
+# async def create_shit_kick_move(
+#     db: AsyncSession,
+#     *,
+#     victim_slug: str,
+#     from_player_slug: str,
+#     dice: int,
+#     dice_roll_id: int,
+# ) -> None:
+#     last = await get_players_latest_moves(db, slugs=[victim_slug])
+#     last_move = last.get(victim_slug)
+#     cell_from = int(last_move.cell_to) if last_move else 0
+#     cell_to = max(0, cell_from - dice)
 
-    move = PlayerMove(
-        player_slug=victim_slug,
-        type=PlayerMoveType.SHIT_KICK.value,
-        item_title="",
-        item_review="",
-        item_rating=0.0,
-        item_duration=0,
-        item_length=None,
-        vod_links=None,
-        game_id=None,
-        cover_image_url=None,
-        difficulty_level=0,
-        cell_from=cell_from,
-        cell_to=cell_to,
-        dice_roll_id=dice_roll_id,
-        dice_roll_sum=dice,
-        dice_roll=str([dice]),
-        from_player_slug=from_player_slug,
-    )
-    db.add(move)
+#     move = PlayerMove(
+#         player_slug=victim_slug,
+#         type=PlayerMoveType.SHIT_KICK.value,
+#         item_title="",
+#         item_review="",
+#         item_rating=0.0,
+#         item_duration=0,
+#         item_length=None,
+#         vod_links=None,
+#         game_id=None,
+#         cover_image_url=None,
+#         difficulty_level=0,
+#         cell_from=cell_from,
+#         cell_to=cell_to,
+#         dice_roll_id=dice_roll_id,
+#         dice_roll_sum=dice,
+#         dice_roll=str([dice]),
+#         from_player_slug=from_player_slug,
+#     )
+#     db.add(move)
 
 
 async def process_kick_logic(
