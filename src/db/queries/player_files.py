@@ -1,7 +1,8 @@
 from collections.abc import Iterable
-from typing import cast
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import func, select
+
 from src.db.db_models import PlayerFile
 
 

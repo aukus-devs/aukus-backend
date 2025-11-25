@@ -13,7 +13,6 @@ class PlayerMoveType(Enum):
     DROP = "drop"
     MOVIE = "movie"
     SHEIKH_MOMENT = "sheikh_moment"
-    SHIT_KICK = "shit_kick"
 
 
 class UserRole(Enum):
