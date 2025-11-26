@@ -299,7 +299,7 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
                 for move in moves
                 if move.type == PlayerMoveType.SHEIKH_MOMENT.value
             ]
-            return len(sheikh_moves) >= 3
+            return len(sheikh_moves) >= 2
         case "rate-10":
             return (
                 last_move.item_rating == 10
