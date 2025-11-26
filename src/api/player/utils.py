@@ -301,9 +301,15 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
             ]
             return len(sheikh_moves) >= 3
         case "rate-10":
-            return last_move.item_rating == 10
+            return (
+                last_move.item_rating == 10
+                and last_move.type == PlayerMoveType.COMPLETED.value
+            )
         case "rate-0":
-            return last_move.item_rating == 0
+            return (
+                last_move.item_rating == 0
+                and last_move.type == PlayerMoveType.COMPLETED.value
+            )
         case "complete-easy":
             return (
                 last_move.type == PlayerMoveType.COMPLETED.value
