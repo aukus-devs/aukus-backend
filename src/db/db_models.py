@@ -174,3 +174,12 @@ class Donation(DbBase):
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+class ShitKicks(DbBase):
+    __tablename__: str = "shit_kicks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    created_at: Mapped[int] = mapped_column(Integer, default=utc_now_ts)
+    player_slug: Mapped[str] = mapped_column(String(255), nullable=False)
+    target_player_slug: Mapped[str] = mapped_column(String(255), nullable=True)
+    result: Mapped[str] = mapped_column(String(255), nullable=False)

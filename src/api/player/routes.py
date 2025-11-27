@@ -39,7 +39,7 @@ from src.db.db_models import (
     Player,
     PlayerMove,
     PlayerSkin,
-    Skin,
+    Skin
 )
 from src.db.db_session import get_db
 from src.db.queries.player_moves import (
@@ -51,6 +51,7 @@ from src.db.queries.player_moves import (
     inc_shit,
     process_kick_logic,
 )
+from src.db.queries.shit_kick import create_kick_shit_event
 from src.enums import GameDifficulty, GameLength, PlayerMoveType, UserRole
 from src.utils.auth import get_current_player, get_token_payload, security
 
@@ -394,6 +395,8 @@ async def kick_player(
             kicker=current_user,
             target=target,
         )
+        await create_kick_shit_event(
+            db, player_slug=current_user.slug, target_slug=target.slug, result=str(result_type.value))
         await db.flush()
         await db.commit()
         return KickResponse(result_type=result_type)
@@ -414,6 +417,8 @@ async def add_shit(
         raise HTTPException(status_code=400, detail="Invalid amount")
 
     inc_shit(current_user, amount)
+    await create_kick_shit_event(
+        db, player_slug=current_user.slug, result=str('shit_added'))
     await db.flush()
     await db.commit()
     return HTTPException(status_code=200)
@@ -434,7 +439,8 @@ async def make_shield(
     else:
         inc_shit(current_user, -10)
         inc_shield(current_user, 3)
-
+    await create_kick_shit_event(
+        db, player_slug=current_user.slug, result=str('shield_added'))
     await db.flush()
     await db.commit()
     return HTTPException(status_code=200)
