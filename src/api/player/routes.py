@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import func, or_, select  # pyright: ignore[reportUnknownVariableType]
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,13 +34,7 @@ from src.api.player.utils import (
     send_player_move_notification,
 )
 from src.consts import MAP_LADDERS, MAP_SNAKES
-from src.db.db_models import (
-    Achievement,
-    Player,
-    PlayerMove,
-    PlayerSkin,
-    Skin
-)
+from src.db.db_models import Achievement, Player, PlayerMove, PlayerSkin, Skin
 from src.db.db_session import get_db
 from src.db.queries.player_moves import (
     get_all_players,
@@ -291,6 +285,7 @@ async def finish_player_move(
                 dice_roll_sum=dice_roll_sum,
                 game_id=last_move.game_id,
                 cover_image_url=last_move.cover_image_url,
+                item_duration=last_move.item_duration,
             )
         except Exception as e:
             logging.warning(f"Failed to send move notification: {e}")
@@ -396,7 +391,11 @@ async def kick_player(
             target=target,
         )
         await create_kick_shit_event(
-            db, player_slug=current_user.slug, target_slug=target.slug, result=str(result_type.value))
+            db,
+            player_slug=current_user.slug,
+            target_slug=target.slug,
+            result=str(result_type.value),
+        )
         await db.flush()
         await db.commit()
         return KickResponse(result_type=result_type)
@@ -418,7 +417,8 @@ async def add_shit(
 
     inc_shit(current_user, amount)
     await create_kick_shit_event(
-        db, player_slug=current_user.slug, result=str('shit_added'))
+        db, player_slug=current_user.slug, result=str("shit_added")
+    )
     await db.flush()
     await db.commit()
     return HTTPException(status_code=200)
@@ -440,7 +440,8 @@ async def make_shield(
         inc_shit(current_user, -10)
         inc_shield(current_user, 3)
     await create_kick_shit_event(
-        db, player_slug=current_user.slug, result=str('shield_added'))
+        db, player_slug=current_user.slug, result=str("shield_added")
+    )
     await db.flush()
     await db.commit()
     return HTTPException(status_code=200)

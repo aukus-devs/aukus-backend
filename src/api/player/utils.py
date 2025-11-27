@@ -449,6 +449,7 @@ async def send_player_move_notification(
     dice_roll_sum: int | None = None,
     game_id: int | None = None,
     cover_image_url: str | None = None,
+    item_duration: int = 0,
 ) -> bool:
     auth_headers = {"Authorization": f"Bearer {token}"}
 
@@ -464,6 +465,7 @@ async def send_player_move_notification(
         "dice_roll_sum": dice_roll_sum,
         "game_id": game_id,
         "cover_image_url": cover_image_url,
+        "item_duration": item_duration,
     }
 
     try:
