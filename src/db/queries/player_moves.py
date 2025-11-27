@@ -76,9 +76,12 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
 
     games_0_4 = func.sum(
         case(
-            and_(
-                pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_0_4.value,
+            (
+                and_(
+                    pm.type == PlayerMoveType.COMPLETED.value,
+                    pm.item_length == GameLength.T_0_4.value,
+                ),
+                1,
             ),
             else_=0,
         )
@@ -86,9 +89,12 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
 
     games_5_10 = func.sum(
         case(
-            and_(
-                pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_5_10.value,
+            (
+                and_(
+                    pm.type == PlayerMoveType.COMPLETED.value,
+                    pm.item_length == GameLength.T_5_10.value,
+                ),
+                1,
             ),
             else_=0,
         )
@@ -96,9 +102,12 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
 
     games_11_16 = func.sum(
         case(
-            and_(
-                pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_11_16.value,
+            (
+                and_(
+                    pm.type == PlayerMoveType.COMPLETED.value,
+                    pm.item_length == GameLength.T_11_16.value,
+                ),
+                1,
             ),
             else_=0,
         )
@@ -106,9 +115,12 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
 
     games_17_24 = func.sum(
         case(
-            and_(
-                pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_17_24.value,
+            (
+                and_(
+                    pm.type == PlayerMoveType.COMPLETED.value,
+                    pm.item_length == GameLength.T_17_24.value,
+                ),
+                1,
             ),
             else_=0,
         )
@@ -116,9 +128,12 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
 
     games_25_40 = func.sum(
         case(
-            and_(
-                pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_25_40.value,
+            (
+                and_(
+                    pm.type == PlayerMoveType.COMPLETED.value,
+                    pm.item_length == GameLength.T_25_40.value,
+                ),
+                1,
             ),
             else_=0,
         )
@@ -126,9 +141,12 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
 
     games_40_plus = func.sum(
         case(
-            and_(
-                pm.type == PlayerMoveType.COMPLETED.value,
-                pm.item_length == GameLength.T_40_PLUS.value,
+            (
+                and_(
+                    pm.type == PlayerMoveType.COMPLETED.value,
+                    pm.item_length == GameLength.T_40_PLUS.value,
+                ),
+                1,
             ),
             else_=0,
         )
