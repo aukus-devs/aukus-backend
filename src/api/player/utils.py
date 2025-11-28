@@ -195,6 +195,8 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
 
     movies = [move for move in moves if move.type == PlayerMoveType.MOVIE.value]
 
+    moshna_players = {"melharucos"}
+
     match achievement.code:
         case "visit-1":
             return cell_row(last_move.cell_to) == 1
@@ -385,6 +387,8 @@ def check_achievement_completion(achievement: Achievement, moves: list[PlayerMov
         case "return-to-0":
             max_pos = max(move.cell_to for move in moves)
             return last_move.cell_to == 0 and max_pos > 0
+        case "moshna":
+            return last_move.player_slug in moshna_players
         case _:
             return False
 
