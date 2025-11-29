@@ -30,6 +30,7 @@ class PlayerStatsItem(ApiModel):
     snakes_moves_sum: int
     first_achievements: int
     regular_achievements: int
+    games_time: int
 
 
 class PlayerStatsResponse(ApiModel):

@@ -74,6 +74,8 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
     ladders = func.sum(case((pm.ladder_from.is_not(None), 1), else_=0)).label("ladders")
     snakes = func.sum(case((pm.snake_from.is_not(None), 1), else_=0)).label("snakes")
 
+    games_time = func.sum(pm.item_duration).label("games_time")
+
     games_0_4 = func.sum(
         case(
             (
@@ -202,6 +204,7 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
             # func.avg(per_row_avg.c.avg_roll_per_row).label("average_dice_roll"),
             ladders_moves_sum,
             snakes_moves_sum,
+            games_time,
         )
         .select_from(pm)
         .group_by(pm.player_slug)
@@ -317,6 +320,7 @@ def inc_shield(p: Player, count: int) -> None:
 
 def inc_shit(p: Player, count: int) -> None:
     p.shit_stacks = max(0, (p.shit_stacks or 0) + count)
+
 
 async def process_kick_logic(
     *,

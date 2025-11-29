@@ -107,6 +107,7 @@ async def player_stats(
                     snakes_moves_sum=0,
                     first_achievements=0,
                     regular_achievements=0,
+                    games_time=0,
                 )
             )
 
