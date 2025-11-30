@@ -142,6 +142,7 @@ async def get_event_data(
                 else a.description,
                 reward_skin_id=a.reward_skin_id,
                 visibility=visibility,
+                points=a.points,
             )
         )
 

@@ -13,7 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.db_models import Player, PlayerMove
+from src.db.db_models import Achievement, Player, PlayerAchievement, PlayerMove
 from src.enums import GameLength, PlayerKickResult, PlayerMoveType
 
 
@@ -232,25 +232,20 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         for r in avg_results
     }
 
-    # achievements for previous events, don't count in scores
-    excluded_achievements = [162, 165, 138, 135, 132, 129]
+    exclude_achievements_query = await db.execute(
+        select(Achievement.id).where(Achievement.points == 0)
+    )
+    exclude_achievements: list[int] = exclude_achievements_query.scalars().all()
 
     unlocked_achievements_query = (
-        select(text("player_slug"), text("is_first"), func.count("*").label("count"))
-        .select_from(text("player_achievements"))
-        .where(
-            text(
-                f"achievement_id NOT IN ({', '.join(map(str, excluded_achievements))})"
-            )
+        select(
+            PlayerAchievement.player_slug,
+            PlayerAchievement.is_first,
+            func.count("*").label("count"),
         )
-        .group_by(text("player_slug"), text("is_first"))
+        .where(PlayerAchievement.achievement_id.not_in(exclude_achievements))
+        .group_by(PlayerAchievement.player_slug, PlayerAchievement.is_first)
     )
-
-    # unlocked_achievements_query = (
-    #     select(text("player_slug"), text("is_first"), func.count("*").label("count"))
-    #     .select_from(text("player_achievements"))
-    #     .group_by(text("player_slug"), text("is_first"))
-    # )
 
     unlocked_achievements = await db.execute(unlocked_achievements_query)
     achievement_counts = unlocked_achievements.mappings().all()

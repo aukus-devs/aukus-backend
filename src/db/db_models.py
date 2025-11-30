@@ -142,6 +142,7 @@ class Achievement(DbBase):
     description: Mapped[str] = mapped_column(Text, nullable=False)
     reward_skin_id: Mapped[int] = mapped_column(Integer, nullable=False)
     code: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    points: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
 
 class PlayerAchievement(DbBase):
@@ -174,6 +175,7 @@ class Donation(DbBase):
     amount: Mapped[float] = mapped_column(Float, nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
 
 class ShitKicks(DbBase):
     __tablename__: str = "shit_kicks"

@@ -81,6 +81,7 @@ class AchievementItem(ApiModel):
     description: str
     reward_skin_id: int
     visibility: AchievementVisibility
+    points: int
 
 
 class ChatMessageItem(ApiModel):
