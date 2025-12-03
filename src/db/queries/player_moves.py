@@ -61,7 +61,9 @@ class AchievementCounts(TypedDict):
 async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | float]]:
     pm = PlayerMove
 
-    total_moves = func.count().label("total_moves")
+    total_moves = func.sum(case((pm.dice_roll_id.is_not(None), 1), else_=0)).label(
+        "total_moves"
+    )
     games_completed = func.sum(
         case((pm.type == PlayerMoveType.COMPLETED.value, 1), else_=0)
     ).label("games_completed")
