@@ -8,7 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import func, or_, select  # pyright: ignore[reportUnknownVariableType]
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.event_data.models import UnlockedAchievementItem
+from src.api.event_data.models import PlayerMoveItem, UnlockedAchievementItem
 from src.api.player.models import (
     AddShitRequest,
     CreatePlayerMoveRequest,
@@ -18,7 +18,6 @@ from src.api.player.models import (
     KickRequest,
     KickResponse,
     PlayerChangeSkinRequest,
-    PlayerMoveItem,
     PlayerMovesQuery,
     PlayerMovesResponse,
     PlayerStatsItem,
@@ -108,6 +107,9 @@ async def player_stats(
                     first_achievements=0,
                     regular_achievements=0,
                     games_time=0,
+                    average_rating=0,
+                    shits_thrown=0,
+                    shields_used=0,
                 )
             )
 
@@ -273,7 +275,7 @@ async def finish_player_move(
 
     async def send_notification_background():
         try:
-            await send_player_move_notification(
+            _ = await send_player_move_notification(
                 token=credentials.credentials,
                 username=current_user.slug,
                 slug=current_user.slug,
@@ -291,7 +293,7 @@ async def finish_player_move(
         except Exception as e:
             logging.warning(f"Failed to send move notification: {e}")
 
-    asyncio.create_task(send_notification_background())
+    _ = asyncio.create_task(send_notification_background())
 
     return FinishPlayerMoveResponse(
         move_to=position_before_snake_or_ladder,
@@ -395,7 +397,7 @@ async def kick_player(
             db,
             player_slug=current_user.slug,
             target_slug=target.slug,
-            result=str(result_type.value),
+            result=result_type.value,
         )
         await db.flush()
         await db.commit()
@@ -417,9 +419,7 @@ async def add_shit(
         raise HTTPException(status_code=400, detail="Invalid amount")
 
     inc_shit(current_user, amount)
-    await create_kick_shit_event(
-        db, player_slug=current_user.slug, result="shit_added"
-    )
+    await create_kick_shit_event(db, player_slug=current_user.slug, result="shit_added")
     await db.flush()
     await db.commit()
     return HTTPException(status_code=200)

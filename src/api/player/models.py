@@ -31,6 +31,9 @@ class PlayerStatsItem(ApiModel):
     first_achievements: int
     regular_achievements: int
     games_time: int
+    average_rating: float
+    shits_thrown: int
+    shields_used: int
 
 
 class PlayerStatsResponse(ApiModel):

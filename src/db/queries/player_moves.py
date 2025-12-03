@@ -13,7 +13,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.db.db_models import Achievement, Player, PlayerAchievement, PlayerMove
+from src.db.db_models import (
+    Achievement,
+    Player,
+    PlayerAchievement,
+    PlayerMove,
+    ShitKicks,
+)
 from src.enums import GameLength, PlayerKickResult, PlayerMoveType
 
 
@@ -75,6 +81,7 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
     snakes = func.sum(case((pm.snake_from.is_not(None), 1), else_=0)).label("snakes")
 
     games_time = func.sum(pm.item_duration).label("games_time")
+    average_rating = func.avg(pm.item_rating).label("average_rating")
 
     games_0_4 = func.sum(
         case(
@@ -205,6 +212,7 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
             ladders_moves_sum,
             snakes_moves_sum,
             games_time,
+            average_rating,
         )
         .select_from(pm)
         .group_by(pm.player_slug)
@@ -262,24 +270,85 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         else:
             achievements_by_player[slug]["regular"] = count
 
-    # print("DEBUG")
-    # print(achievement_counts)
-    # print(achievements_by_player)
+    shits_thrown_select = (
+        select(
+            ShitKicks.player_slug,
+            func.sum(
+                case(
+                    (
+                        ShitKicks.result.in_(
+                            [
+                                PlayerKickResult.WIN.value,
+                                PlayerKickResult.SHIELD_REMOVED.value,
+                            ]
+                        ),
+                        1,
+                    ),
+                    else_=0,
+                )
+            ).label("amount"),
+        )
+        .select_from(ShitKicks)
+        .group_by(ShitKicks.player_slug)
+    )
 
-    return [
-        {
-            **dict(r),
-            "map_position": int(map_pos_by_slug.get(r["player_slug"], 0)),  # pyright: ignore[reportAny]
-            "average_dice_roll": avg_roll_by_player.get(r["player_slug"], 0.0),
-            "first_achievements": achievements_by_player.get(r["player_slug"], {}).get(
-                "first", 0
-            ),
-            "regular_achievements": achievements_by_player.get(
-                r["player_slug"], {}
-            ).get("regular", 0),
-        }
-        for r in rows
-    ]
+    shits_thrown_query = await db.execute(shits_thrown_select)
+    shits_thrown = shits_thrown_query.mappings().all()
+
+    shits_thrown_by_player: dict[str, int] = {}
+    for record in shits_thrown:
+        print("shit -->>", record)
+        slug = record["player_slug"]
+        amount = record["amount"]
+        shits_thrown_by_player[slug] = amount
+
+    shields_used_select = (
+        select(
+            ShitKicks.target_player_slug,
+            func.sum(
+                case(
+                    (
+                        ShitKicks.result == PlayerKickResult.SHIELD_REMOVED.value,
+                        1,
+                    ),
+                    else_=0,
+                )
+            ).label("amount"),
+        )
+        .where(ShitKicks.target_player_slug.is_not(None))
+        .select_from(ShitKicks)
+        .group_by(ShitKicks.target_player_slug)
+    )
+
+    shields_used_by_player_query = await db.execute(shields_used_select)
+    shields_used = shields_used_by_player_query.mappings().all()
+
+    shields_used_by_player: dict[str, int] = {}
+    for record in shields_used:
+        slug = record["target_player_slug"]
+        amount = record["amount"]
+        shields_used_by_player[slug] = amount
+
+    result: list[dict[str, int | float | str]] = []
+
+    for r in rows:
+        item = dict(r)
+
+        slug: str = r["player_slug"]
+        achievements = achievements_by_player.get(slug, {"first": 0, "regular": 0})
+
+        item["map_position"] = map_pos_by_slug.get(slug, 0)
+        item["average_dice_roll"] = avg_roll_by_player.get(slug, 0.0)
+
+        item["first_achievements"] = achievements.get("first", 0)
+        item["regular_achievements"] = achievements.get("regular", 0)
+
+        item["shields_used"] = shields_used_by_player.get(slug, 0)
+        item["shits_thrown"] = shits_thrown_by_player.get(slug, 0)
+
+        result.append(item)
+
+    return result
 
 
 async def get_all_players(db: AsyncSession) -> list[Player]:
