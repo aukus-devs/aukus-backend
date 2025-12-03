@@ -418,7 +418,7 @@ async def add_shit(
 
     inc_shit(current_user, amount)
     await create_kick_shit_event(
-        db, player_slug=current_user.slug, result=str("shit_added")
+        db, player_slug=current_user.slug, result="shit_added"
     )
     await db.flush()
     await db.commit()
@@ -441,7 +441,7 @@ async def make_shield(
         inc_shit(current_user, -10)
         inc_shield(current_user, 3)
     await create_kick_shit_event(
-        db, player_slug=current_user.slug, result=str("shield_added")
+        db, player_slug=current_user.slug, result="shield_added"
     )
     await db.flush()
     await db.commit()
