@@ -471,7 +471,7 @@ async def send_player_move_notification(
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 f"{EVENTLAB_API_URL}/api/notifications/player-move",
-                json=payload.model_dump_json(),
+                json=payload.model_dump(),
                 headers=auth_headers,
             )
             if response.status_code == 200:
