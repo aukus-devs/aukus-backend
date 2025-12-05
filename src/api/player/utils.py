@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.player.models import DiceRollResult
+from src.api.player.models import DiceRollResult, PlayerMoveNotificationRequest
 from src.config import EVENTLAB_API_URL
 from src.consts import LONGEST_LADDER, LONGEST_SNAKE
 from src.db.db_models import (
@@ -444,39 +444,34 @@ async def send_player_move_notification(
     token: str,
     username: str,
     slug: str,
-    move_type: str,
-    item_title: str,
-    item_review: str,
-    item_rating: float,
-    cell_from: int,
-    cell_to: int,
-    dice_roll_sum: int | None = None,
-    game_id: int | None = None,
-    cover_image_url: str | None = None,
-    item_duration: int = 0,
+    move: PlayerMove,
 ) -> bool:
     auth_headers = {"Authorization": f"Bearer {token}"}
 
-    payload = {
-        "username": username,
-        "slug": slug,
-        "move_type": move_type,
-        "item_title": item_title,
-        "item_review": item_review,
-        "item_rating": item_rating,
-        "cell_from": cell_from,
-        "cell_to": cell_to,
-        "dice_roll_sum": dice_roll_sum,
-        "game_id": game_id,
-        "cover_image_url": cover_image_url,
-        "item_duration": item_duration,
-    }
+    payload = PlayerMoveNotificationRequest.model_validate(
+        {
+            "username": username,
+            "slug": slug,
+            "move_type": move.type,
+            "item_title": move.item_title,
+            "item_review": move.item_review,
+            "item_rating": move.item_rating,
+            "cell_from": move.cell_from,
+            "cell_to": move.cell_to,
+            "dice_roll_sum": move.dice_roll_sum,
+            "game_id": move.game_id,
+            "cover_image_url": move.cover_image_url,
+            "item_duration": move.item_duration,
+            "snake": move.snake_from,
+            "ladder": move.ladder_from,
+        }
+    )
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 f"{EVENTLAB_API_URL}/api/notifications/player-move",
-                json=payload,
+                json=payload.model_dump_json(),
                 headers=auth_headers,
             )
             if response.status_code == 200:

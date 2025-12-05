@@ -112,3 +112,20 @@ class UpdatePlayerMoveRequest(ApiModel):
     item_review: str | None = None
     item_rating: float | None = None
     vod_links: str | None = None
+
+
+class PlayerMoveNotificationRequest(ApiModel):
+    username: str
+    slug: str
+    move_type: str
+    item_title: str
+    item_review: str
+    item_rating: float
+    cell_from: int
+    cell_to: int
+    dice_roll_sum: int | None = None
+    game_id: int | None = None
+    cover_image_url: str | None = None
+    item_duration: int = 0
+    snake: int | None = None
+    ladder: int | None = None
