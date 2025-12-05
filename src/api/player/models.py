@@ -34,6 +34,8 @@ class PlayerStatsItem(ApiModel):
     average_rating: float
     shits_thrown: int
     shields_used: int
+    best_game: PlayerMoveItem | None
+    worst_game: PlayerMoveItem | None
 
 
 class PlayerStatsResponse(ApiModel):

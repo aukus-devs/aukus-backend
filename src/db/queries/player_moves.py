@@ -7,6 +7,7 @@ from sqlalchemy import (
     and_,  # pyright: ignore[reportUnknownVariableType]
     case,
     cast,
+    desc,
     func,
     select,
     text,
@@ -331,6 +332,58 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
         amount = record["amount"]
         shields_used_by_player[slug] = amount
 
+    best_game_sub_query = (
+        select(
+            PlayerMove.id,
+            func.row_number()
+            .over(
+                partition_by=PlayerMove.player_slug,
+                order_by=(desc(PlayerMove.item_rating), desc(PlayerMove.item_duration)),
+            )
+            .label("rn"),
+        )
+        .where(PlayerMove.type == PlayerMoveType.COMPLETED.value)
+        .subquery()
+    )
+
+    best_game_select = (
+        select(PlayerMove)
+        .join(best_game_sub_query, PlayerMove.id == best_game_sub_query.c.id)
+        .where(best_game_sub_query.c.rn == 1)
+    )
+
+    best_game_query = await db.execute(best_game_select)
+    best_game_results: list[PlayerMove] = best_game_query.scalars().all()
+    best_game_per_player: dict[str, PlayerMove] = {}
+    for record in best_game_results:
+        best_game_per_player[record.player_slug] = record
+
+    worst_game_sub_query = (
+        select(
+            PlayerMove.id,
+            func.row_number()
+            .over(
+                partition_by=PlayerMove.player_slug,
+                order_by=(desc(PlayerMove.item_rating), desc(PlayerMove.item_duration)),
+            )
+            .label("rn"),
+        )
+        .where(PlayerMove.type == PlayerMoveType.COMPLETED.value)
+        .subquery()
+    )
+
+    worst_game_select = (
+        select(PlayerMove)
+        .join(worst_game_sub_query, PlayerMove.id == worst_game_sub_query.c.id)
+        .where(worst_game_sub_query.c.rn == 1)
+    )
+
+    worst_game_query = await db.execute(worst_game_select)
+    worst_game_results: list[PlayerMove] = worst_game_query.scalars().all()
+    worst_game_per_player: dict[str, PlayerMove] = {}
+    for record in worst_game_results:
+        worst_game_per_player[record.player_slug] = record
+
     result: list[dict[str, int | float | str]] = []
 
     for r in rows:
@@ -347,6 +400,9 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
 
         item["shields_used"] = shields_used_by_player.get(slug, 0)
         item["shits_thrown"] = shits_thrown_by_player.get(slug, 0)
+
+        item["best_game"] = best_game_per_player.get(slug)
+        item["worst_game"] = worst_game_per_player.get(slug)
 
         result.append(item)
 
