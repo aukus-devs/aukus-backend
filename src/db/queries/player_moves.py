@@ -299,7 +299,7 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
 
     shits_thrown_by_player: dict[str, int] = {}
     for record in shits_thrown:
-        print("shit -->>", record)
+        # print("shit -->>", record)
         slug = record["player_slug"]
         amount = record["amount"]
         shits_thrown_by_player[slug] = amount
