@@ -4,7 +4,8 @@ from typing import TypedDict
 
 from sqlalchemy import (
     Float,
-    and_,  # pyright: ignore[reportUnknownVariableType]
+    and_,
+    asc,  # pyright: ignore[reportUnknownVariableType]
     case,
     cast,
     desc,
@@ -364,7 +365,7 @@ async def get_players_stats(db: AsyncSession) -> list[dict[str, str | int | floa
             func.row_number()
             .over(
                 partition_by=PlayerMove.player_slug,
-                order_by=(desc(PlayerMove.item_rating), desc(PlayerMove.item_duration)),
+                order_by=(asc(PlayerMove.item_rating), desc(PlayerMove.item_duration)),
             )
             .label("rn"),
         )
