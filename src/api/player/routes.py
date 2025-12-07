@@ -167,6 +167,20 @@ async def create_player_move(
     db.add(move)
     await db.flush()
 
+    if request.type == PlayerMoveType.REROLL:
+        async def send_notification_background():
+            try:
+                _ = await send_player_move_notification(
+                    token=credentials.credentials,
+                    username=current_user.slug,
+                    slug=current_user.slug,
+                    move=move,
+                )
+            except Exception as e:
+                logging.warning(f"Failed to send move notification: {e}")
+
+        _ = asyncio.create_task(send_notification_background())
+
     return CreatePlayerMoveResponse(move_id=move.id)
 
 
