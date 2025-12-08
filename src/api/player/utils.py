@@ -422,20 +422,17 @@ async def fetch_stream_category_duration(
                 + f"{duration}s ({data.sessions_count} sessions)"
             )
 
-        if duration > 0:
-            close_response = await client.post(
-                f"{EVENTLAB_API_URL}/api/streams/close-game-categories",
-                json={"slug": current_user.slug, "game_name": category},
-                headers=auth_headers,
+        close_response = await client.post(
+            f"{EVENTLAB_API_URL}/api/streams/close-game-categories",
+            json={"slug": current_user.slug, "game_name": category},
+            headers=auth_headers,
+        )
+        if close_response.status_code == 200:
+            close_data = CloseCategoriesResponse.model_validate(close_response.json())
+            logging.info(
+                f"Closed {close_data.closed} categories for "
+                + f"{current_user.slug} - {category}"
             )
-            if close_response.status_code == 200:
-                close_data = CloseCategoriesResponse.model_validate(
-                    close_response.json()
-                )
-                logging.info(
-                    f"Closed {close_data.closed} categories for "
-                    + f"{current_user.slug} - {category}"
-                )
 
     return duration
 
