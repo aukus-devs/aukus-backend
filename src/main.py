@@ -17,8 +17,7 @@ from src.config import (
     TELEGRAM_ALERT_THREAD_ID,
     setup_logging,
 )
-from src.db.db_models import Player
-from src.utils.auth import get_admin_player
+from src.utils.auth import TokenPayload, get_admin_token
 
 setup_logging()
 
@@ -107,7 +106,7 @@ _ = app.middleware("http")(logging_middleware)
 
 @app.get("/api/test/exception")
 async def test_exception(
-    _current_user: Annotated[Player, Depends(get_admin_player)],
+    _current_user: Annotated[TokenPayload, Depends(get_admin_token)],
 ):
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
