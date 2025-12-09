@@ -159,3 +159,21 @@ def get_token_payload(
         return parse_token(token)
     except HTTPException:
         return None
+
+
+async def get_admin_player(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db),
+) -> Player:
+    player = await get_current_player(request, credentials, db, allow_acting=False)
+    token = credentials.credentials
+    payload = parse_token(token)
+    
+    if UserRole.ADMIN not in payload.roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    
+    return player

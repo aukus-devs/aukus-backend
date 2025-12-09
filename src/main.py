@@ -1,4 +1,9 @@
-from fastapi import FastAPI
+import logging
+from collections.abc import Awaitable, Callable
+from typing import Annotated
+
+import httpx
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 import uvicorn
 from src.api.event_data import routes as event_data
 from src.api.canvas import routes as canvas
@@ -6,11 +11,110 @@ from src.api.player import routes as player
 from src.api.rules import routes as rules
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.config import IS_LOCAL, setup_logging
+from src.config import (
+    TELEGRAM_ALERT_BOT_TOKEN,
+    TELEGRAM_ALERT_CHAT_ID,
+    TELEGRAM_ALERT_THREAD_ID,
+    setup_logging,
+)
+from src.db.db_models import Player
+from src.utils.auth import get_admin_player
 
 setup_logging()
 
+logger = logging.getLogger(__name__)
+
+
+async def send_telegram_alert(message: str) -> None:
+    if not TELEGRAM_ALERT_BOT_TOKEN or not TELEGRAM_ALERT_CHAT_ID:
+        return
+
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_ALERT_BOT_TOKEN}/sendMessage"
+        payload: dict[str, str | int] = {
+            "chat_id": TELEGRAM_ALERT_CHAT_ID,
+            "text": message,
+            "parse_mode": "HTML",
+        }
+
+        if TELEGRAM_ALERT_THREAD_ID:
+            payload["message_thread_id"] = int(TELEGRAM_ALERT_THREAD_ID)
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=payload, timeout=5.0)
+            if not response.is_success:
+                logger.error(
+                    f"Telegram API returned non-OK response: Status {response.status_code}, Body: {response.text}"
+                )
+    except Exception as e:
+        logger.error(f"Failed to send Telegram alert: {e}")
+
+
+async def logging_middleware(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    try:
+        response = await call_next(request)
+
+        if response.status_code >= 400:
+            logger.error(
+                f"Failed request: {request.method} {request.url} - Status: {response.status_code}"
+            )
+
+            response_body: bytes = b""
+            async for chunk in response.body_iterator:  # type: ignore[attr-defined,misc]
+                response_body += chunk  # type: ignore[misc]
+
+            body_text: str = ""
+            try:
+                body_text = response_body.decode()  # type: ignore[misc]
+                if body_text:
+                    logger.error(f"Error response body: {body_text}")
+            except Exception as e:
+                logger.error(f"Could not decode response body: {e}")
+
+            if response.status_code >= 500:
+                telegram_message = (
+                    f"<b>Aukus 4 Backend, Server Error >=500</b>\n\n"
+                    f"<b>Method:</b> {request.method}\n"
+                    f"<b>URL:</b> {request.url}\n"
+                    f"<b>Status:</b> {response.status_code}\n"
+                )
+                if body_text:
+                    telegram_message += (
+                        f"\n<b>Response:</b>\n<code>{body_text[:500]}</code>"
+                    )
+
+                await send_telegram_alert(telegram_message)
+
+            return Response(
+                content=response_body,
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                media_type=response.media_type,
+            )
+
+        return response
+    except Exception as e:
+        logger.error(f"Middleware error: {e}")
+        raise
+
+
 app = FastAPI(title="Aukus Backend")
+
+_ = app.middleware("http")(logging_middleware)
+
+
+@app.get("/api/test/exception")
+async def test_exception(
+    _current_user: Annotated[Player, Depends(get_admin_player)],
+):
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail="Test exception for Telegram alert",
+    )
+
+
 app.include_router(canvas.router)
 app.include_router(event_data.router)
 app.include_router(player.router)

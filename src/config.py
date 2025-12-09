@@ -22,6 +22,10 @@ S3_REGION_NAME = os.getenv("S3_REGION_NAME", "ru-central1")
 
 EMOTES_CDN_PROXY = os.getenv("EMOTES_CDN_PROXY", "https://cdn.rhhhhhhh.live/")
 
+TELEGRAM_ALERT_BOT_TOKEN: str = os.getenv("TELEGRAM_ALERT_BOT_TOKEN", "")
+TELEGRAM_ALERT_CHAT_ID = os.getenv("TELEGRAM_ALERT_CHAT_ID", "")
+TELEGRAM_ALERT_THREAD_ID = os.getenv("TELEGRAM_ALERT_THREAD_ID", "")
+
 
 def setup_logging():
     logging.basicConfig(
