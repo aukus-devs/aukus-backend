@@ -3,7 +3,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from typing import Callable
 
-
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
@@ -47,13 +47,41 @@ SessionLocal: Callable[[], AsyncSession] = async_sessionmaker(  # pyright: ignor
 
 async def get_db():
     async with SessionLocal() as session:
+        max_retries = 3
+
         try:
             yield session
-            await session.commit()
+
+            for attempt in range(max_retries):
+                try:
+                    await session.commit()
+                    break
+                except OperationalError as e:
+                    await session.rollback()
+
+                    if "Deadlock found" in str(e) and attempt < max_retries - 1:
+                        await asyncio.sleep(0.05 * (attempt + 1))
+                        continue
+                    raise
+
         except Exception:
             await session.rollback()
             raise
         finally:
+            await session.close()
+
+
+async def get_db_readonly():
+    async with SessionLocal() as session:
+        session.expire_on_commit = False  # pyright: ignore[reportAttributeAccessIssue]
+        session.autoflush = False  # pyright: ignore[reportAttributeAccessIssue]
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.rollback()
             await session.close()
 
 

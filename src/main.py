@@ -1,9 +1,11 @@
 import logging
+import traceback
 from collections.abc import Awaitable, Callable
 from typing import Annotated
 
 import httpx
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi.responses import JSONResponse
 import uvicorn
 from src.api.event_data import routes as event_data
 from src.api.canvas import routes as canvas
@@ -100,6 +102,31 @@ async def logging_middleware(
 
 
 app = FastAPI(title="Aukus Backend")
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    error_type = type(exc).__name__
+    error_message = str(exc)
+
+    logger.error(f"Unhandled exception: {error_type}: {error_message}")
+    logger.error(traceback.format_exc())
+
+    telegram_message = (
+        f"<b>Aukus 4 Backend, Server Error</b>\n\n"
+        f"<b>Method:</b> {request.method}\n"
+        f"<b>URL:</b> {request.url}\n"
+        f"<b>Error Type:</b> {error_type}\n"
+        f"\n<b>Error:</b>\n<code>{error_message[:500]}</code>"
+    )
+
+    await send_telegram_alert(telegram_message)
+
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error", "error_type": error_type},
+    )
+
 
 _ = app.middleware("http")(logging_middleware)
 
