@@ -28,26 +28,26 @@ from src.enums import GameLength, PlayerKickResult, PlayerMoveType
 async def get_players_latest_moves(
     db: AsyncSession, *, slugs: list[str] | None = None
 ) -> dict[str, PlayerMove]:
-    # Base query: optionally filter by slugs first
-    base_stmt = select(PlayerMove)
-    if slugs:
-        base_stmt = base_stmt.where(PlayerMove.player_slug.in_(slugs))
-
-    # Subquery: rank moves per player by id
-    stmt = (
-        select(
-            PlayerMove,
-            func.row_number()
-            .over(partition_by=PlayerMove.player_slug, order_by=PlayerMove.id.desc())
-            .label("rnk"),
-        )
-        .select_from(base_stmt.subquery())
-        .subquery()
+    # 1. Create a CTE (Common Table Expression) that only fetches IDs.
+    # This keeps the temporary data "narrow" and fast.
+    inner_stmt = select(
+        PlayerMove.id,
+        func.row_number()
+        .over(partition_by=PlayerMove.player_slug, order_by=PlayerMove.id.desc())
+        .label("rnk"),
     )
 
-    # Select only the latest (row_number = 1)
+    # Base query: optionally filter by slugs first
+    if slugs:
+        inner_stmt = inner_stmt.where(PlayerMove.player_slug.in_(slugs))
+
+    subquery = inner_stmt.subquery()
+
+    # Subquery: rank moves per player by id
     query = (
-        select(PlayerMove).join(stmt, PlayerMove.id == stmt.c.id).where(stmt.c.rnk == 1)
+        select(PlayerMove)
+        .join(subquery, PlayerMove.id == subquery.c.id)
+        .where(subquery.c.rnk == 1)
     )
 
     result = await db.execute(query)
