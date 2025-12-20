@@ -1,5 +1,6 @@
 # database.py
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from typing import Callable
 
@@ -14,6 +15,8 @@ from src.config import DATABASE_URL
 from src.db.db_models import (
     DbBase,
 )
+
+logger = logging.getLogger(__name__)
 
 is_sqlite = DATABASE_URL.startswith("sqlite")
 
@@ -58,14 +61,18 @@ async def get_db():
                     break
                 except OperationalError as e:
                     await session.rollback()
+                    logger.error(
+                        f"Database OperationalError on commit (attempt {attempt + 1}/{max_retries}): {e}"
+                    )
 
                     if "Deadlock found" in str(e) and attempt < max_retries - 1:
                         await asyncio.sleep(0.05 * (attempt + 1))
                         continue
                     raise
 
-        except Exception:
+        except Exception as e:
             await session.rollback()
+            logger.error(f"Database error in get_db: {e}", exc_info=True)
             raise
         finally:
             await session.close()
@@ -77,8 +84,9 @@ async def get_db_readonly():
         session.autoflush = False  # pyright: ignore[reportAttributeAccessIssue]
         try:
             yield session
-        except Exception:
+        except Exception as e:
             await session.rollback()
+            logger.error(f"Database error in get_db_readonly: {e}", exc_info=True)
             raise
         finally:
             await session.rollback()

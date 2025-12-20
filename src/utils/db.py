@@ -1,12 +1,16 @@
+import logging
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 
 async def safe_commit(session: AsyncSession):
     try:
         await session.commit()
-    except Exception:
+    except Exception as e:
         await session.rollback()
+        logger.error(f"Database error in safe_commit: {e}", exc_info=True)
         raise
 
 

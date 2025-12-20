@@ -201,8 +201,8 @@ async def finish_player_move(
 
     try:
         dice_roll = await get_dice_roll_from_eventlab(request.dice_roll_id)
-    except Exception:
-        logging.exception("Failed to fetch dice roll")
+    except Exception as e:
+        logging.error(f"Failed to fetch dice roll: {e}", exc_info=True)
         raise HTTPException(status_code=400, detail="Failed to fetch dice roll")
 
     dice_roll_sum = sum(dice_roll.roll_values)
@@ -408,8 +408,9 @@ async def kick_player(
         await db.commit()
         return KickResponse(result_type=result_type)
 
-    except Exception:
+    except Exception as e:
         await db.rollback()
+        logging.error(f"Database error in kick_player: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Kick failed")
 
 
