@@ -77,7 +77,7 @@ class PlayerMovesQuery(ApiModel):
     players: list[str] = []
     start_ts: int | None = None
     search_title: str | None = None
-    titles: list[str] = []
+    igdb_ids: list[int] = []
     exclude_ids: list[int] = []
 
 

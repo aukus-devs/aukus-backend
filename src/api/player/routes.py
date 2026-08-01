@@ -84,6 +84,8 @@ async def player_stats(
         if p.slug not in present:
             players.append(
                 PlayerStatsItem(
+                    best_game=None,
+                    worst_game=None,
                     player_slug=p.slug,
                     map_position=0,
                     total_moves=0,
@@ -168,6 +170,7 @@ async def create_player_move(
     await db.flush()
 
     if request.type == PlayerMoveType.REROLL:
+
         async def send_notification_background():
             try:
                 _ = await send_player_move_notification(
@@ -320,8 +323,8 @@ async def get_player_moves(
         query = query.where(PlayerMove.created_at <= params.start_ts)
     if params.search_title and len(params.search_title) >= 3:
         query = query.where(PlayerMove.item_title.ilike(f"%{params.search_title}%"))
-    if params.titles:
-        query = query.where(PlayerMove.item_title.in_(params.titles))
+    if params.igdb_ids:
+        query = query.where(PlayerMove.game_id.in_(params.igdb_ids))
     if params.exclude_ids:
         query = query.where(PlayerMove.id.not_in(params.exclude_ids))
 

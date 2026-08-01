@@ -7,11 +7,21 @@ DB_URL = os.getenv("DB_URL", "")
 
 IS_LOCAL = ENV == "local"
 
-DATABASE_URL = "mysql+asyncmy://root:pass@127.0.0.1:3306/aukus4" if IS_LOCAL else DB_URL
+PORT = int(os.getenv("PORT", 8301))
+
+DATABASE_URL = (
+    os.getenv("AUKUS_DATABASE_URL", "mysql+asyncmy://root:pass@127.0.0.1:3306/aukus4")
+    if IS_LOCAL
+    else DB_URL
+)
 
 TOKEN_SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key")
 
-EVENTLAB_API_URL = "http://localhost:8300" if IS_LOCAL else "https://api.eventlab.dev"
+EVENTLAB_API_URL = (
+    os.getenv("EVENTLAB_API_URL", "http://localhost:8300")
+    if IS_LOCAL
+    else "https://api.eventlab.dev"
+)
 
 S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "eventlab")
 S3_ACCESS_KEY_ID = os.getenv("S3_ACCESS_KEY_ID", "")

@@ -4,16 +4,17 @@ from collections.abc import Awaitable, Callable
 from typing import Annotated
 
 import httpx
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
-from fastapi.responses import JSONResponse
 import uvicorn
-from src.api.event_data import routes as event_data
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 from src.api.canvas import routes as canvas
+from src.api.event_data import routes as event_data
 from src.api.player import routes as player
 from src.api.rules import routes as rules
-from fastapi.middleware.cors import CORSMiddleware
-
 from src.config import (
+    PORT,
     TELEGRAM_ALERT_BOT_TOKEN,
     TELEGRAM_ALERT_CHAT_ID,
     TELEGRAM_ALERT_THREAD_ID,
@@ -157,4 +158,4 @@ app.add_middleware(
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8301)
+    uvicorn.run(app, host="127.0.0.1", port=PORT)
