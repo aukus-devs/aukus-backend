@@ -1,0 +1,22 @@
+services:
+  aukus-backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: aukus-backend-local
+    environment:
+      - AUKUS_DATABASE_URL=mysql+asyncmy://root:pass@mysql:3306/aukus4
+      - EVENTLAB_DATABASE_URL=mysql+asyncmy://root:pass@mysql:3306/eventlab
+      - EVENTLAB_API_URL=http://eventlab-backend:8000
+      - PORT=8000
+      - CORS_ORIGINS=http://localhost:8092,http://localhost:5173,http://localhost:5174
+      - NODE_ENV=development
+      - DB_QUERY_LOGGING=true
+      - RUN_SEEDS=true
+    ports:
+      - "8093:8000"
+    networks:
+      - eventlab-local
+    depends_on:
+      mysql:
+        condition: service_healthy
