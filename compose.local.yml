@@ -7,7 +7,7 @@ services:
     environment:
       - AUKUS_DATABASE_URL=mysql+asyncmy://root:pass@mysql:3306/aukus4
       - EVENTLAB_DATABASE_URL=mysql+asyncmy://root:pass@mysql:3306/eventlab
-      - EVENTLAB_API_URL=http://eventlab-backend:8000
+      - EVENTLAB_API_URL=http://api-server:8000
       - PORT=8000
       - CORS_ORIGINS=http://localhost:8092,http://localhost:5173,http://localhost:5174
       - NODE_ENV=development
