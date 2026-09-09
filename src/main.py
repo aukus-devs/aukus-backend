@@ -14,6 +14,7 @@ from src.api.event_data import routes as event_data
 from src.api.player import routes as player
 from src.api.rules import routes as rules
 from src.config import (
+    IS_LOCAL,
     PORT,
     TELEGRAM_ALERT_BOT_TOKEN,
     TELEGRAM_ALERT_CHAT_ID,
@@ -148,14 +149,31 @@ app.include_router(player.router)
 app.include_router(rules.router)
 
 
+def _build_allow_origin_regex() -> str:
+    patterns: list[str] = []
+    if IS_LOCAL:
+        patterns.append(r"http://localhost(:\d+)?")
+        patterns.append(r"http://127\.0\.0\.1(:\d+)?")
+        patterns.append(r"https://eventlab\.dev")
+        patterns.append(r"https://[a-zA-Z0-9-]+\.eventlab\.dev")
+    else:
+        patterns.append(r"https://eventlab\.dev")
+        patterns.append(r"https://[a-zA-Z0-9-]+\.eventlab\.dev")
+        patterns.append(r"http://localhost:5173")
+    cors_pattern = "|".join(f"(?:{pattern})" for pattern in patterns)
+    logger.info("CORS: %s", cors_pattern)
+    return cors_pattern
+
+
+_ = app.middleware("http")(logging_middleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[],
+    allow_origin_regex=_build_allow_origin_regex(),
+    allow_credentials=True,  # Required for cookies
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],  # Adjust as needed for production
 )
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=PORT)
